@@ -8,7 +8,6 @@ For example, an Order Processing System can use Event Sourcing to track all the 
 This chapter presents an introduction to every relevant architecture style in the land of PHP, following the evolution from traditional old school PHP code to a more sophisticated architecture. Please note that although there are many other existing architecture styles, such as Data Fabric or SOA, we found some of them a bit too complex to introduce from the PHP perspective.
 
 
-
 The Good Old Days
 -----------------
 
@@ -16,131 +15,133 @@ The Good Old Days
 
 Before the release of PHP 4, the language didn't embrace the Object-Oriented paradigm. Back then, the usual way of writing applications was by using procedures and global state. Concepts like **Separation of Concerns** (**SoC**) and **Model-View-Controller** (**MVC**) were alien among the PHP community. The example below is an application written in this traditional way, where applications were composed of many front controllers mixed with HTML code. During this time, Infrastructure-, Presentation-, UI-, and Domain-layer code were all tangled together:
 
-    include __DIR__ . '/bootstrap.php';
-    
-    $link = mysql_connect('localhost', 'a_username', '4_p4ssw0rd');
-    
-    if (!$link) {
-        die('Could not connect: ' . mysql_error());
-    }
-    
-    mysql_set_charset('utf8', $link);
-    mysql_select_db('my_database', $link);
-    
-    $errormsg = null ;
-    if (isset($_POST['submit'] && isValid($_POST['post'])) {
-        $post = getFrom($_POST['post']);
-        mysql_query('START TRANSACTION', $link);
-        $sql = sprintf(
-            "INSERT INTO posts (title, content) VALUES ('%s','%s')",    
-            mysql_real_escape_string($post['title']),
-            mysql_real_escape_string($post['content']
-        ));
-    
-        $result = mysql_query($sql, $link);
-        if ($result) {
-            mysql_query('COMMIT', $link);
-        } else {
-            mysql_query('ROLLBACK', $link);
-            $errormsg = 'Post could not be created! :(';
-        }
-    }
-    
-    $result = mysql_query('SELECT id, title, content FROM posts', $link);
-    ?>
-    <html>
-        <head></head>
-        <body>
-            <?php if (null !== $errormsg) : ?>
-                <div class="alert error"><?php echo $errormsg; ?></div>
-            <?php else: ?>
-                <div class="alert success">
-                    Bravo! Post was created successfully!
-                </div>
-            <?php endif; ?>
-            <table>
-                <thead><tr><th>ID</th><th>TITLE</th>
-                <th>ACTIONS</th></tr></thead>
-                <tbody>
-                <?php while($post = mysql_fetch_assoc($result)) : ?>
-                    <tr>
-                        <td><?php echo $post['id']; ?></td>
-                        <td><?php echo $post['title']; ?></td>
-                        <td><?php editPostUrl($post['id']); ?></td>
-                    </tr>
-                <?php endwhile; ?>
-                </tbody>
-            </table>
-       </body>
-     </html>
-     <?php mysql_close($link); ?>
+```php
+include __DIR__ . '/bootstrap.php';
 
+$link = mysql_connect('localhost', 'a_username', '4_p4ssw0rd');
+
+if (!$link) {
+    die('Could not connect: ' . mysql_error());
+}
+
+mysql_set_charset('utf8', $link);
+mysql_select_db('my_database', $link);
+
+$errormsg = null ;
+if (isset($_POST['submit'] && isValid($_POST['post'])) {
+    $post = getFrom($_POST['post']);
+    mysql_query('START TRANSACTION', $link);
+    $sql = sprintf(
+        "INSERT INTO posts (title, content) VALUES ('%s','%s')",    
+        mysql_real_escape_string($post['title']),
+        mysql_real_escape_string($post['content']
+    ));
+
+    $result = mysql_query($sql, $link);
+    if ($result) {
+        mysql_query('COMMIT', $link);
+    } else {
+        mysql_query('ROLLBACK', $link);
+        $errormsg = 'Post could not be created! :(';
+    }
+}
+
+$result = mysql_query('SELECT id, title, content FROM posts', $link);
+?>
+<html>
+    <head></head>
+    <body>
+        <?php if (null !== $errormsg) : ?>
+            <div class="alert error"><?php echo $errormsg; ?></div>
+        <?php else: ?>
+            <div class="alert success">
+                Bravo! Post was created successfully!
+            </div>
+        <?php endif; ?>
+        <table>
+            <thead><tr><th>ID</th><th>TITLE</th>
+            <th>ACTIONS</th></tr></thead>
+            <tbody>
+            <?php while($post = mysql_fetch_assoc($result)) : ?>
+                <tr>
+                    <td><?php echo $post['id']; ?></td>
+                    <td><?php echo $post['title']; ?></td>
+                    <td><?php editPostUrl($post['id']); ?></td>
+                </tr>
+            <?php endwhile; ?>
+            </tbody>
+        </table>
+   </body>
+ </html>
+ <?php mysql_close($link); ?>
+```
 
 This style of coding is often referred to as the _Big Ball of Mud_ we mentioned in the first chapter. An improvement seen in this style, however, was to encapsulate the header and the footer of the webpage in their own separate files, which were included in the header and footer files. This avoided duplication and favored reuse:
 
-    include __DIR__ . '/bootstrap.php';
-    
-    $link = mysql_connect('localhost', 'a_username', '4_p4ssw0rd');
-    
-    if (!$link) {
-        die('Could not connect: ' . mysql_error());
+```php
+include __DIR__ . '/bootstrap.php';
+
+$link = mysql_connect('localhost', 'a_username', '4_p4ssw0rd');
+
+if (!$link) {
+    die('Could not connect: ' . mysql_error());
+}
+
+mysql_set_charset('utf8', $link);
+mysql_select_db('my_database', $link);
+
+$errormsg = null;
+
+if (isset($_POST['submit'] && isValid($_POST['post'])) {
+    $post = getFrom($_POST['post']);
+    mysql_query('START TRANSACTION', $link);
+    $sql = sprintf(
+        "INSERT INTO posts(title, content) VALUES('%s','%s')", 
+        mysql_real_escape_string($post['title']),
+        mysql_real_escape_string($post['content'])
+    );
+
+    $result = mysql_query($sql, $link);
+    if ($result) {
+        mysql_query('COMMIT', $link);
+    } else {
+        mysql_query('ROLLBACK', $link);
+        $errormsg = 'Post could not be created! :(';
     }
-    
-    mysql_set_charset('utf8', $link);
-    mysql_select_db('my_database', $link);
-    
-    $errormsg = null;
-    
-    if (isset($_POST['submit'] && isValid($_POST['post'])) {
-        $post = getFrom($_POST['post']);
-        mysql_query('START TRANSACTION', $link);
-        $sql = sprintf(
-            "INSERT INTO posts(title, content) VALUES('%s','%s')", 
-            mysql_real_escape_string($post['title']),
-            mysql_real_escape_string($post['content'])
-        );
-    
-        $result = mysql_query($sql, $link);
-        if ($result) {
-            mysql_query('COMMIT', $link);
-        } else {
-            mysql_query('ROLLBACK', $link);
-            $errormsg = 'Post could not be created! :(';
-        }
-    }
-    
-    $result = mysql_query('SELECT id, title, content FROM posts', $link);
-    ?>
-    <?php include __DIR__ . '/header.php'; ?>
-    <?php if (null !== $errormsg) : ?>
-        <div class="alert error"><?php echo $errormsg; ?></div>
-    <?php else: ?>
-        <div class="alert success">
-            Bravo! Post was created successfully!
-        </div>
-    <?php endif; ?>
-    <table>
-        <thead>
-            <tr>
-                <th>ID</th>
-                <th>TITLE</th>
-                <th>ACTIONS</th>
-            </tr>
-        </thead>
-        <tbody>
-        <?php while($post = mysql_fetch_assoc($result)): ?>
-            <tr>
-                <td><?php echo $post['id']; ?></td>
-                <td><?php echo $post['title']; ?></td>
-                <td><?php editPostUrl($post['id']); ?></td>
-            </tr>
-        <?php endwhile; ?>
-        </tbody>
-    </table>
-    <?php include __DIR__ . '/footer.php'; ?>
+}
+
+$result = mysql_query('SELECT id, title, content FROM posts', $link);
+?>
+<?php include __DIR__ . '/header.php'; ?>
+<?php if (null !== $errormsg) : ?>
+    <div class="alert error"><?php echo $errormsg; ?></div>
+<?php else: ?>
+    <div class="alert success">
+        Bravo! Post was created successfully!
+    </div>
+<?php endif; ?>
+<table>
+    <thead>
+        <tr>
+            <th>ID</th>
+            <th>TITLE</th>
+            <th>ACTIONS</th>
+        </tr>
+    </thead>
+    <tbody>
+    <?php while($post = mysql_fetch_assoc($result)): ?>
+        <tr>
+            <td><?php echo $post['id']; ?></td>
+            <td><?php echo $post['title']; ?></td>
+            <td><?php editPostUrl($post['id']); ?></td>
+        </tr>
+    <?php endwhile; ?>
+    </tbody>
+</table>
+<?php include __DIR__ . '/footer.php'; ?>
+```
 
 Nowadays, and although it is highly discouraged, there are still applications that use this procedural way of coding. The main disadvantage of this style of architecture is that there's no real Separation of Concerns — the maintenance and cost of evolving an application being developed this way increases drastically in relation to other well-known and proven architectures.
-
 
 
 Layered Architecture
@@ -176,93 +177,96 @@ The MVC pattern
 
 Continuing with the previous example, we mentioned that different concerns should be split up. In order to do so, all layers should be identified in our original tangled code. Throughout this process, we need to pay special attention to the code conforming to the Model layer, which will be the beating heart of the application:
 
-    class Post
+```php
+class Post
+{
+    private $title;
+    private $content;
+
+    public static function writeNewFrom($title, $content)
     {
-        private $title;
-        private $content;
-    
-        public static function writeNewFrom($title, $content)
-        {
-            return new static($title, $content);
-        }
-    
-        private function __construct($title, $content)
-        {
-            $this->setTitle($title);
-            $this->setContent($content);
-        }
-    
-        private function setTitle($title)
-        {
-            if (empty($title)) {
-                throw new RuntimeException('Title cannot be empty');
-            }
-    
-            $this->title = $title;
-        }
-    
-        private function setContent($content)
-        {
-            if (empty($content)) {
-                throw new RuntimeException('Content cannot be empty');
-            }
-    
-            $this->content = $content;
-        }
-    }
-    
-    class PostRepository
-    {
-        private $db;
-    
-        public function __construct()
-        {
-            $this->db = new PDO(
-                'mysql:host=localhost;dbname=my_database',
-                'a_username',
-                '4_p4ssw0rd',
-                [
-                    PDO::MYSQL_ATTR_INIT_COMMAND => 'SET NAMES utf8mb4',
-                ]
-            );
-        }
-    
-        public function add(Post $post)
-        {
-            $this->db->beginTransaction();
-    
-            try {
-                $stm = $this->db->prepare(
-                    'INSERT INTO posts (title, content) VALUES (?, ?)'
-                );
-    
-                $stm->execute([
-                    $post->title(),
-                    $post->content(),
-                ]);
-    
-                $this->db->commit();
-            } catch (Exception $e) {
-                $this->db->rollback();
-                throw new UnableToCreatePostException($e);
-            }
-        }
+        return new static($title, $content);
     }
 
+    private function __construct($title, $content)
+    {
+        $this->setTitle($title);
+        $this->setContent($content);
+    }
+
+    private function setTitle($title)
+    {
+        if (empty($title)) {
+            throw new RuntimeException('Title cannot be empty');
+        }
+
+        $this->title = $title;
+    }
+
+    private function setContent($content)
+    {
+        if (empty($content)) {
+            throw new RuntimeException('Content cannot be empty');
+        }
+
+        $this->content = $content;
+    }
+}
+
+class PostRepository
+{
+    private $db;
+
+    public function __construct()
+    {
+        $this->db = new PDO(
+            'mysql:host=localhost;dbname=my_database',
+            'a_username',
+            '4_p4ssw0rd',
+            [
+                PDO::MYSQL_ATTR_INIT_COMMAND => 'SET NAMES utf8mb4',
+            ]
+        );
+    }
+
+    public function add(Post $post)
+    {
+        $this->db->beginTransaction();
+
+        try {
+            $stm = $this->db->prepare(
+                'INSERT INTO posts (title, content) VALUES (?, ?)'
+            );
+
+            $stm->execute([
+                $post->title(),
+                $post->content(),
+            ]);
+
+            $this->db->commit();
+        } catch (Exception $e) {
+            $this->db->rollback();
+            throw new UnableToCreatePostException($e);
+        }
+    }
+}
+```
 
 The Model layer is now defined by a `Post` class and a `PostRepository` class. The `Post` class represents a blog post, and the `PostRepository` class represents the whole collection of blog posts available. Additionally, another layer — one that coordinates and orchestrates the Domain Model behavior — is needed inside the Model. Enter the Application layer:
 
-    class PostService
+```php
+class PostService
+{
+    public function createPost($title, $content)
     {
-        public function createPost($title, $content)
-        {
-            $post = Post::writeNewFrom($title, $content);
-    
-            (new PostRepository())->add($post);
-    
-            return $post;
-        }
+        $post = Post::writeNewFrom($title, $content);
+
+        (new PostRepository())->add($post);
+
+        return $post;
     }
+}
+```
 
 
 The `PostService` class is what is known as an Application Service, and its purpose is to orchestrate and organize the Domain behavior. In other words, the Application services are the ones that make things happen, and they're the direct clients of a Domain Model. No other type of object should be able to directly talk to the internal layers of the Model layer.
@@ -275,35 +279,37 @@ The View is a layer that can both send and receive messages from the Model layer
 
 **`DTOs Instead of Model Instances?`** This is an old and active topic. Why create a DTO instead of giving an instance of the Model to the View layer? The main reason and the short answer is, again, Separation of Concerns. Letting the View inspect and use a Model instance leads to tight coupling between the View layer and the Model layer. In fact, a change in the Model layer can potentially break all the views that make use of the changed Model instances.
 
-    {% extends "base.html.twig" %}
-    
-    {% block content %}
-        {% if errormsg is defined %}
-            <div class="alert error">{{ errormsg }}</div>
-        {% else %}
-            <div class="alert success">
-                Bravo! Post was created successfully!
-            </div>
-        {% endif %}
-        <table>
-            <thead>
-                <tr>
-                    <th>ID</th>
-                    <th>TITLE</th>
-                    <th>ACTIONS</th>
-                </tr>
-            </thead>
-            <tbody>
-            {% for post in posts %}
-                <tr>
-                    <td>{{ post.id }}</td>
-                    <td>{{ post.title }}</td>
-                    <td><a href="{{ editPostUrl(post.id) }}">Edit Post</a></td>
-                </tr>
-            {% endfor %}
-            </tbody>
-        </table>
-    {% endblock %}
+```php
+{% extends "base.html.twig" %}
+
+{% block content %}
+    {% if errormsg is defined %}
+        <div class="alert error">{{ errormsg }}</div>
+    {% else %}
+        <div class="alert success">
+            Bravo! Post was created successfully!
+        </div>
+    {% endif %}
+    <table>
+        <thead>
+            <tr>
+                <th>ID</th>
+                <th>TITLE</th>
+                <th>ACTIONS</th>
+            </tr>
+        </thead>
+        <tbody>
+        {% for post in posts %}
+            <tr>
+                <td>{{ post.id }}</td>
+                <td>{{ post.title }}</td>
+                <td><a href="{{ editPostUrl(post.id) }}">Edit Post</a></td>
+            </tr>
+        {% endfor %}
+        </tbody>
+    </table>
+{% endblock %}
+```
 
 Most of the time, when the Model triggers a state change, it also notifies the related Views so that the UI is refreshed. In a typical web scenario, the synchronization between the Model and its representations can be a bit tricky because of the client-server nature. In these kind of environments, some JavaScript-defined interactions are usually needed to maintain that synchronization. For this reason, JavaScript MVC frameworks like the ones below have become widely popular in recent years:
 
@@ -318,37 +324,39 @@ The Controller layer is responsible for organizing and orchestrating the View an
 
 In terms of a web application in PHP, the Controller usually comprehends a set of classes, which, in order to fulfill their purpose, "speak HTTP." In other words, they receive an HTTP request and return an HTTP response:
 
-    class PostsController
+```php
+class PostsController
+{
+    public function updateAction(Request $request)
     {
-        public function updateAction(Request $request)
-        {
-            if (
-                $request->request->has('submit') &&
-                Validator::validate($request->request->post)
-            ) {
-                $postService = new PostService();
-    
-                try {
-                    $postService->createPost(
-                        $request->request->get('title'),
-                        $request->request->get('content')
-                    );
-    
-                    $this->addFlash(
-                        'notice',
-                        'Post has been created successfully!'
-                    );
-                } catch (Exception $e) {
-                    $this->addFlash(
-                        'error',
-                        'Unable to create the post!'
-                    );
-                }
+        if (
+            $request->request->has('submit') &&
+            Validator::validate($request->request->post)
+        ) {
+            $postService = new PostService();
+
+            try {
+                $postService->createPost(
+                    $request->request->get('title'),
+                    $request->request->get('content')
+                );
+
+                $this->addFlash(
+                    'notice',
+                    'Post has been created successfully!'
+                );
+            } catch (Exception $e) {
+                $this->addFlash(
+                    'error',
+                    'Unable to create the post!'
+                );
             }
-    
-            return $this->render('posts/update-result.html.twig');
         }
+
+        return $this->render('posts/update-result.html.twig');
     }
+}
+```
 
 ### Inverting Dependencies: Hexagonal Architecture
 
@@ -376,67 +384,73 @@ There are great videos on YouTube by _Matthias Noback_ where he talks about Hexa
 
 Continuing with the blog example application, the first concept we need is a Port where the outside world can talk to the application. For this case, we'll use an HTTP Port and its corresponding Adapter. The outside will use the Port to send messages to the application. The blog example was using a database to store the whole collection of blog posts, so in order to allow the application to retrieve blog posts from the database, a Port is needed:
 
-    interface PostRepository
-    {
-        public function byId(PostId $id);
-        public function add(Post $post);
-    }
+```php
+interface PostRepository
+{
+    public function byId(PostId $id);
+    public function add(Post $post);
+}
+```
 
 This interface exposes the Port that the application will retrieve information about blog posts through, and it'll be located in the Domain Layer. Now an Adapter for this Port is needed. The Adapter is in charge of defining the way in which the blog posts will be retrieved using a specific technology:
 
-    class PDOPostRepository implements PostRepository
+```php
+class PDOPostRepository implements PostRepository
+{
+    private $db;
+
+    public function __construct(PDO $db)
     {
-        private $db;
-    
-        public function __construct(PDO $db)
-        {
-            $this->db = $db;
-        }
-    
-        public function byId(PostId $id)
-        {
-            $stm = $this->db->prepare(
-                'SELECT * FROM posts WHERE id = ?'
-            );
-    
-            $stm->execute([$id->id()]);
-    
-            return recreateFrom($stm->fetch());
-        }
-    
-        public function add(Post $post)
-        {
-            $stm = $this->db->prepare(
-                'INSERT INTO posts (title, content) VALUES (?, ?)'
-            );
-    
-            $stm->execute([
-                $post->title(),
-                $post->content(),
-            ]);
-        }
+        $this->db = $db;
     }
+
+    public function byId(PostId $id)
+    {
+        $stm = $this->db->prepare(
+            'SELECT * FROM posts WHERE id = ?'
+        );
+
+        $stm->execute([$id->id()]);
+
+        return recreateFrom($stm->fetch());
+    }
+
+    public function add(Post $post)
+    {
+        $stm = $this->db->prepare(
+            'INSERT INTO posts (title, content) VALUES (?, ?)'
+        );
+
+        $stm->execute([
+            $post->title(),
+            $post->content(),
+        ]);
+    }
+}
+```
 
 Once we have the Port and its Adapter defined, the last step is to refactor the `PostService` class so that it uses them. This can be easily achieved by using [Dependency Injection](http://www.martinfowler.com/articles/injection.html):
 
-    class PostService
+```php
+class PostService
+{
+    private $postRepository;
+
+    public function __construct(PostRepositor $postRepository)
     {
-        private $postRepository;
-    
-        public function __construct(PostRepositor $postRepository)
-        {
-            $this->postRepository = $postRepository;
-        }
-    
-        public function createPost($title, $content)
-        {
-            $post = Post::writeNewFrom($title, $content);
-    
-            $this->postRepository->add($post);
-    
-            return $post;
-        }
+        $this->postRepository = $postRepository;
     }
+
+    public function createPost($title, $content)
+    {
+        $post = Post::writeNewFrom($title, $content);
+
+        $this->postRepository->add($post);
+
+        return $post;
+    }
+}
+```
 
 This is just a simple example of Hexagonal Architecture. It's a flexible architecture that promotes Separation of Concerns, like Layered Architecture. It also promotes symmetry, due to having an inside application that communicates with the outside via ports. From now on, this will be the foundational architecture used to build and explain CQRS and Event Sourcing.
 
@@ -446,17 +460,19 @@ For more examples about this architecture, you can check out the [Appendix](../c
 
 Hexagonal Architecture is a good foundational architecture, but it has some limitations. For example, complex UIs can require Aggregate information displayed in diverse forms (**[Chapter 8](../chapters/08%20Aggregates.md)**, _Aggregates_), or they can require data obtained from multiple Aggregates. And in this scenario, we could end up with a lot of finder methods inside the Repositories (maybe as many as the UI views which exist within the application). Or, maybe we can decide to move this complexity to the Application Services, using complex structures to accumulate data from multiple Aggregates. Here's an example:
 
-    interface PostRepository 
-    { 
-        public function save(Post $post);
-        public function byId(PostId $id);
-        public function all(); 
-        public function byCategory(CategoryId $categoryId); 
-        public function byTag(TagId $tagId); 
-        public function withComments(PostId $id); 
-        public function groupedByMonth(); 
-        // ... 
-    }
+```php
+interface PostRepository 
+{ 
+    public function save(Post $post);
+    public function byId(PostId $id);
+    public function all(); 
+    public function byCategory(CategoryId $categoryId); 
+    public function byTag(TagId $tagId); 
+    public function withComments(PostId $id); 
+    public function groupedByMonth(); 
+    // ... 
+}
+```
 
 When these techniques are abused, the construction of the UI views can become really painful. We should evaluate the tradeoff between making Application Services return Domain Model instances and returning some kind of DTOs. With the latter option, we avoid tight coupling between the Domain Model and Infrastructure code (web controllers, CLI controllers, and so on).
 
@@ -483,215 +499,228 @@ These kinds of processes, speaking in CQRS terminology, are called Write Model P
 
 This is the true holder of Domain behavior. Continuing with our example, the Repository interface would be simplified to the following:
 
-    interface PostRepository
-    { 
-        public function save(Post $post); 
-        public function byId(PostId $id); 
-    }
+```php
+interface PostRepository
+{ 
+    public function save(Post $post); 
+    public function byId(PostId $id); 
+}
+```
 
 Now the `PostRepository` has been freed from all the read concerns except one: The `byId` function which is responsible for loading the Aggregate by its ID so that we can operate on it. And once this is done, all the query methods are also stripped down from the Post model, leaving it only with command methods. This means we'll effectively get rid of all the getter methods and any other methods exposing information about the Post Aggregate. Instead, Domain Events will be published in order to be able to trigger Write Model projections by subscribing to them:
 
-    class AggregateRoot
-    {
-        private $recordedEvents = [];
-    
-        protected function recordApplyAndPublishThat(
-            DomainEvent $domainEvent
-        ) {
-            $this->recordThat($domainEvent);
-            $this->applyThat($domainEvent);
-            $this->publishThat($domainEvent);
-        }
-    
-        protected function recordThat(DomainEvent $domainEvent)
-        {
-            $this->recordedEvents[] = $domainEvent;
-        }
-    
-        protected function applyThat(DomainEvent $domainEvent)
-        {
-            $modifier = 'apply' . get_class($domainEvent);
-    
-            $this->$modifier($domainEvent);
-        }
-    
-        protected function publishThat(DomainEvent $domainEvent)
-        {
-            DomainEventPublisher::getInstance()->publish($domainEvent);
-        }
-    
-        public function recordedEvents()
-        {
-            return $this->recordedEvents;
-        }
-    
-        public function clearEvents()
-        {
-            $this->recordedEvents = [];
-        }
-    }
-    
-    class Post extends AggregateRoot
-    {
-        private $id;
-        private $title;
-        private $content;
-        private $published = false;
-        private $categories;
-    
-        private function __construct(PostId $id)
-        {
-            $this->id = $id;
-            $this->categories = new Collection();
-        }
-    
-        public static function writeNewFrom($title, $content)
-        {
-            $postId = PostId::create();
-    
-            $post = new static($postId);
-    
-            $post->recordApplyAndPublishThat(
-                new PostWasCreated($postId, $title, $content)
-            );
-        }
-    
-        public function publish()
-        {
-            $this->recordApplyAndPublishThat(
-                new PostWasPublished($this->id)
-            );
-        }
-    
-        public function categorizeIn(CategoryId $categoryId)
-        {
-            $this->recordApplyAndPublishThat(
-                new PostWasCategorized($this->id, $categoryId)
-            );
-        }
-    
-        public function changeContentFor($newContent)
-        {
-            $this->recordApplyAndPublishThat(
-                new PostContentWasChanged($this->id, $newContent)
-            );
-        }
-    
-        public function changeTitleFor($newTitle)
-        {
-            $this->recordApplyAndPublishThat(
-                new PostTitleWasChanged($this->id, $newTitle)
-            );
-        }
+```php
+class AggregateRoot
+{
+    private $recordedEvents = [];
+
+    protected function recordApplyAndPublishThat(
+        DomainEvent $domainEvent
+    ) {
+        $this->recordThat($domainEvent);
+        $this->applyThat($domainEvent);
+        $this->publishThat($domainEvent);
     }
 
+    protected function recordThat(DomainEvent $domainEvent)
+    {
+        $this->recordedEvents[] = $domainEvent;
+    }
+
+    protected function applyThat(DomainEvent $domainEvent)
+    {
+        $modifier = 'apply' . get_class($domainEvent);
+
+        $this->$modifier($domainEvent);
+    }
+
+    protected function publishThat(DomainEvent $domainEvent)
+    {
+        DomainEventPublisher::getInstance()->publish($domainEvent);
+    }
+
+    public function recordedEvents()
+    {
+        return $this->recordedEvents;
+    }
+
+    public function clearEvents()
+    {
+        $this->recordedEvents = [];
+    }
+}
+
+class Post extends AggregateRoot
+{
+    private $id;
+    private $title;
+    private $content;
+    private $published = false;
+    private $categories;
+
+    private function __construct(PostId $id)
+    {
+        $this->id = $id;
+        $this->categories = new Collection();
+    }
+
+    public static function writeNewFrom($title, $content)
+    {
+        $postId = PostId::create();
+
+        $post = new static($postId);
+
+        $post->recordApplyAndPublishThat(
+            new PostWasCreated($postId, $title, $content)
+        );
+    }
+
+    public function publish()
+    {
+        $this->recordApplyAndPublishThat(
+            new PostWasPublished($this->id)
+        );
+    }
+
+    public function categorizeIn(CategoryId $categoryId)
+    {
+        $this->recordApplyAndPublishThat(
+            new PostWasCategorized($this->id, $categoryId)
+        );
+    }
+
+    public function changeContentFor($newContent)
+    {
+        $this->recordApplyAndPublishThat(
+            new PostContentWasChanged($this->id, $newContent)
+        );
+    }
+
+    public function changeTitleFor($newTitle)
+    {
+        $this->recordApplyAndPublishThat(
+            new PostTitleWasChanged($this->id, $newTitle)
+        );
+    }
+}
+```
 
 All actions that trigger a state change are implemented via Domain Events. For each Domain Event published, there's an apply method responsible for reflecting the state change:
 
-    class Post extends AggregateRoot
-    {
-        // ...
-    
-        protected function applyPostWasCreated(
-            PostWasCreated $event
-        ) {
-            $this->id = $event->id();
-            $this->title = $event->title();
-            $this->content = $event->content();
-        }
-    
-        protected function applyPostWasPublished(
-            PostWasPublished $event
-        ) {
-            $this->published = true;
-        }
-    
-        protected function applyPostWasCategorized(
-            PostWasCategorized $event
-        ) {
-            $this->categories->add($event->categoryId());
-        }
-    
-        protected function applyPostContentWasChanged(
-            PostContentWasChanged $event
-        ) {
-            $this->content = $event->content();
-        }
-    
-        protected function applyPostTitleWasChanged(
-            PostTitleWasChanged $event
-        ) {
-            $this->title = $event->title();
-        }
+```php
+class Post extends AggregateRoot
+{
+    // ...
+
+    protected function applyPostWasCreated(
+        PostWasCreated $event
+    ) {
+        $this->id = $event->id();
+        $this->title = $event->title();
+        $this->content = $event->content();
     }
 
+    protected function applyPostWasPublished(
+        PostWasPublished $event
+    ) {
+        $this->published = true;
+    }
 
+    protected function applyPostWasCategorized(
+        PostWasCategorized $event
+    ) {
+        $this->categories->add($event->categoryId());
+    }
+
+    protected function applyPostContentWasChanged(
+        PostContentWasChanged $event
+    ) {
+        $this->content = $event->content();
+    }
+
+    protected function applyPostTitleWasChanged(
+        PostTitleWasChanged $event
+    ) {
+        $this->title = $event->title();
+    }
+}
+```
 
 #### The Read Model
 
 The Read Model, also known as the Query Model, is a pure denormalized data model lifted from Domain concerns. In fact, with CQRS, all the read concerns are treated as reporting processes, an infrastructure concern. In general, when using CQRS, the Read Model is subject to the needs of the UI and how complex the views compounding the UI are. In a situation where the Read Model is defined in terms of relational databases, the simplest approach would be to set one-to-one relationships between database tables and UI views. These database tables and UI views will be updated using Write Model projections triggered from the Domain Events published by the write side:
 
-    -- Definition of a UI view of a single post with its comments
-    CREATE TABLE single_post_with_comments (
-        id INTEGER NOT NULL,
-        post_id INTEGER NOT NULL,
-        post_title VARCHAR(100) NOT NULL,
-        post_content TEXT NOT NULL,
-        post_created_at DATETIME NOT NULL,
-        comment_content TEXT NOT NULL
-    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
-    
-    -- Set up some data
-    INSERT INTO single_post_with_comments VALUES
-        (1, 1, "Layered" , "Some content", NOW(), "A comment"),
-        (2, 1, "Layered" , "Some content", NOW(), "The comment"),
-        (3, 2, "Hexagonal" , "Some content", NOW(), "No comment"),
-        (4, 2, "Hexagonal", "Some content", NOW(), "All comments"),
-        (5, 3, "CQRS", "Some content", NOW(), "This comment"),
-        (6, 3, "CQRS", "Some content", NOW(), "That comment");
-    
-    -- Query it
-    SELECT * FROM single_post_with_comments WHERE post_id = 1;
+```mysql
+-- Definition of a UI view of a single post with its comments
+CREATE TABLE single_post_with_comments
+(
+    id              INTEGER      NOT NULL,
+    post_id         INTEGER      NOT NULL,
+    post_title      VARCHAR(100) NOT NULL,
+    post_content    TEXT         NOT NULL,
+    post_created_at DATETIME     NOT NULL,
+    comment_content TEXT         NOT NULL
+) ENGINE = InnoDB
+  DEFAULT CHARSET = utf8mb4
+  COLLATE = utf8mb4_unicode_ci;
+
+-- Set up some data
+INSERT INTO single_post_with_comments
+VALUES (1, 1, "Layered", "Some content", NOW(), "A comment"),
+       (2, 1, "Layered", "Some content", NOW(), "The comment"),
+       (3, 2, "Hexagonal", "Some content", NOW(), "No comment"),
+       (4, 2, "Hexagonal", "Some content", NOW(), "All comments"),
+       (5, 3, "CQRS", "Some content", NOW(), "This comment"),
+       (6, 3, "CQRS", "Some content", NOW(), "That comment");
+
+-- Query it
+SELECT *
+FROM single_post_with_comments WHERE post_id = 1;
+```
 
 An important feature of this architectural style is that the Read Model should be completely disposable, since the true state of the application is handled by the Write Model. This means the Read Model can be removed and recreated when needed, using Write Model projections.
 
 Here we can see some examples of possible views within a blog application:
 
-    SELECT * FROM
-        posts_grouped_by_month_and_year 
-    ORDER BY month DESC,year ASC;
-    
-    SELECT * FROM
-        posts_by_tags 
-    WHERE tag = "ddd";
-    
-    SELECT * FROM
-        posts_by_author 
-    WHERE author_id = 1;
+```mysql
+SELECT *
+FROM posts_grouped_by_month_and_year
+ORDER BY month DESC, year ASC;
+
+SELECT *
+FROM posts_by_tags
+WHERE tag = "ddd";
+
+SELECT *
+FROM posts_by_author
+WHERE author_id = 1;
+```
 
 It's important to point out that CQRS doesn't constrain the definition and implementation of the Read Model to a relational database. It depends exclusively on the needs of the application being built. It could be a relational database, a document-oriented database, a key-value store, or whatever best suits the needs of your application. Following the blog post application, we'll use [Elasticsearch](https://en.wikipedia.org/wiki/Elasticsearch) — a document-oriented database — to implement a Read Model:
 
-    class PostsController
+```php
+class PostsController
+{
+    public function listAction()
     {
-        public function listAction()
-        {
-            $client = new ElasticsearchClientBuilder::create()->build();
-    
-            $response = $client-> search([
-                'index' => 'blog-engine',
-                'type' => 'posts',
-                'body' => [
-                    'sort' => [
-                        'created_at' => ['order' => 'desc']
-                    ]
+        $client = new ElasticsearchClientBuilder::create()->build();
+
+        $response = $client-> search([
+            'index' => 'blog-engine',
+            'type' => 'posts',
+            'body' => [
+                'sort' => [
+                    'created_at' => ['order' => 'desc']
                 ]
-            ]);
-    
-            return [
-                'posts' => $response
-            ];
-        }
+            ]
+        ]);
+
+        return [
+            'posts' => $response
+        ];
     }
+}
+```
 
 The Read Model code has been drastically simplified to a single query against an Elasticsearch index.
 
@@ -703,49 +732,54 @@ Here comes the tricky part. How do we synchronize the Read Model with the Write 
 
 Let's have a look at an example of configuring projections so that we can get a better idea. First of all, we need to define a skeleton for the projections:
 
-    interface Projection 
-    { 
-        public function listensTo(); 
-        public function project($event); 
-    }
+```php
+interface Projection 
+{ 
+    public function listensTo(); 
+    public function project($event); 
+}
+```
 
 So defining an `Elasticsearch` projection for a `PostWasCreated` event would be as simple as this:
 
-    namespace Infrastructure\Projection\Elasticsearch;
-    
-    use Elasticsearch\Client;
-    use PostWasCreated;
-    
-    class PostWasCreatedProjection implements Projection
+```php
+namespace Infrastructure\Projection\Elasticsearch;
+
+use Elasticsearch\Client;
+use PostWasCreated;
+
+class PostWasCreatedProjection implements Projection
+{
+    private $client;
+
+    public function __construct(Client $client)
     {
-        private $client;
-    
-        public function __construct(Client $client)
-        {
-            $this->client = $client;
-        }
-    
-        public function listensTo()
-        {
-            return PostWasCreated::class;
-        }
-    
-        public function project($event)
-        {
-            $this->client->index([
-                'index' => 'posts',
-                'type' => 'post',
-                'id' => $event->getPostId(),
-                'body' => [
-                    'content' => $event->getPostContent(),
-                    // ...
-                ]
-            ]);
-        }
+        $this->client = $client;
     }
+
+    public function listensTo()
+    {
+        return PostWasCreated::class;
+    }
+
+    public function project($event)
+    {
+        $this->client->index([
+            'index' => 'posts',
+            'type' => 'post',
+            'id' => $event->getPostId(),
+            'body' => [
+                'content' => $event->getPostContent(),
+                // ...
+            ]
+        ]);
+    }
+}
+```
 
 The Projector implementation is a kind of specialized Domain Event listener. The main difference between that and the default Domain Event listener is that the Projector reacts to a group of Domain Events instead of only one:
 
+```php
     namespace Infrastructure\Projection;
     
     class Projector
@@ -769,195 +803,204 @@ The Projector implementation is a kind of specialized Domain Event listener. The
             }
         }
     }
+```
 
 The following code shows how the flow between the projector and the events would appear:
 
-    $client = new ElasticsearchClientBuilder::create()->build();
-    
-    $projector = new Projector();
-    $projector->register([
-        new Infrastructure\Projection\Elasticsearch\
-            PostWasCreatedProjection($client), 
-        new Infrastructure\Projection\Elasticsearch\
-            PostWasPublishedProjection($client),
-        new Infrastructure\Projection\Elasticsearch\
-            PostWasCategorizedProjection($client),
-        new Infrastructure\Projection\Elasticsearch\
-            PostContentWasChangedProjection($client),
-        new Infrastructure\Projection\Elasticsearch\
-            PostTitleWasChangedProjection($client),
-    ]);
-    
-    $events = [
-        new PostWasCreated(/* ... */),
-        new PostWasPublished(/* ... */),
-        new PostWasCategorized(/* ... */),
-        new PostContentWasChanged(/* ... */),
-        new PostTitleWasChanged(/* ... */),
-    ];
-    
-    $projector->project($event);
+```php
+$client = new ElasticsearchClientBuilder::create()->build();
+
+$projector = new Projector();
+$projector->register([
+    new Infrastructure\Projection\Elasticsearch\
+        PostWasCreatedProjection($client), 
+    new Infrastructure\Projection\Elasticsearch\
+        PostWasPublishedProjection($client),
+    new Infrastructure\Projection\Elasticsearch\
+        PostWasCategorizedProjection($client),
+    new Infrastructure\Projection\Elasticsearch\
+        PostContentWasChangedProjection($client),
+    new Infrastructure\Projection\Elasticsearch\
+        PostTitleWasChangedProjection($client),
+]);
+
+$events = [
+    new PostWasCreated(/* ... */),
+    new PostWasPublished(/* ... */),
+    new PostWasCategorized(/* ... */),
+    new PostContentWasChanged(/* ... */),
+    new PostTitleWasChanged(/* ... */),
+];
+
+$projector->project($event);
+```
 
 This code is kind of synchronous, but the process can be asynchronous if needed. And you could make your customers aware of this out-of-sync data by placing some alerts in the view layer.
 
 For the next example, we'll use the `amqplib` PHP extension in combination with [ReactPHP](https://github.com/GeniusesOfSymfony/ReactAMQP):
 
-    // Connect to an AMQP broker
-    $cnn = new AMQPConnection();
-    $cnn->connect();
-    
-    // Create a channel
-    $ch = new AMQPChannel($cnn);
-    
-    // Declare a new exchange
-    $ex = new AMQPExchange($ch);
-    $ex->setName('events');
-    
-    $ex->declare();
-    
-    // Create an event loop
-    $loop = ReactEventLoopFactory::create();
-    
-    // Create a producer that will send any waiting messages every half a second
-    $producer = new Gos\Component\React\AMQPProducer($ex, $loop, 0.5);
-    
-    $serializer = JMS\Serializer\SerializerBuilder::create()->build();
-    
-    $projector = new AsyncProjector($producer, $serializer);
-    
-    $events = [
-        new PostWasCreated(/* ... */),
-        new PostWasPublished(/* ... */),
-        new PostWasCategorized(/* ... */),
-        new PostContentWasChanged(/* ... */),
-        new PostTitleWasChanged(/* ... */),
-    ];
-    
-    $projector->project($event);
+```php
+// Connect to an AMQP broker
+$cnn = new AMQPConnection();
+$cnn->connect();
+
+// Create a channel
+$ch = new AMQPChannel($cnn);
+
+// Declare a new exchange
+$ex = new AMQPExchange($ch);
+$ex->setName('events');
+
+$ex->declare();
+
+// Create an event loop
+$loop = ReactEventLoopFactory::create();
+
+// Create a producer that will send any waiting messages every half a second
+$producer = new Gos\Component\React\AMQPProducer($ex, $loop, 0.5);
+
+$serializer = JMS\Serializer\SerializerBuilder::create()->build();
+
+$projector = new AsyncProjector($producer, $serializer);
+
+$events = [
+    new PostWasCreated(/* ... */),
+    new PostWasPublished(/* ... */),
+    new PostWasCategorized(/* ... */),
+    new PostContentWasChanged(/* ... */),
+    new PostTitleWasChanged(/* ... */),
+];
+
+$projector->project($event);
+```
 
 For this to work, we need an asynchronous projector. Here's a naive implementation of that:
 
-    namespace Infrastructure\Projection;
-    
-    use Gos\Component\React\AMQPProducer;
-    use JMS\Serializer\Serializer;
-    
-    class AsyncProjector
+```php
+namespace Infrastructure\Projection;
+
+use Gos\Component\React\AMQPProducer;
+use JMS\Serializer\Serializer;
+
+class AsyncProjector
+{
+    private $producer;
+    private $serializer;
+
+    public function __construct(
+        Producer $producer,
+        Serializer $serializer
+    ) {
+        $this->producer = $producer;
+        $this->serializer = $serializer;
+    }
+
+    public function project(array $events)
     {
-        private $producer;
-        private $serializer;
-    
-        public function __construct(
-            Producer $producer,
-            Serializer $serializer
-        ) {
-            $this->producer = $producer;
-            $this->serializer = $serializer;
-        }
-    
-        public function project(array $events)
-        {
-            foreach ($events as $event) {
-                $this->producer->publish(
-                    $this->serializer->serialize(
-                        $event, 'json'
-                    )
-                );
-            }
+        foreach ($events as $event) {
+            $this->producer->publish(
+                $this->serializer->serialize(
+                    $event, 'json'
+                )
+            );
         }
     }
+}
+```
 
 And the event consumer on the RabbitMQ exchange would look something like this:
 
-    // Connect to an AMQP broker
-    $cnn = new AMQPConnection();
-    $cnn-> connect();
-    
-    // Create a channel
-    $ch = new AMQPChannel($cnn);
-    
-    // Create a new queue
-    $queue = new AMQPQueue($ch);
-    $queue->setName('events');
-    $queue->declare();
-    
-    // Create an event loop
-    $loop = React\EventLoop\Factory::create();
-    
-    $serializer = JMS\Serializer\SerializerBuilder::create()->build();
-    
-    $client = new Elasticsearch\ClientBuilder::create()->build();
-    
-    $projector = new Projector();
-    $projector->register([
-        new Infrastructure\Projection\Elasticsearch\
-            PostWasCreatedProjection($client),
-        new Infrastructure\Projection\Elasticsearch\
-            PostWasPublishedProjection($client),
-        new Infrastructure\Projection\Elasticsearch\
-            PostWasCategorizedProjection($client),
-        new Infrastructure\Projection\Elasticsearch\
-            PostContentWasChangedProjection($client),
-        new Infrastructure\Projection\Elasticsearch\
-            PostTitleWasChangedProjection($client),              
-    ]);
-    
-    // Create a consumer
-    $consumer = new Gos\Component\ReactAMQP\Consumer($queue, $loop, 0.5, 10);
-    
-    // Check for messages every half a second and consume up to 10 at a time.
-    $consumer->on(
-        'consume',
-        function ($envelope, $queue) use ($projector, $serializer) {
-            $event = $serializer->unserialize($envelope->getBody(), 'json');
-            $projector->project($event);
-        }
-    );
-    
-    $loop->run();
+```php
+// Connect to an AMQP broker
+$cnn = new AMQPConnection();
+$cnn-> connect();
 
+// Create a channel
+$ch = new AMQPChannel($cnn);
+
+// Create a new queue
+$queue = new AMQPQueue($ch);
+$queue->setName('events');
+$queue->declare();
+
+// Create an event loop
+$loop = React\EventLoop\Factory::create();
+
+$serializer = JMS\Serializer\SerializerBuilder::create()->build();
+
+$client = new Elasticsearch\ClientBuilder::create()->build();
+
+$projector = new Projector();
+$projector->register([
+    new Infrastructure\Projection\Elasticsearch\
+        PostWasCreatedProjection($client),
+    new Infrastructure\Projection\Elasticsearch\
+        PostWasPublishedProjection($client),
+    new Infrastructure\Projection\Elasticsearch\
+        PostWasCategorizedProjection($client),
+    new Infrastructure\Projection\Elasticsearch\
+        PostContentWasChangedProjection($client),
+    new Infrastructure\Projection\Elasticsearch\
+        PostTitleWasChangedProjection($client),              
+]);
+
+// Create a consumer
+$consumer = new Gos\Component\ReactAMQP\Consumer($queue, $loop, 0.5, 10);
+
+// Check for messages every half a second and consume up to 10 at a time.
+$consumer->on(
+    'consume',
+    function ($envelope, $queue) use ($projector, $serializer) {
+        $event = $serializer->unserialize($envelope->getBody(), 'json');
+        $projector->project($event);
+    }
+);
+
+$loop->run();
+```
 
 From now on, it could be as simple as making all the needed Repositories consume an instance of the projector and then making them invoke the projection process:
 
-    class DoctrinePostRepository implements PostRepository
+```php
+class DoctrinePostRepository implements PostRepository
+{
+    private $em;
+    private $projector;
+
+    public function __construct(EntityManager $em, Projector $projector)
     {
-        private $em;
-        private $projector;
-    
-        public function __construct(EntityManager $em, Projector $projector)
-        {
-            $this->em = $em;
-            $this->projector = $projector;
-        }
-    
-        public function save(Post $post)
-        {
-            $this->em->transactional(
-                function (EntityManager $em) use ($post)
-                {
-                    $em->persist($post);
-    
-                    foreach ($post->recordedEvents() as $event) {
-                        $em->persist($event);
-                    }
-                }
-            );
-    
-            $this->projector->project($post->recordedEvents());
-        }
-    
-        public function byId(PostId $id)
-        {
-            return $this->em->find($id);
-        }
+        $this->em = $em;
+        $this->projector = $projector;
     }
+
+    public function save(Post $post)
+    {
+        $this->em->transactional(
+            function (EntityManager $em) use ($post)
+            {
+                $em->persist($post);
+
+                foreach ($post->recordedEvents() as $event) {
+                    $em->persist($event);
+                }
+            }
+        );
+
+        $this->projector->project($post->recordedEvents());
+    }
+
+    public function byId(PostId $id)
+    {
+        return $this->em->find($id);
+    }
+}
+```
 
 The `Post` instance and the recorded events are triggered and persisted in the same transaction. This ensures that no events are lost, as we'll project them to the Read Model if the transaction is successful. As a result, no inconsistencies will exist between the Write Model and the Read Model.
 
 ### Note
 
 ****`To ORM or Not To ORM`****   One of the most common questions when implementing CQRS is if an **Object-Relational Mapper** (**ORM**) is really needed. We strongly believe that using an ORM for the Write Model is perfectly fine and has all of the advantages of using a tool, which will help us save a lot of work in case we use a relational database. But we shouldn't forget that we still need to persist and retrieve the Write Model's state in a relational database.
-
 
 
 Event Sourcing
@@ -983,121 +1026,129 @@ Event Sourcing takes this a step further. If we were using a database table to s
 
 With this model in mind, tools like object-relational mappers are no longer needed. The only tool needed would be a simple database abstraction layer by which events can be appended:
 
-    interface EventSourcedAggregateRoot
+```php
+interface EventSourcedAggregateRoot
+{
+    public static function reconstitute(EventStream $events);
+}
+
+class Post extends AggregateRoot implements EventSourcedAggregateRoot
+{
+    public static function reconstitute(EventStream $history)
     {
-        public static function reconstitute(EventStream $events);
-    }
-    
-    class Post extends AggregateRoot implements EventSourcedAggregateRoot
-    {
-        public static function reconstitute(EventStream $history)
-        {
-            $post = new static($history->getAggregateId());
-    
-            foreach ($events as $event) {
-                $post->applyThat($event);
-            }
-    
-            return $post;
+        $post = new static($history->getAggregateId());
+
+        foreach ($events as $event) {
+            $post->applyThat($event);
         }
+
+        return $post;
     }
+}
+```
 
 Now the `Post` Aggregate has a method which, when given a set of events (or, in other words, an event stream), is able to replay the state step by step until it reaches the current state, all before saving. The next step would be building an adapter of the `PostRepository` port that will fetch all the published events from the `Post` Aggregate and append them to the data store where all the events are appended. This is what we call an event store:
 
-    class EventStorePostRepository implements PostRepository
+```php
+class EventStorePostRepository implements PostRepository
+{
+    private $eventStore;
+    private $projector;
+
+    public function __construct($eventStore, $projector)
     {
-        private $eventStore;
-        private $projector;
-    
-        public function __construct($eventStore, $projector)
-        {
-            $this->eventStore = $eventStore;
-            $this->projector = $projector;
-        }
-    
-        public function save(Post $post)
-        {
-            $events = $post->recordedEvents();
-    
-            $this->eventStore->append(new EventStream(
-                $post->id(),  
-                $events)
-            );
-            $post->clearEvents();
-    
-            $this->projector->project($events);
-        }
+        $this->eventStore = $eventStore;
+        $this->projector = $projector;
     }
+
+    public function save(Post $post)
+    {
+        $events = $post->recordedEvents();
+
+        $this->eventStore->append(new EventStream(
+            $post->id(),  
+            $events)
+        );
+        $post->clearEvents();
+
+        $this->projector->project($events);
+    }
+}
+```
 
 This is how the implementation of the `PostRepository` looks when we use an event store to save all the events published by the `Post` Aggregate. Now we need a way to restore an Aggregate from its events history. A `reconstitute` method implemented by the `Post` Aggregate and used to rebuild a blog post state from triggered events comes in handy:
 
-    class EventStorePostRepository implements PostRepository
+```php
+class EventStorePostRepository implements PostRepository
+{
+    public function byId(PostId $id)
     {
-        public function byId(PostId $id)
-        {
-            return Post::reconstitute(
-                $this->eventStore->getEventsFor($id)
-            );
-        }
+        return Post::reconstitute(
+            $this->eventStore->getEventsFor($id)
+        );
     }
+}
+```
 
 The event store is the workhorse that carries out all the responsibility in regard to saving and restoring event streams. Its public API is composed of two simple methods: They are `append` and `getEventsFrom`. The former appends an event stream to the event store, and the latter loads event streams to allow Aggregate rebuilding.
 
 We could use a key-value implementation to store all events:
 
-    class EventStore
+```php
+class EventStore
+{
+    private $redis;
+    private $serializer;
+
+    public function __construct($redis, $serializer)
     {
-        private $redis;
-        private $serializer;
-    
-        public function __construct($redis, $serializer)
-        {
-            $this->redis = $redis;
-            $this->serializer = $serializer;
-        }
-    
-        public function append(EventStream $eventstream)
-        {
-            foreach ($eventstream as $event) {
-                $data = $this->serializer->serialize(
-                    $event, 'json'
-                );
-    
-                $date = (new DateTimeImmutable())->format('YmdHis');
-    
-                $this->redis->rpush(
-                    'events:' . $event->getAggregateId(),
-                    $this->serializer->serialize([
-                        'type' => get_class($event),
-                        'created_on' => $date,
-                        'data' => $data
-                    ],'json')
-                );
-            }
-        }
-    
-        public function getEventsFor($id)
-        {
-            $serializedEvents = $this->redis->lrange('events:' . $id, 0, -1);
-    
-            $eventStream = [];
-            foreach($serializedEvents as $serializedEvent){
-                $eventData = $this->serializerdeserialize(
-                    $serializedEvent, 
-                    'array',
-                    'json'
-               );
-    
-                $eventStream[] = $this->serializer->deserialize(
-                    $eventData['data'],
-                    $eventData['type'],
-                    'json'
-                );
-            }
-    
-            return new EventStream($id, $eventStream);
+        $this->redis = $redis;
+        $this->serializer = $serializer;
+    }
+
+    public function append(EventStream $eventstream)
+    {
+        foreach ($eventstream as $event) {
+            $data = $this->serializer->serialize(
+                $event, 'json'
+            );
+
+            $date = (new DateTimeImmutable())->format('YmdHis');
+
+            $this->redis->rpush(
+                'events:' . $event->getAggregateId(),
+                $this->serializer->serialize([
+                    'type' => get_class($event),
+                    'created_on' => $date,
+                    'data' => $data
+                ],'json')
+            );
         }
     }
+
+    public function getEventsFor($id)
+    {
+        $serializedEvents = $this->redis->lrange('events:' . $id, 0, -1);
+
+        $eventStream = [];
+        foreach($serializedEvents as $serializedEvent){
+            $eventData = $this->serializerdeserialize(
+                $serializedEvent, 
+                'array',
+                'json'
+           );
+
+            $eventStream[] = $this->serializer->deserialize(
+                $eventData['data'],
+                $eventData['type'],
+                'json'
+            );
+        }
+
+        return new EventStream($id, $eventStream);
+    }
+}
+```
 
 This event store implementation is built upon [Redis](http://redis.io), a widely used key-value store. The events are appended in a list using the prefix events: In addition, before persisting the events, we extract some metadata like the event class or the creation date, as it will come in handy later.
 
@@ -1105,104 +1156,108 @@ Obviously, in terms of performance, it's expensive for an Aggregate to go over i
 
 To follow the example, we'll use the first way of snapshotting. In the event's metadata, we store an additional field, the version, from which we'll start replaying the Aggregate history:
 
-    class SnapshotRepository
+```php
+class SnapshotRepository
+{
+    public function byId($id)
     {
-        public function byId($id)
-        {
-            $key = 'snapshots:' . $id;
-            $metadata = $this->serializer->unserialize(
-                $this->redis->get($key)
-            );
-    
-            if (null === $metadata) {
-                return;
-            } 
-    
-            return new Snapshot(
-                $metadata['version'],
-                $this->serializer->unserialize(
-                    $metadata['snapshot']['data'],
-                    $metadata['snapshot']['type'],
-                    'json'
-                )
-            );
-        }
-    
-        public function save($id, Snapshot $snapshot)
-        {
-            $key = 'snapshots:' . $id;
-            $aggregate = $snapshot->aggregate();
-    
-            $snapshot = [
-                'version' => $snapshot->version(),
-                'snapshot' => [
-                    'type' => get_class($aggregate),
-                    'data' => $this->serializer->serialize(
-                        $aggregate, 'json'
-                    )
-                ]
-            ];
-    
-            $this->redis->set($key, $snapshot);
-        }
+        $key = 'snapshots:' . $id;
+        $metadata = $this->serializer->unserialize(
+            $this->redis->get($key)
+        );
+
+        if (null === $metadata) {
+            return;
+        } 
+
+        return new Snapshot(
+            $metadata['version'],
+            $this->serializer->unserialize(
+                $metadata['snapshot']['data'],
+                $metadata['snapshot']['type'],
+                'json'
+            )
+        );
     }
+
+    public function save($id, Snapshot $snapshot)
+    {
+        $key = 'snapshots:' . $id;
+        $aggregate = $snapshot->aggregate();
+
+        $snapshot = [
+            'version' => $snapshot->version(),
+            'snapshot' => [
+                'type' => get_class($aggregate),
+                'data' => $this->serializer->serialize(
+                    $aggregate, 'json'
+                )
+            ]
+        ];
+
+        $this->redis->set($key, $snapshot);
+    }
+}
+```
 
 
 And now we need to refactor the `EventStore` class so that it starts using the `SnapshotRepository` to load the Aggregate with acceptable performance times:
 
-    class EventStorePostRepository implements PostRepository
+```php
+class EventStorePostRepository implements PostRepository
+{
+    public function byId(PostId $id)
     {
-        public function byId(PostId $id)
-        {
-            $snapshot = $this->snapshotRepository->byId($id);
-    
-            if (null === $snapshot) {
-                return Post::reconstitute(
-                    $this->eventStore->getEventsFrom($id)
-                );
-            }
-    
-            $post = $snapshot->aggregate();
-    
-            $post->replay(
-                $this->eventStore->fromVersion($id, $snapshot->version())
+        $snapshot = $this->snapshotRepository->byId($id);
+
+        if (null === $snapshot) {
+            return Post::reconstitute(
+                $this->eventStore->getEventsFrom($id)
             );
-    
-            return $post;
         }
+
+        $post = $snapshot->aggregate();
+
+        $post->replay(
+            $this->eventStore->fromVersion($id, $snapshot->version())
+        );
+
+        return $post;
     }
+}
+```
 
 We just need to take Aggregate snapshots periodically. We could do this synchronously or asynchronously by a process responsible for monitoring the event store. The following code is a simple example demonstrating the implementation of Aggregate snapshotting:
 
-    class EventStorePostRepository implements PostRepository
+```php
+class EventStorePostRepository implements PostRepository
+{
+    public function save(Post $post)
     {
-        public function save(Post $post)
-        {
-            $id = $post->id();
-            $events = $post->recordedEvents();
-            $post->clearEvents();
-            $this->eventStore->append(new EventStream($id, $events));
-            $countOfEvents =$this->eventStore->countEventsFor($id);
-            $version = $countOfEvents / 100;
-    
-            if (!$this->snapshotRepository->has($post->id(), $version)) {
-                $this->snapshotRepository->save(
-                    $id,
-                    new Snapshot(
-                        $post, $version
-                    )
-                );
-            }
-    
-            $this->projector->project($events);
-        }
-    }
+        $id = $post->id();
+        $events = $post->recordedEvents();
+        $post->clearEvents();
+        $this->eventStore->append(new EventStream($id, $events));
+        $countOfEvents =$this->eventStore->countEventsFor($id);
+        $version = $countOfEvents / 100;
 
+        if (!$this->snapshotRepository->has($post->id(), $version)) {
+            $this->snapshotRepository->save(
+                $id,
+                new Snapshot(
+                    $post, $version
+                )
+            );
+        }
+
+        $this->projector->project($events);
+    }
+}
+```
 
 ### Note
 
 **`To ORM or Not To ORM`** It's clear from the use case of this architectural style that using an ORM just to persist / fetch events would be overkill. Even if we use a relational database for storing them, we only need to persist / fetch events from the data store.
-
 
 
 Wrap-Up
