@@ -10,7 +10,6 @@ The main goal of this book is to show you PHP code examples of the Domain-Driven
 More importantly, _Domain-Driven Design is not about technology_. Instead, it's about developing knowledge around business and using technology to provide value. Only once you're capable of understanding the business your company works within will you be able to participate in the software model discovery process to produce a Ubiquitous Language.
 
 
-
 Why Domain-Driven Design Matters
 --------------------------------
 
@@ -19,7 +18,6 @@ Why Domain-Driven Design Matters
 Software is not just about code. If you think about it, code is rarely the end goal of our profession. Code is just the medium to solve business problems. So why does it have to talk a different language? Domain-Driven Design emphasizes making sure businesses and software speak the same language. Once broken the barrier, there is no need for translations or tedious syncing, information doesn't get lost. Everyone contributes to discovering the Business Domain, not just coders. The resulting software is the only truth for the common language.
 
 Domain-Driven Design it also provides a framework for strategic and tactical design — strategic to pinpoint the most important areas to develop based on business value, and tactical to build a working Domain Model of battle-tested building blocks and patterns.
-
 
 
 The Three Pillars of Domain-Driven Design
@@ -63,7 +61,6 @@ Alberto Brandolini explains Event Storming and its advantages in a [blog post](h
 If you want to know more about Event Storming, check out Brandolini's book, [Introducing EventStorming](https://leanpub.com/introducing_eventstorming).
 
 
-
 Considering Domain-Driven Design
 --------------------------------
 
@@ -82,14 +79,12 @@ If you know your application is going to grow and is likely to change often, Dom
 If you don't understand the Domain you're working on because it's new and nobody has invested in a solution before, this might mean it's complex enough for you to start applying Domain-Driven Design. In this case, you'll need to work closely with Domain Experts to get the models right.
 
 
-
 The Tricky Parts
 ----------------
 
 * * *
 
 Applying Domain-Driven Design is not easy. It requires time and effort to get around the Business Domain, terminology, research, and collaboration with Domain Experts rather than coding jargon. You'll need to have the commitment of Domain Experts for getting involved in the process too. This will requires an open and healthy continuous conversation to model their spoken language into software. On top of that, we'll have to make an effort to avoid thinking technically, to think seriously about the behavior of objects and the Ubiquitous Language first.
-
 
 
 Strategical Overview
@@ -108,7 +103,6 @@ Distributed architectures are proven to increase overall company productivity be
 If your Domain — the problem you need to solve  — is not complex, applying the strategical part of Domain-Driven Design can add unnecessary overhead and slow down your development speed.
 
 If you want to know more about the strategical part of Domain-Driven Design, you should take a look at the first three chapters of _Vaughn Vernon's_ book, [Implementing Domain-Driven Design](http://www.amazon.com/Implementing-Domain-Driven-Design-Vaughn-Vernon-ebook/dp/B00BCLEBN8), or the book [Domain-Driven Design: Tackling Complexity in the Heart of Software](http://www.amazon.com/Domain-Driven-Design-Tackling-Complexity-Software/dp/0321125215)) by _Eric Evans_, both of which specifically focus on this aspect.
-
 
 
 Related Movements: Microservices and Self-Contained Systems
@@ -143,7 +137,6 @@ An SCS should make its features usable to end-users by its own UI. Therefore the
 ### Note
 
 **`Exercise`** Discuss the pros and cons of such distributed architectures with your workmates. Think about using different languages, deployment processes, infrastructure responsibilities, and so on.
-
 
 
 Wrap-Up
