@@ -466,7 +466,7 @@ interface PostRepository
     public function save(Post $post);
     public function byId(PostId $id);
     public function all(); 
-    public function byCategory(CategoryId $categoryId); 
+    public function byCategory(CategoryId $categoryId);
     public function byTag(TagId $tagId); 
     public function withComments(PostId $id); 
     public function groupedByMonth(); 
@@ -502,7 +502,7 @@ This is the true holder of Domain behavior. Continuing with our example, the Rep
 ```php
 interface PostRepository
 { 
-    public function save(Post $post); 
+    public function save(Post $post);
     public function byId(PostId $id); 
 }
 ```
