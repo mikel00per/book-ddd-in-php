@@ -5,7 +5,7 @@ Every enterprise application is typically composed of several areas in which the
 
 ### Note
 
-**`Dealing with Distributed Systems`**Dealing with distributed systems is **hard**. Breaking a system into independent autonomous parts has its benefits, but it also increases complexity. For example, the coordination and synchronization of distributed systems is not trivial, and as a result, should be considered carefully. As Martin Fowler said in the [PoEAA](https://www.martinfowler.com/books/eaa.html) book, the first law of distributed systems is always: **Don't distribute**.
+**`Dealing with Distributed Systems`** Dealing with distributed systems is **hard**. Breaking a system into independent autonomous parts has its benefits, but it also increases complexity. For example, the coordination and synchronization of distributed systems is not trivial, and as a result, should be considered carefully. As Martin Fowler said in the [PoEAA](https://www.martinfowler.com/books/eaa.html) book, the first law of distributed systems is always: **Don't distribute**.
 
 
 
