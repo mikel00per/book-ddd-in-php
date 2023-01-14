@@ -208,7 +208,7 @@ Nice! If you're wondering what this `UserRepository` thing is doing in the const
 
 ### Dependency Inversion
 
-Handling users is not the responsibility of the Service. As we saw in [Chapter 10](/chapters/10%20Repositories.md), _Repositories_, there's a specialized class that deals with `User` collections: the `User` Repository. This is a dependency from the Application Service to the Repository. We don't want to couple the Application Service with a concrete implementation of the Repository, as then we'd be coupling our Service with Infrastructure details. So we depend on the contract (interface) that concrete implementations depend on, the `UserRepository`.
+Handling users is not the responsibility of the Service. As we saw in [Chapter 10](../chapters/10%20Repositories.md), _Repositories_, there's a specialized class that deals with `User` collections: the `User` Repository. This is a dependency from the Application Service to the Repository. We don't want to couple the Application Service with a concrete implementation of the Repository, as then we'd be coupling our Service with Infrastructure details. So we depend on the contract (interface) that concrete implementations depend on, the `UserRepository`.
 
 A specific implementation of the `UserRepository` will be built and passed in at runtime — for example, with `DoctrineUserRepository`, a specific implementation that uses Doctrine. Passing a specific implementation will also work when testing. For example, `NotAvailableUserRepository` can be a specific implementation that will throw exceptions each time an operation is performed. This way, we can test all Application Service behaviors, including _sad_ paths, which is when the application must behave properly, even if something goes wrong.
 
@@ -335,7 +335,7 @@ This is our preferred approach, and probably the one that fits all scenarios:
         }
     }
 
-Using a dedicated class per Application Service makes the code more robust against external changes (Single Responsibility Principle). There are fewer reasons to change the class, as the Service does one and only one thing. The Application Service will be easier to test, seeing as it does less things. It's easier to implement a common Application Service contract, making class decoration easier (check out Sub section _Transactions_ of [Chapter 10](/chapters/10%20Repositories.md),  _Repositories_ ). This will also result in higher cohesion, as all dependencies are exclusively dedicated to a single use case.
+Using a dedicated class per Application Service makes the code more robust against external changes (Single Responsibility Principle). There are fewer reasons to change the class, as the Service does one and only one thing. The Application Service will be easier to test, seeing as it does less things. It's easier to implement a common Application Service contract, making class decoration easier (check out Sub section _Transactions_ of [Chapter 10](../chapters/10%20Repositories.md),  _Repositories_ ). This will also result in higher cohesion, as all dependencies are exclusively dedicated to a single use case.
 
 The `execution` method could have a more expressive name, like `signUp`. However, the execute [Command pattern](http://martinfowler.com/bliki/DecoratedCommand.html) format standardizes a common contract across Application Services, thereby enabling easy decoration, which comes in handy for transactions.
 

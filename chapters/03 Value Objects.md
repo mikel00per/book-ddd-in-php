@@ -461,7 +461,7 @@ Consider the following `Product` Entity with string id, `name`, and `price` (`Mo
          // ...
      }
 
-Assuming you have a [Chapter 10](/chapters/10%20Repositories.md), _Repositories_ for persisting `Product` Entities, an implementation to create and persist a new `Product` could look like this:
+Assuming you have a [Chapter 10](../chapters/10%20Repositories.md), _Repositories_ for persisting `Product` Entities, an implementation to create and persist a new `Product` could look like this:
 
     $product = new Product(
         $productRepository->nextIdentity(), 
@@ -491,7 +491,7 @@ If we're dealing with an Ad Hoc ORM using the Embedded Value pattern, we need to
         price_currency VARCHAR( 3) NOT NULL
     ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
-For persisting the Entity in the database, our [Chapter 10](/chapters/10%20Repositories.md), _Repositories_ has to map each of the fields of the Entity and the ones from the `Money` Value Object.
+For persisting the Entity in the database, our [Chapter 10](../chapters/10%20Repositories.md), _Repositories_ has to map each of the fields of the Entity and the ones from the `Money` Value Object.
 
 If you're using an `Ad hoc ORM` Repository based on DBAL—let's call it `DbalProductRepository`—you must take care of creating the `INSERT` statement, binding the parameters, and executing the statement:
 
@@ -552,7 +552,7 @@ As you can see, you can map your Value Objects and query parameters in an `Ad ho
 
 There are some benefits to this approach. First, you can easily read, step by step, how the persistence and subsequent creations occur. Second, you can perform queries based on any of the attributes of the Value Object. Finally, the space required to persist the Entity is just what is required — no more and no less.
 
-However, using the ad hoc ORM approach has its drawbacks. As explained in the [Chapter 6](/chapters/06%20Domain-Events.md), _Domain-Events_, Entities (in Aggregate form) should fire an Event in the constructor if your Domain is interested in the Aggregate's creation. If you use the new operator, you'll be firing the Event as many times as the Aggregate is fetched from the database.
+However, using the ad hoc ORM approach has its drawbacks. As explained in the [Chapter 6](../chapters/06%20Domain-Events.md), _Domain-Events_, Entities (in Aggregate form) should fire an Event in the constructor if your Domain is interested in the Aggregate's creation. If you use the new operator, you'll be firing the Event as many times as the Aggregate is fetched from the database.
 
 This is one of the reasons why Doctrine uses internal proxies and `serialize` and `unserialize` methods to reconstitute an object with its attributes in a specific state without using its constructor. An Entity should only be created with the new operator once in its lifetime:
 
@@ -737,7 +737,7 @@ As you can see, there are two new attributes: one for the amount, and another fo
 
 ### Note
 
-**`Surrogate Attributes`** These two new fields don't strictly belong to the Domain, as they don't refer to Infrastructure details. Rather, they're a necessity due to the lack of embeddable support in Doctrine. There are alternatives that can push these two attributes outside the pure Domain; however, this approach is simpler, easier, and, as a tradeoff, acceptable. There's another use of surrogate attributes in this book; you can find it in  the sub-section _Surrogate Identity_ of the section _Identity Operation_ of [Chapter 4](/chapters/04%20Entities.md)_, Entities_.
+**`Surrogate Attributes`** These two new fields don't strictly belong to the Domain, as they don't refer to Infrastructure details. Rather, they're a necessity due to the lack of embeddable support in Doctrine. There are alternatives that can push these two attributes outside the pure Domain; however, this approach is simpler, easier, and, as a tradeoff, acceptable. There's another use of surrogate attributes in this book; you can find it in  the sub-section _Surrogate Identity_ of the section _Identity Operation_ of [Chapter 4](../chapters/04%20Entities.md)_, Entities_.
 
 If we wanted to push these two attributes outside of the Domain, this could be achieved through the use of an [Abstract Factory](http://en.wikipedia.org/wiki/Abstract_factory_pattern). First, we need to create a new Entity, `DoctrineProduct`, in our Infrastructure folder. This Entity will extend from `Product` Entity. All surrogate fields will be placed in the new class, and methods such as price or `setPrice` should be reimplemented. We'll map Doctrine to use the new `DoctrineProduct` as opposed to the `Product` Entity.
 

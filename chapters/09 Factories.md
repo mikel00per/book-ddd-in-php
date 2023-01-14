@@ -142,7 +142,7 @@ Consider the following Service example. Given a request from the outside world, 
         }
     }
 
-Finder methods in Repositories like `latestPosts` have some limitations, as they keep adding complexity to our Repositories indefinitely. As we discuss in the [Chapter 10](/chapters/10%20Repositories.md), _Repositories_ Specifications are a better approach.
+Finder methods in Repositories like `latestPosts` have some limitations, as they keep adding complexity to our Repositories indefinitely. As we discuss in the [Chapter 10](../chapters/10%20Repositories.md), _Repositories_ Specifications are a better approach.
 
 Lucky for us, we have a nice `query` method in our `PostRepository` that works with Specifications:
 
@@ -343,7 +343,7 @@ Imagine a `User` Entity like the following one:
         // ...
      }
 
-Imagine we want to use Doctrine as our Infrastructure persistence mechanism. Doctrine requires having an `id` as a plain string instance variable in order to work properly. In our Entity, `$userId` is a `UserId` Value Object. Adding an additional `id` to our `User` Entity just because of Doctrine would couple our persistence mechanism with our Domain Model. We saw in the [Chapter 4](/chapters/04%20Entities.md), _Entities_ that we could solve this problem with a Surrogate ID by creating a wrapper around our `User` Entity in the Infrastructure layer:
+Imagine we want to use Doctrine as our Infrastructure persistence mechanism. Doctrine requires having an `id` as a plain string instance variable in order to work properly. In our Entity, `$userId` is a `UserId` Value Object. Adding an additional `id` to our `User` Entity just because of Doctrine would couple our persistence mechanism with our Domain Model. We saw in the [Chapter 4](../chapters/04%20Entities.md), _Entities_ that we could solve this problem with a Surrogate ID by creating a wrapper around our `User` Entity in the Infrastructure layer:
 
     class DoctrineUser extends User
     {

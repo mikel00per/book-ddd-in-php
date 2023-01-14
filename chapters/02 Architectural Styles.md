@@ -440,11 +440,11 @@ Once we have the Port and its Adapter defined, the last step is to refactor the 
 
 This is just a simple example of Hexagonal Architecture. It's a flexible architecture that promotes Separation of Concerns, like Layered Architecture. It also promotes symmetry, due to having an inside application that communicates with the outside via ports. From now on, this will be the foundational architecture used to build and explain CQRS and Event Sourcing.
 
-For more examples about this architecture, you can check out the [Appendix](/chapters/13%20Hexagonal%20Architecture%20with%20PHP.md), _Hexagonal Architecture with PHP_. For a more detailed example, you should jump to the [Chapter 11](/chapters/11%20Application.md), _Application_, which explains advanced topics like transactionality and other cross-cutting concerns.
+For more examples about this architecture, you can check out the [Appendix](../chapters/13%20Hexagonal%20Architecture%20with%20PHP.md), _Hexagonal Architecture with PHP_. For a more detailed example, you should jump to the [Chapter 11](../chapters/11%20Application.md), _Application_, which explains advanced topics like transactionality and other cross-cutting concerns.
 
 ### Command Query Responsibility Segregation (CQRS)
 
-Hexagonal Architecture is a good foundational architecture, but it has some limitations. For example, complex UIs can require Aggregate information displayed in diverse forms (**[Chapter 8](/chapters/08%20Aggregates.md)**, _Aggregates_), or they can require data obtained from multiple Aggregates. And in this scenario, we could end up with a lot of finder methods inside the Repositories (maybe as many as the UI views which exist within the application). Or, maybe we can decide to move this complexity to the Application Services, using complex structures to accumulate data from multiple Aggregates. Here's an example:
+Hexagonal Architecture is a good foundational architecture, but it has some limitations. For example, complex UIs can require Aggregate information displayed in diverse forms (**[Chapter 8](../chapters/08%20Aggregates.md)**, _Aggregates_), or they can require data obtained from multiple Aggregates. And in this scenario, we could end up with a lot of finder methods inside the Repositories (maybe as many as the UI views which exist within the application). Or, maybe we can decide to move this complexity to the Application Services, using complex structures to accumulate data from multiple Aggregates. Here's an example:
 
     interface PostRepository 
     { 

@@ -123,7 +123,7 @@ Let's see a possible implementation for `OrderId`, the `Order` Identity that has
     }
 
 
-There are different implementations you can consider for implementing the `OrderId`. The example shown above is quite simple. As explained in the [Chapter 3](/chapters/03%20Value%20Objects.md), _Value Objects_, you can make the `__constructor` method private and use static factory methods to create new instances. Talk with your team, experiment, and agree. Because Entity Identities are not complex Value Objects, our recommendation is that you shouldn't worry too much here.
+There are different implementations you can consider for implementing the `OrderId`. The example shown above is quite simple. As explained in the [Chapter 3](../chapters/03%20Value%20Objects.md), _Value Objects_, you can make the `__constructor` method private and use static factory methods to create new instances. Talk with your team, experiment, and agree. Because Entity Identities are not complex Value Objects, our recommendation is that you shouldn't worry too much here.
 
 Going back to the `Order`, it's time to update references to `OrderId`:
 
@@ -351,7 +351,7 @@ The intent of UUIDs is to enable distributed systems to uniquely identify inform
 
 There are several libraries in PHP that generate UUIDs, and they can be found at Packagist: [https://packagist.org/search/?q=uuid](https://packagist.org/search/?q=uuid). The best recommendation is the one developed by Ben Ramsey at the following  link: [https://github.com/ramsey/uuid](https://github.com/ramsey/uuid) because it has tons of watchers on GitHub and millions of installations on Packagist.
 
-The preferred place to put the creation of the Identity would be inside a Repository (we'll go deeper into this in the [Chapter 10](/chapters/10%20Repositories.md), _Repositories_:
+The preferred place to put the creation of the Identity would be inside a Repository (we'll go deeper into this in the [Chapter 10](../chapters/10%20Repositories.md), _Repositories_:
 
     namespace Ddd\Billing\Domain\Model\Order;
     
@@ -1137,7 +1137,7 @@ Validation is a highly important process in our Domain Model. It checks not only
 
 ### Attribute Validation
 
-Some people understand validation as the process whereby a service validates the state of a given object. In this case, the validation conforms to a [Design-by-contract](http://en.wikipedia.org/wiki/Design_by_contract) approach, which consists of preconditions, postconditions, and invariants. One such way to protect a single attribute is by using [Chapter 3](/chapters/03%20Value%20Objects.md), _Value Objects_. In order to make our design more flexible for change, we focus only on asserting Domain preconditions that must be met. Here, we'll be using guards as an easy way of validating the preconditions:
+Some people understand validation as the process whereby a service validates the state of a given object. In this case, the validation conforms to a [Design-by-contract](http://en.wikipedia.org/wiki/Design_by_contract) approach, which consists of preconditions, postconditions, and invariants. One such way to protect a single attribute is by using [Chapter 3](../chapters/03%20Value%20Objects.md), _Value Objects_. In order to make our design more flexible for change, we focus only on asserting Domain preconditions that must be met. Here, we'll be using guards as an easy way of validating the preconditions:
 
     class Username
     {
@@ -1207,7 +1207,7 @@ As you can see in the example above, there are four preconditions that must be s
 
 If all the preconditions are met, the attribute will be set and the object will be successfully built. Otherwise, an `InvalidArgumentException` will be raised, execution will be halted, and the client will be shown an error.
 
-Some developers may consider this kind of validation defensive programming. However, we're not checking that the input is a string or that nulls are not permitted. We can't avoid people using our code incorrectly, but we can control the correctness of our Domain state. As seen in the [Chapter 3](/chapters/03%20Value%20Objects.md), _Value Objects_, validation can help us with security too.
+Some developers may consider this kind of validation defensive programming. However, we're not checking that the input is a string or that nulls are not permitted. We can't avoid people using our code incorrectly, but we can control the correctness of our Domain state. As seen in the [Chapter 3](../chapters/03%20Value%20Objects.md), _Value Objects_, validation can help us with security too.
 
 [Defensive programming](https://en.wikipedia.org/wiki/Defensive_programming) isn't a bad thing. In general, it makes sense when developing components or libraries that are going to be used as a third party in other projects. However, when developing your own Bounded Context, those extra paranoid checks (nulls, basic types, type hinting, and so  on.) can be avoided to increase development speed by relying on the coverage of your unit test suite.
 
@@ -1379,7 +1379,7 @@ Entities and Domain Events
 
 * * *
 
-We'll explore [Chapter 6](/chapters/06%20Domain-Events.md), _Domain-Events_ in future chapters; however, it's important to highlight that operations performed on Entities can fire Domain Events. This approach is used to communicate the Domain change to other parts of the Application, or even to other Applications, as you'll see in [Chapter 12](/chapters/12%20Integrating%20Bounded%20Contexts.md), _Integrating Bounded Contexts_:
+We'll explore [Chapter 6](../chapters/06%20Domain-Events.md), _Domain-Events_ in future chapters; however, it's important to highlight that operations performed on Entities can fire Domain Events. This approach is used to communicate the Domain change to other parts of the Application, or even to other Applications, as you'll see in [Chapter 12](../chapters/12%20Integrating%20Bounded%20Contexts.md), _Integrating Bounded Contexts_:
 
     class Post
     {

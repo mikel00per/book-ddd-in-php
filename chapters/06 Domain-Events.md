@@ -972,7 +972,7 @@ This code is quite straightforward. The only edge case we have to consider is wh
 
 ### Note
 
-**`Why an Exchange Name?`** We'll see this in more detail in the [Chpater 12](#integrating-bounded-contexts-chapter), _Integrating Bounded Contexts_. However, when a system is running and a new Bounded Context comes into play, you might be interested in resending all the Domain Events to the new Bounded Context. So keeping track of the last Domain Event published and the channel where it was sent might come in handy later.
+**`Why an Exchange Name?`** We'll see this in more detail in the [Chapter 12](../chapters/12%20Integrating%20Bounded%20Contexts.md), _Integrating Bounded Contexts_. However, when a system is running and a new Bounded Context comes into play, you might be interested in resending all the Domain Events to the new Bounded Context. So keeping track of the last Domain Event published and the channel where it was sent might come in handy later.
 
 In order to keep track of published Domain Events, we need an exchange name and a notification ID. Here's a possible implementation:
 
@@ -1266,4 +1266,4 @@ Wrap-Up
 
 * * *
 
-We've seen the tricks to model a proper `DomainEvent` with a base interface, we've seen where to publish the `DomainEvent` (the nearer to the Entities the better), and we've seen the strategies for spreading those `DomainEvents` to local and remote Bounded Contexts. Now, the only thing remaining is listening for a notification in the messaging system, reading it, and executing the corresponding Application Service or Command. We'll see how to do this in [Chapter 12](/chapters/05%20Services.mdhttps://subscription.packtpub.com/book/application-development/9781787284944/5), _Services_.
+We've seen the tricks to model a proper `DomainEvent` with a base interface, we've seen where to publish the `DomainEvent` (the nearer to the Entities the better), and we've seen the strategies for spreading those `DomainEvents` to local and remote Bounded Contexts. Now, the only thing remaining is listening for a notification in the messaging system, reading it, and executing the corresponding Application Service or Command. We'll see how to do this in [Chapter 12](../chapters/05%20Services.md), _Services_.
