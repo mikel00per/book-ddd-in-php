@@ -1,11 +1,9 @@
 Chapter 3. Value Objects
 ------------------------
 
-By using the `self` keyword, we don't The Value Objects are a fundamental building block of Domain-Driven Design, and they're used to model concepts of your Ubiquitous Language in code. A Value Object is not just a thing in your Domain — it measures, quantifies, or describes something. Value Objects can be seen as small, simple objects — such as money or a date range — whose equality is not based on identity, but instead on the content held.
+By using the `self` keyword, we don't Value Objects are a fundamental building block of Domain-Driven Design, and they're used to model concepts of your Ubiquitous Language in code. A Value Object is not just a thing in your Domain — it measures, quantifies, or describes something. Value Objects can be seen as small, simple objects — such as money or a date range — whose equality is not based on identity, but instead on the content held.
 
 For example, a product price could be modeled using a Value Object. In this case, it's not representing a thing, but rather a value that allows us to measure how much Money a product is worth. The memory footprint for these objects is trivial to determine (calculated by their constituent parts) and there's very little overhead. As a result, new instance creation is favored over reference reuse, even when being used to represent the same value. Equality is then checked based on the comparability of the fields of both instances.
-
-
 
 Definition
 ----------
@@ -27,7 +25,6 @@ Examples of Value Objects are numbers, text strings, dates, times, a person's fu
 **`Exercise`** Try to locate more examples of potential Value Objects in your current Domain.
 
 
-
 Value Object vs. Entity
 -----------------------
 
@@ -43,7 +40,6 @@ Consider the following examples from [Wikipedia](http://en.wikipedia.org/wiki/Do
 **`Exercise`** Think about the concept of an address (street, number, zip code, and so on). What is a possible context where an address could be modeled as an Entity and not as a Value Object? Discuss your findings with a peer.
 
 
-
 Currency and Money Example
 --------------------------
 
@@ -53,29 +49,31 @@ The `Currency` and `Money` Value Objects are probably the most used examples for
 
 In the real world, a currency describes monetary units in the same way that meters and yards describe distance units. Each currency is represented with a three-letter uppercase ISO code:
 
-    class Currency 
-    { 
-        private $isoCode;
-    
-        public function __construct($anIsoCode)
-        {
-            $this->setIsoCode($anIsoCode);
-        }
-    
-        private function setIsoCode($anIsoCode)
-        {
-            if (!preg_match('/^[A-Z]{3}$/', $anIsoCode)) {
-               throw new InvalidArgumentException();
-            }
-    
-            $this->isoCode = $anIsoCode;
-        }
-    
-        public function isoCode()
-        {
-            return $this->isoCode;
-        }
+```php
+class Currency 
+{ 
+    private $isoCode;
+
+    public function __construct($anIsoCode)
+    {
+        $this->setIsoCode($anIsoCode);
     }
+
+    private function setIsoCode($anIsoCode)
+    {
+        if (!preg_match('/^[A-Z]{3}$/', $anIsoCode)) {
+           throw new InvalidArgumentException();
+        }
+
+        $this->isoCode = $anIsoCode;
+    }
+
+    public function isoCode()
+    {
+        return $this->isoCode;
+    }
+}
+```
 
 One of the main goals of Value Objects is also the holy grail of Object-Oriented design: encapsulation. By following this pattern, you'll end up with a dedicated location to put all the validation, comparison logic, and behavior for a given concept.
 
@@ -87,40 +85,41 @@ Money is used to measure a specific amount of currency. It's modeled using an am
 
 As a bonus, you might also notice that we're using [self encapsulation](http://martinfowler.com/bliki/SelfEncapsulation.html) to set the ISO code, which centralizes changes in the Value Object itself:
 
-    class Money 
-    { 
-        private $amount; 
-        private $currency;
-    
-        public function __construct($anAmount, Currency $aCurrency)
-        {
-            $this->setAmount($anAmount);
-            $this->setCurrency($aCurrency);
-        }
-    
-        private function setAmount($anAmount)
-        {
-            $this->amount = (int) $anAmount;
-        }
-    
-        private function setCurrency(Currency $aCurrency)
-        {
-            $this->currency = $aCurrency;
-        }
-    
-        public function amount()
-        {
-            return $this->amount;
-        }
-    
-        public function currency()
-        {
-            return $this->currency;
-        }
+```php
+class Money 
+{ 
+    private $amount;
+    private $currency;
+
+    public function __construct($anAmount, Currency $aCurrency)
+    {
+        $this->setAmount($anAmount);
+        $this->setCurrency($aCurrency);
     }
 
-Now that you know the formal definition of Value Objects, let's dive deeper into some of the powerful features they offer.
+    private function setAmount($anAmount)
+    {
+        $this->amount = (int) $anAmount;
+    }
 
+    private function setCurrency(Currency $aCurrency)
+    {
+        $this->currency = $aCurrency;
+    }
+
+    public function amount()
+    {
+        return $this->amount;
+    }
+
+    public function currency()
+    {
+        return $this->currency;
+    }
+}
+```
+
+Now that you know the formal definition of Value Objects, let's dive deeper into some of the powerful features they offer.
 
 
 Characteristics
@@ -128,7 +127,7 @@ Characteristics
 
 * * *
 
-While modeling an Ubiquitous Language concept in code, you should always favor Value Objects over Entities. Value Objects are easier to create, test, use, and maintain.
+While modeling a Ubiquitous Language concept in code, you should always favor Value Objects over Entities. Value Objects are easier to create, test, use, and maintain.
 
 Keeping this in mind, you can determine whether the concept in question can be modeled as a Value Object if:
 
@@ -157,22 +156,24 @@ In languages with [method overloading](http://en.wikipedia.org/wiki/Function_ove
 
 In our `Money` object, we could add some useful factory methods like the following:
 
-    class Money 
-    { 
-        // ...
-        public static function fromMoney(Money $aMoney)
-        {
-            return new self(
-                $aMoney->amount(),
-                $aMoney->currency()
-            );
-        }
-    
-        public static function ofCurrency(Currency $aCurrency)
-        {
-            return new self(0, $aCurrency);
-        }
+```php
+class Money 
+{ 
+    // ...
+    public static function fromMoney(Money $aMoney)
+    {
+        return new self(
+            $aMoney->amount(),
+            $aMoney->currency()
+        );
     }
+
+    public static function ofCurrency(Currency $aCurrency)
+    {
+        return new self(0, $aCurrency);
+    }
+}
+```
 
 By using the `self` keyword, we don't couple the code with the class name. As such, a change to the class name or namespace won't affect these factory methods. This small implementation detail helps when refactoring the code at a later date.
 
@@ -184,47 +185,53 @@ Due to this immutability, we must consider how to handle mutable actions that ar
 
 Fortunately, it's relatively simple to abide by this rule, as shown in the example below:
 
-    class Money 
-    { 
-       // ...
-        public function increaseAmountBy($anAmount)
-        {
-            return new self(
-                $this->amount() + $anAmount,
-                $this->currency()
-            );
-        }
+```php
+class Money 
+{ 
+   // ...
+    public function increaseAmountBy($anAmount)
+    {
+        return new self(
+            $this->amount() + $anAmount,
+            $this->currency()
+        );
     }
+}
+```
 
 The `Money` object returned by `increaseAmountBy` is different from the `Money` client object that received the method call. This can be observed in the example comparability checks below:
 
-    $aMoney = new Money(100, new Currency('USD')); 
-    $otherMoney = $aMoney->increaseAmountBy(100);
-    
-    var_dump($aMoney === otherMoney); // bool(false)
-    
-    $aMoney = $aMoney->increaseAmountBy(100); 
-    var_dump($aMoney === $otherMoney); // bool(false)
+```php
+$aMoney = new Money(100, new Currency('USD'));
+$otherMoney = $aMoney->increaseAmountBy(100);
+
+var_dump($aMoney === otherMoney); // bool(false)
+
+$aMoney = $aMoney->increaseAmountBy(100); 
+var_dump($aMoney === $otherMoney); // bool(false)
+```
 
 ### Conceptual Whole
 
 So why not just implement something similar to the following example, avoiding the need for a new Value Object class altogether?
 
-    class Product 
-    { 
-        private id; 
-        private name;
-        /**
-         * @var int
-         */
-        private $amount;
-        /**
-         * @var string
-         */
-        private $currency;
-    
-        // ...
-    }
+```php
+class Product 
+{ 
+    private id;
+    private name;
+    /**
+     * @var int
+     */
+    private $amount;
+    /**
+     * @var string
+     */
+    private $currency;
+
+    // ...
+}
+```
 
 This approach has some noticeable flaws, if say, for example, you want to validate the ISO. It doesn't really make sense for the Product to be responsible for the Currency's ISO validation (thus violating the Single Responsibility Principle). This is highlighted even more so if you want to reuse the accompanying logic in other parts of your Domain (to abide by the DRY principle).
 
@@ -252,42 +259,48 @@ When using the identity operator `===`, object variables are identical if and on
 
 The following example should help confirm these subtle differences:
 
-    $a = new Currency('USD'); 
-    $b = new Currency('USD');
-    
-    var_dump($a == $b); // bool(true) 
-    var_dump($a === $b); // bool(false)
-    
-    $c = new Currency('EUR');
-    
-    var_dump($a == $c); // bool(false)
-    var_dump($a === $c); // bool(false)
+```php
+$a = new Currency('USD');
+$b = new Currency('USD');
+
+var_dump($a == $b); // bool(true) 
+var_dump($a === $b); // bool(false)
+
+$c = new Currency('EUR');
+
+var_dump($a == $c); // bool(false)
+var_dump($a === $c); // bool(false)
+```
 
 A solution is to implement a conventional equals method in each Value Object. This method is tasked with checking the type and equality of its composite attributes. Abstract data type comparability is easy to implement using the built-in type hinting in PHP. You can also use the `get_class()` function to aid in the comparability check if necessary.
 
 The language, however, is unable to decipher what equality truly means in your Domain concept, meaning it's your responsibility to provide the answer. In order to compare the `Currency` objects, we just need to confirm that both their associated ISO codes are the same. The `===` operator does the job pretty well in this case:
 
-    class Currency 
-    { 
-        // ...
-        public function equals(Currency $currency)
-        {
-            return $currency->isoCode() === $this->isoCode();
-        }
+```php
+class Currency 
+{ 
+    // ...
+    public function equals(Currency $currency)
+    {
+        return $currency->isoCode() === $this->isoCode();
     }
+}
+```
 
 Because `Money` objects use `Currency` objects, the `equals` method needs to perform this comparability check, along with comparing the amounts:
 
-    class Money 
-    { 
-        // ...
-        public function equals(Money $money)
-        {
-            return
-                $money->currency()->equals($this->currency()) &&
-                $money->amount() === $this->amount();
-        }
+```php
+class Money 
+{ 
+    // ...
+    public function equals(Money $money)
+    {
+        return
+            $money->currency()->equals($this->currency()) &&
+            $money->amount() === $this->amount();
     }
+}
+```
 
 ### Replaceability
 
@@ -297,9 +310,11 @@ Sharing the same Value Object can be risky; if one is altered, both will reflect
 
 Due to the problems highlighted in this example, when holding a reference to a Value Object, it's recommended to replace the object as a whole rather than modifying its value:
 
-    $this−>price = new Money(100, new Currency('USD')); 
-    //...
-    $this->price = $this->price->increaseAmountBy(200);
+```php
+$this−>price = new Money(100, new Currency('USD'));
+//...
+$this->price = $this->price->increaseAmountBy(200);
+```
 
 This kind of behavior is similar to how basic types such as strings work in PHP. Consider the function `strtolower`. It returns a new string rather than modifying the original one. No reference is used; instead, a new value is returned.
 
@@ -307,54 +322,59 @@ This kind of behavior is similar to how basic types such as strings work in PHP.
 
 If we want to include some additional behavior — like an `add` method — in our `Money` class, it feels natural to check that the input fits any preconditions and maintains any invariance. In our case, we only wish to add monies with the same currency:
 
-    class Money 
-    { 
-        // ...
-        public function add(Money $money)
-        {
-            if ($money->currency() !== $this->currency()) {
-                throw new InvalidArgumentException();
-            }
-    
-            $this->amount += $money->amount();
+```php
+class Money 
+{ 
+    // ...
+    public function add(Money $money)
+    {
+        if ($money->currency() !== $this->currency()) {
+            throw new InvalidArgumentException();
         }
+
+        $this->amount += $money->amount();
     }
+}
+```
 
 If the two currencies don't match, an exception is raised. Otherwise, the amounts are added. However, this code has some undesirable pitfalls. Now imagine we have a mysterious method call to `otherMethod` in our code:
 
-    class Banking 
-    {
-        public function doSomething() 
-        { 
-            $aMoney = new Money(100, new Currency('USD')); 
-    
-            $this->otherMethod($aMoney);//mysterious call
-            // ...
-        }
+```php
+class Banking 
+{
+    public function doSomething() 
+    { 
+        $aMoney = new Money(100, new Currency('USD')); 
+
+        $this->otherMethod($aMoney);//mysterious call
+        // ...
     }
+}
+```
 
 Everything is fine until, for some reason, we start seeing unexpected results when we're returning or finished with `otherMethod`. Suddenly, `$aMoney` no longer contains 100 USD. What happened? And what happens if `otherMethod` internally uses our previously defined `add` method? Maybe you're unaware that add mutates the state of the `Money` instance. This is what we call a side effect. You must avoid generating side effects. You must not mutate your arguments. If you do, the developer using your objects may experience strange behaviors. They'll complain, and they'll be correct.
 
 So how can we fix this? Simple — by making sure that the Value Object remains immutable, we avoid this kind of unexpected problem. An easy solution could be returning a new instance for every potentially mutable operation, which the `add` method does:
 
-    class Money 
-    { 
-        // ...
-        public function add(Money $money)
-        {
-            if (!$money->currency()->equals($this->currency())) {
-                throw new \InvalidArgumentException();
-            }
-    
-            return new self(
-                $money->amount() + $this->amount(),
-                $this->currency()
-            );
+```php
+class Money 
+{ 
+    // ...
+    public function add(Money $money)
+    {
+        if (!$money->currency()->equals($this->currency())) {
+            throw new \InvalidArgumentException();
         }
+
+        return new self(
+            $money->amount() + $this->amount(),
+            $this->currency()
+        );
     }
+}
+```
 
 With this simple change, immutability is guaranteed. Each time two instances of `Money` are added together, a new resulting instance is returned. Other classes can perform any number of changes without affecting the original copy. Code free of side effects is easy to understand, easy to test, and less error prone.
-
 
 
 Basic Types
@@ -364,21 +384,22 @@ Basic Types
 
 Consider the following code snippet:
 
-    $a = 10; 
-    $b = 10; 
-    var_dump($a == $b); 
-    // bool(true) 
-    var_dump($a === $b); 
-    // bool(true) 
-    $a = 20; 
-    var_dump($a); 
-    // integer(20) 
-    $a = $a + 30; 
-    var_dump($a); 
-    // integer(50); 
+```php
+$a = 10;
+$b = 10; 
+var_dump($a == $b); 
+// bool(true) 
+var_dump($a === $b); 
+// bool(true) 
+$a = 20;
+var_dump($a); 
+// integer(20) 
+$a = $a + 30; 
+var_dump($a); 
+// integer(50); 
+```
 
 Although `$a` and `$b` are different variables stored in different memory locations, when compared, they're the same. They hold the same value, so we consider them equal. You can change the value of `$a` from `10` to `20` at any time that you want, making the new value `20` and eliminating the `10`. You can replace integer values as much as you want without consideration of the previous value because you're not modifying it; you're just replacing it. If you apply any operation — such as addition (That is. `$a + $b`) — to these variables, you get another new value that can be assigned to another variable or a previously defined one. When you pass `$a` to another function, except when explicitly passed by reference, you're passing a value. It doesn't matter if `$a` gets modified within that function, because in your current code, you'll still have the original copy. Value Objects behave as basic types.
-
 
 
 Testing Value Objects
@@ -390,47 +411,48 @@ Value Objects are tested in the same way normal objects are. However, the immuta
 
 Let's put this into practice and test the side-effect-free implementation of our add method in the `Money` class:
 
-    class MoneyTest extends FrameworkTestCase 
+```php
+class MoneyTest extends FrameworkTestCase 
+{ 
+    /** 
+     * @test
+     */ 
+    public function copiedMoneyShouldRepresentSameValue()
     { 
-        /** 
-         * @test
-         */ 
-        public function copiedMoneyShouldRepresentSameValue()
-        { 
-            $aMoney = new Money(100, new Currency('USD'));
-    
-            $copiedMoney = Money::fromMoney($aMoney);
-    
-            $this->assertTrue($aMoney->equals($copiedMoney));
-        }
-    
-        /**
-         * @test
-         */
-        public function originalMoneyShouldNotBeModifiedOnAddition()
-        {
-            $aMoney = new Money(100, new Currency('USD'));
-    
-            $aMoney->add(new Money(20, new Currency('USD')));
-    
-            $this->assertEquals(100, $aMoney->amount());
-        }
-    
-        /**
-         * @test
-         */
-        public function moniesShouldBeAdded()
-        {
-            $aMoney = new Money(100, new Currency('USD'));
-    
-            $newMoney = $aMoney->add(new Money(20, new Currency('USD')));
-    
-            $this->assertEquals(120, $newMoney->amount());
-        }
-    
-        // ...
+        $aMoney = new Money(100, new Currency('USD'));
+
+        $copiedMoney = Money::fromMoney($aMoney);
+
+        $this->assertTrue($aMoney->equals($copiedMoney));
     }
 
+    /**
+     * @test
+     */
+    public function originalMoneyShouldNotBeModifiedOnAddition()
+    {
+        $aMoney = new Money(100, new Currency('USD'));
+
+        $aMoney->add(new Money(20, new Currency('USD')));
+
+        $this->assertEquals(100, $aMoney->amount());
+    }
+
+    /**
+     * @test
+     */
+    public function moniesShouldBeAdded()
+    {
+        $aMoney = new Money(100, new Currency('USD'));
+
+        $newMoney = $aMoney->add(new Money(20, new Currency('USD')));
+
+        $this->assertEquals(120, $newMoney->amount());
+    }
+
+    // ...
+}
+```
 
 
 Persisting Value Objects
@@ -442,28 +464,30 @@ Value Objects are not persisted on their own; they're typically persisted within
 
 Consider the following `Product` Entity with string id, `name`, and `price` (`Money` Value Objects) attributes. We've intentionally decided to simplify this example, with the id being a string and not a Value Object:
 
-     class Product
-     {
-         private $productId;
-         private $name;
-         private $price;
-    
-         public function __construct(
-             $aProductId,
-             $aName,
-             Money $aPrice
-         ) {
-             $this->setProductId($aProductId);
-             $this->setName($aName);
-             $this->setPrice($aPrice);
-         }
-    
-         // ...
+```php
+ class Product
+ {
+     private $productId;
+     private $name;
+     private $price;
+
+     public function __construct(
+         $aProductId,
+         $aName,
+         Money $aPrice
+     ) {
+         $this->setProductId($aProductId);
+         $this->setName($aName);
+         $this->setPrice($aPrice);
      }
+
+     // ...
+ }
+```
 
 Assuming you have a [Chapter 10](../chapters/10%20Repositories.md), _Repositories_ for persisting `Product` Entities, an implementation to create and persist a new `Product` could look like this:
 
-    $product = new Product(
+    $product = new Product(
         $productRepository->nextIdentity(), 
         'Domain-Driven Design in PHP', 
         new Money(999, new Currency('USD')) 
@@ -484,71 +508,76 @@ Many different options are available for persisting a single Value Object. These
 
 If we're dealing with an Ad Hoc ORM using the Embedded Value pattern, we need to create a field in the Entity table for each attribute in the Value Object. In this case, two extra columns are needed when persisting a `Product` Entity — one for the amount of the Value Object, and one for its currency ISO code:
 
-    CREATE TABLE `products` (
-        id INT NOT NULL,
-        name VARCHAR( 255) NOT NULL,
-        price_amount INT NOT NULL,
-        price_currency VARCHAR( 3) NOT NULL
-    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+```mysql
+CREATE TABLE `products`
+(
+    id             INT          NOT NULL,
+    name           VARCHAR(255) NOT NULL,
+    price_amount   INT          NOT NULL,
+    price_currency VARCHAR(3)   NOT NULL
+) ENGINE = InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+```
 
 For persisting the Entity in the database, our [Chapter 10](../chapters/10%20Repositories.md), _Repositories_ has to map each of the fields of the Entity and the ones from the `Money` Value Object.
 
 If you're using an `Ad hoc ORM` Repository based on DBAL—let's call it `DbalProductRepository`—you must take care of creating the `INSERT` statement, binding the parameters, and executing the statement:
 
-    class DbalProductRepository
-        extends DbalRepository
-        implements ProductRepository
-    {
-         public function add(Product $aProduct)
-         {
-             $sql = 'INSERT INTO products VALUES (?, ?, ?, ?)' ;
-             $stmt = $this->connection()->prepare($sql);
-             $stmt->bindValue(1, $aProduct->id());
-             $stmt->bindValue(2, $aProduct->name());
-             $stmt->bindValue(3, $aProduct->price()->amount());
-             $stmt->bindValue(4, $aProduct
-                 ->price()->currency()->isoCode());
-             $stmt->execute();
-    
-           // ...
-         }
-     }
+```php
+class DbalProductRepository
+    extends DbalRepository
+    implements ProductRepository
+{
+     public function add(Product $aProduct)
+     {
+         $sql = 'INSERT INTO products VALUES (?, ?, ?, ?)' ;
+         $stmt = $this->connection()->prepare($sql);
+         $stmt->bindValue(1, $aProduct->id());
+         $stmt->bindValue(2, $aProduct->name());
+         $stmt->bindValue(3, $aProduct->price()->amount());
+         $stmt->bindValue(4, $aProduct->price()->currency()->isoCode());
+         $stmt->execute();
 
+       // ...
+     }
+ }
+```
 
 After executing this snippet of code to create a `Products` Entity and persist it into the database, each column is filled with the desired information:
 
-    mysql> select * from products \G
-    *************************** 1. row ***************************
-    id: 1
-    name: Domain-Driven Design in PHP
-    price_amount: 999
-    price_currency: USD
-    1 row in set (0.00 sec)
+```
+mysql> select * from products \G
+*************************** 1. row ***************************
+id: 1
+name: Domain-Driven Design in PHP
+price_amount: 999
+price_currency: USD
+1 row in set (0.00 sec)
+```
 
 As you can see, you can map your Value Objects and query parameters in an `Ad hoc` manner in order to persist your Value Objects. However, everything is not as easy as it seems. Let's try to fetch the persisted Product with its associated `Money` Value Object. A common approach would be to execute a `SELECT` statement and return a new Entity:
 
-    class DbalProductRepository
-        extends DbalRepository
-        implements ProductRepository
+```php
+class DbalProductRepository extends DbalRepository implements ProductRepository
+{
+    public function productOfId($anId)
     {
-        public function productOfId($anId)
-        {
-            $sql = 'SELECT * FROM products WHERE id = ?';
-            $stmt = $this->connection()->prepare($sql);
-            $stmt->bindValue(1, $anId);
-            $res = $stmt->execute();
-            // ...
-    
-            return new Product(
-                $row['id'],
-                $row['name'],
-                new Money(
-                    $row['price_amount'],
-                    new Currency($row['price_currency'])
-                )
-            );
-        }
+        $sql = 'SELECT * FROM products WHERE id = ?';
+        $stmt = $this->connection()->prepare($sql);
+        $stmt->bindValue(1, $anId);
+        $res = $stmt->execute();
+        // ...
+
+        return new Product(
+            $row['id'],
+            $row['name'],
+            new Money(
+                $row['price_amount'],
+                new Currency($row['price_currency'])
+            )
+        );
     }
+}
+```
 
 There are some benefits to this approach. First, you can easily read, step by step, how the persistence and subsequent creations occur. Second, you can perform queries based on any of the attributes of the Value Object. Finally, the space required to persist the Entity is just what is required — no more and no less.
 
@@ -570,84 +599,90 @@ The latest stable Doctrine release is currently _version 2.5_ and it comes with 
 
 Because the `Product`, `Money`, and `Currency` classes have already been shown, the only thing remaining is to show the Doctrine mapping files:
 
-    <?xml version="1.0" encoding="utf-8"?>
-    <doctrine-mapping 
-        xmlns="http://doctrine-project.org/schemas/orm/doctrine-mapping"
-        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-        xsi:schemaLocation="
-            http://doctrine-project.org/schemas/orm/doctrine-mapping
-        https://raw.github.com/doctrine/doctrine2/master/doctrine-mapping.xsd">
-    
-        <entity
-            name="Product"
-            table="product">
-            <id
-                name="id"
-                column="id"
-                type="string"
-                length="255">
-                <generator strategy="NONE">
-                </generator>
-            </id>
-    
-            <field
-                name="name"
-                type="string"
-                length="255"
-            />
-    
-            <embedded
-                name="price"
-                class="Ddd\Domain\Model\Money"
-            />
-        </entity>
-    </doctrine-mapping>
+```xml
+<?xml version="1.0" encoding="utf-8"?>
+<doctrine-mapping 
+    xmlns="http://doctrine-project.org/schemas/orm/doctrine-mapping"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="
+        http://doctrine-project.org/schemas/orm/doctrine-mapping
+    https://raw.github.com/doctrine/doctrine2/master/doctrine-mapping.xsd">
+
+    <entity
+        name="Product"
+        table="product">
+        <id
+            name="id"
+            column="id"
+            type="string"
+            length="255">
+            <generator strategy="NONE">
+            </generator>
+        </id>
+
+        <field
+            name="name"
+            type="string"
+            length="255"
+        />
+
+        <embedded
+            name="price"
+            class="Ddd\Domain\Model\Money"
+        />
+    </entity>
+</doctrine-mapping>
+```
 
 In the product mapping, we're defining `price` as an instance variable that will hold a `Money` instance. At the same time, `Money` is designed with an amount and a `Currency` instance:
 
-    <?xml version="1.0" encoding="utf-8"?>
-    <doctrine-mapping
-        xmlns="http://doctrine-project.org/schemas/orm/doctrine-mapping"
-        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-        xsi:schemaLocation="
-            http://doctrine-project.org/schemas/orm/doctrine-mapping
-        https://raw.github.com/doctrine/doctrine2/master/doctrine-mapping.xsd">
-    
-        <embeddable
-            name="Ddd\Domain\Model\Money">
-    
-            <field
-                name="amount"
-                type="integer"
-            />
-            <embedded
-                name="currency"
-                class="Ddd\Domain\Model\Currency"
-            />
-        </embeddable>
-    </doctrine-mapping>
+```xml
+<?xml version="1.0" encoding="utf-8"?>
+<doctrine-mapping
+    xmlns="http://doctrine-project.org/schemas/orm/doctrine-mapping"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="
+        http://doctrine-project.org/schemas/orm/doctrine-mapping
+    https://raw.github.com/doctrine/doctrine2/master/doctrine-mapping.xsd">
+
+    <embeddable
+        name="Ddd\Domain\Model\Money">
+
+        <field
+            name="amount"
+            type="integer"
+        />
+        <embedded
+            name="currency"
+            class="Ddd\Domain\Model\Currency"
+        />
+    </embeddable>
+</doctrine-mapping>
+```
 
 
 Finally, it's time to show the Doctrine mapping for our `Currency` Value Object:
 
-    <?xml version="1.0" encoding="utf-8"?>
-    <doctrine-mapping
-        xmlns="http://doctrine-project.org/schemas/orm/doctrine-mapping"
-        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-        xsi:schemaLocation="
-            http://doctrine-project.org/schemas/orm/doctrine-mapping
+```xml
+<?xml version="1.0" encoding="utf-8"?>
+<doctrine-mapping
+    xmlns="https://doctrine-project.org/schemas/orm/doctrine-mapping"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="
+        httpS://doctrine-project.org/schemas/orm/doctrine-mapping
         https://raw.github.com/doctrine/doctrine2/master/doctrine-mapping.xsd">
-    
-        <embeddable
-            name="Ddd\Domain\Model\Currency">
-    
-            <field
-                name="iso"
-                type="string"
-                length="3"
-            />
-        </embeddable>
-    </doctrine-mapping>
+
+    <embeddable
+        name="Ddd\Domain\Model\Currency">
+
+        <field
+            name="iso"
+            type="string"
+            length="3"
+        />
+    </embeddable>
+</doctrine-mapping>
+```
 
 As you can see, the above code has a standard embeddable definition with just one string field that holds the ISO code. This approach is the easiest way to use embeddables and is much more effective. By default, Doctrine names your columns by prefixing them using the Value Object name. You can change this behavior to meet your needs by changing the column-prefix attribute in the XML notation.
 
@@ -655,85 +690,88 @@ As you can see, the above code has a standard embeddable definition with just on
 
 If you're still stuck in _Doctrine 2.4_, you may wonder what an acceptable solution for using Embedded Values with _Doctrine < 2.5_ is. We need to now surrogate all the Value Object attributes in the `Product` Entity, which means creating new artificial attributes that will hold the information of the Value Object. With this in place, we can map all those new attributes using Doctrine. Let's see what impact this has on the `Product` Entity:
 
-    class Product 
-    { 
-        private $productId; 
-        private $name; 
-        private $price;
-        private $surrogateCurrencyIsoCode;
-        private $surrogateAmount;
-    
-        public function __construct($aProductId, $aName, Money $aPrice)
-        {
-            $this->setProductId($aProductId);
-            $this->setName($aName);
-            $this->setPrice($aPrice);
-        }
-    
-        private function setPrice(Money $aMoney)
-        {
-            $this->price = $aMoney;
-            $this->surrogateAmount = $aMoney->amount();
-            $this->surrogateCurrencyIsoCode =
-                $aMoney->currency()->isoCode();
-        }
-    
-        private function price()
-        {
-            if (null === $this->price) {
-                $this->price = new Money(
-                    $this->surrogateAmount,
-                    new Currency($this->surrogateCurrency)
-                );
-            }
-            return $this->price;
-        }
-    
-        // ...
+```php
+class Product 
+{ 
+    private $productId;
+    private $name; 
+    private $price;
+    private $surrogateCurrencyIsoCode;
+    private $surrogateAmount;
+
+    public function __construct($aProductId, $aName, Money $aPrice)
+    {
+        $this->setProductId($aProductId);
+        $this->setName($aName);
+        $this->setPrice($aPrice);
     }
+
+    private function setPrice(Money $aMoney)
+    {
+        $this->price = $aMoney;
+        $this->surrogateAmount = $aMoney->amount();
+        $this->surrogateCurrencyIsoCode =
+            $aMoney->currency()->isoCode();
+    }
+
+    private function price()
+    {
+        if (null === $this->price) {
+            $this->price = new Money(
+                $this->surrogateAmount,
+                new Currency($this->surrogateCurrency)
+            );
+        }
+        return $this->price;
+    }
+
+    // ...
+}
+```
 
 As you can see, there are two new attributes: one for the amount, and another for the ISO code of the currency. We've also updated the `setPrice` method in order to keep attribute consistency when setting it. On top of this, we updated the price getter in order to return the `Money` Value Object built from the new fields. Let's see how the corresponding XML Doctrine mapping should be changed:
 
-     <?xml version="1.0" encoding="utf-8"?>
-     <doctrine-mapping
-        xmlns="http://doctrine-project.org/schemas/orm/doctrine-mapping"
-        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-        xsi:schemaLocation="
-            http://doctrine-project.org/schemas/orm/doctrine-mapping
-        https://raw.github.com/doctrine/doctrine2/master/doctrine-mapping.xsd">
-    
-        <entity
-            name="Product"
-            table="product">
-    
-            <id
-                name="id"
-                column="id"
-                type="string"
-                length="255" >
-                <generator strategy="NONE">
-                </generator>
-            </id>
-    
-           <field
-               name="name"
-               type="string"
-               length="255"
-           />
-    
-           <field
-               name="surrogateAmount"
-               type="integer"
-               column="price_amount"
-           />
-           <field
-               name="surrogateCurrencyIsoCode"
-               type="string"
-               column="price_currency"
-           />
-        </entity>
-    </doctrine-mapping>
+```xml
+ <?xml version="1.0" encoding="utf-8"?>
+ <doctrine-mapping
+    xmlns="http://doctrine-project.org/schemas/orm/doctrine-mapping"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="
+        http://doctrine-project.org/schemas/orm/doctrine-mapping
+    https://raw.github.com/doctrine/doctrine2/master/doctrine-mapping.xsd">
 
+    <entity
+        name="Product"
+        table="product">
+
+        <id
+            name="id"
+            column="id"
+            type="string"
+            length="255" >
+            <generator strategy="NONE">
+            </generator>
+        </id>
+
+       <field
+           name="name"
+           type="string"
+           length="255"
+       />
+
+       <field
+           name="surrogateAmount"
+           type="integer"
+           column="price_amount"
+       />
+       <field
+           name="surrogateCurrencyIsoCode"
+           type="string"
+           column="price_currency"
+       />
+    </entity>
+</doctrine-mapping>
+```
 
 ### Note
 
@@ -749,44 +787,50 @@ There could be many additional classes required to avoid placing the surrogate a
 
 If the addition of searching capabilities to the Value Objects attributes is not important, there's another pattern that can be considered: the Serialized LOB. This pattern works by serializing the whole Value Object into a string format that can easily be persisted and fetched. The most significant difference between this solution and the embedded alternative is that in the latter option, the persistence footprint requirements are reduced to a single column:
 
-    CREATE TABLE ` products` (
-        id INT NOT NULL,
-        name VARCHAR( 255) NOT NULL,
-        price TEXT NOT NULL
-    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+```mysql
+CREATE TABLE ` products` (
+    id INT NOT NULL,
+    name VARCHAR( 255) NOT NULL,
+    price TEXT NOT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+```
 
 In order to persist the `Product` Entities using this approach, a change in the `DbalProductRepository` is required. The `Money` Value Object must be serialized into a string before persisting the `final` Entity:
 
-    class DbalProductRepository extends DbalRepository implements ProductRepository
+```php
+class DbalProductRepository extends DbalRepository implements ProductRepository
+{ 
+    public function add(Product $aProduct) 
     { 
-        public function add(Product $aProduct) 
-        { 
-            $sql = 'INSERT INTO products VALUES (?, ?, ?)'; 
-            $stmt = this->connection()->prepare(sql); 
-            $stmt->bindValue(1, aProduct−>id()); 
-            $stmt->bindValue(2, aProduct−>name()); 
-            $stmt->bindValue(3, $this−>serialize($aProduct->price())); 
-    
-            // ...
-        }
-    
-        private function serialize($object)
-        {
-            return serialize($object);
-        }
+        $sql = 'INSERT INTO products VALUES (?, ?, ?)'; 
+        $stmt = this->connection()->prepare(sql);
+        $stmt->bindValue(1, aProduct−>id());
+        $stmt->bindValue(2, aProduct−>name());
+        $stmt->bindValue(3, $this−>serialize($aProduct->price())); 
+
+        // ...
     }
+
+    private function serialize($object)
+    {
+        return serialize($object);
+    }
+}
+```
 
 Let's see how our Product is now represented in the database. The table column `price` is a `TEXT` type column that contains a serialization of a `Money` object representing 9.99 USD:
 
-    mysql > select * from products \G
-    *************************** 1.row***************************
-    id   : 1
-    name : Domain-Driven Design in PHP
-    price : O:22:"Ddd\Domain\Model\Money":2:{s:30:"Ddd\Domain\Model\\
-    Money amount";i :
-    999;s:32:"Ddd\Domain\Model\Money currency";O : 25:"Ddd\Domain\Model\\
-    Currency":1:{\
-    s:34:" Ddd\Domain\Model\Currency isoCode";s:3:"USD";}}1 row in set(\ 0.00 sec)
+```
+mysql > select * from products \G
+*************************** 1.row***************************
+id   : 1
+name : Domain-Driven Design in PHP
+price : O:22:"Ddd\Domain\Model\Money":2:{s:30:"Ddd\Domain\Model\\
+Money amount";i :
+999;s:32:"Ddd\Domain\Model\Money currency";O : 25:"Ddd\Domain\Model\\
+Currency":1:{\
+s:34:" Ddd\Domain\Model\Currency isoCode";s:3:"USD";}}1 row in set(\ 0.00 sec)
+```
 
 This approach does the job. However, it's not recommended due to problems occurring when refactoring classes in your code. Could you imagine the problems if we decided to rename our `Money` class? Could you imagine the changes that would be required in our database representation when moving the `Money` class from one namespace to another? Another tradeoff, as explained before, is the lack of querying capabilities. It doesn't matter whether you use Doctrine or not; writing a query to get the products cheaper than, say, 200 USD is almost impossible while using a serialization strategy.
 
@@ -796,16 +840,20 @@ The querying issue can only be solved by using Embedded Values. However, the ser
 
 The serialize/unserialize native PHP strategies have a problem when dealing with class and namespace refactoring. One alternative is to use your own serialization mechanism —  for example, concatenating the amount, a one character separator such as `|`, and the currency ISO code. However, there's another favored approach: using an open source serializer library such as [JMS Serializer](http://jmsyst.com/libs/serializer). Let's see an example of applying it when serializing a `Money` object:
 
-    $myMoney = new Money(999, new Currency('USD'));
-    
-    $serializer = JMS\Serializer\SerializerBuilder::create()->build(); 
-    $jsonData = $serializer−>serialize(myMoney, 'json');
+```php
+$myMoney = new Money(999, new Currency('USD'));
+
+$serializer = JMS\Serializer\SerializerBuilder::create()->build(); 
+$jsonData = $serializer−>serialize(myMoney, 'json');
+```
 
 In order to unserialize the object, the process is straightforward:
 
-    $serializer = JMS\Serializer\SerializerBuilder::create()->build(); 
-    // ... 
-    $myMoney = $serializer−>deserialize(jsonData, 'Ddd', 'json');
+```php
+$serializer = JMS\Serializer\SerializerBuilder::create()->build(); 
+// ... 
+$myMoney = $serializer−>deserialize(jsonData, 'Ddd', 'json');
+```
 
 With this example, you can refactor your `Money` class without having to update your database. JMS Serializer can be used in many different scenarios — for example, when working with REST APIs. An important feature is the ability to specify which attributes of an object should be omitted in the serialization process — for example, a password.
 
@@ -829,64 +877,70 @@ Because the built-in text type of `PostgreSQL` does not support NULL bytes, the 
 
 Let's look at a possible XML mapping for the Product Entity by using the object type:
 
-    <?xml version="1.0" encoding="utf-8"?>
-    <doctrine-mapping
-        xmlns="http://doctrine-project.org/schemas/orm/doctrine-mapping"
-        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-        xsi:schemaLocation="
-            http://doctrine-project.org/schemas/orm/doctrine-mapping
-        https://raw.github.com/doctrine/doctrine2/master/doctrine-mapping.xsd">
-    
-        <entity
-            name="Product"
-            table="products">
-    
-            <id
-                name="id"
-                column="id"
-                type="string"
-                length="255">
-                <generator strategy="NONE">
-                </generator>
-            </id>
-            <field
-                name="name"
-                type="string"
-                length="255"
-            />
-            <field
-                name="price"
-                type="object"
-            />
-        </entity>
-    </doctrine-mapping>
+```xml
+<?xml version="1.0" encoding="utf-8"?>
+<doctrine-mapping
+    xmlns="http://doctrine-project.org/schemas/orm/doctrine-mapping"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="
+        http://doctrine-project.org/schemas/orm/doctrine-mapping
+    https://raw.github.com/doctrine/doctrine2/master/doctrine-mapping.xsd">
+
+    <entity
+        name="Product"
+        table="products">
+
+        <id
+            name="id"
+            column="id"
+            type="string"
+            length="255">
+            <generator strategy="NONE">
+            </generator>
+        </id>
+        <field
+            name="name"
+            type="string"
+            length="255"
+        />
+        <field
+            name="price"
+            type="object"
+        />
+    </entity>
+</doctrine-mapping>
+```
 
 
 The key addition is `type="object"`, which tells Doctrine that we're going to be using an object mapping. Let's see how we could create and persist a `Product` Entity using Doctrine:
 
-    // ... 
-    $em−>persist($product); 
-    $em−>flush($product);
+```php
+// ... 
+$em−>persist($product); 
+$em−>flush($product);
+```
 
 Let's check that if we now fetch our `Product` Entity from the database, it's returned in an expected state:
 
-    // ...
-    $repository = $em->getRepository('Ddd\\Domain\\Model\\Product');
-    $item = $repository->find(1);
-    var_dump($item);
-    
-    /*
-    class Ddd\Domain\Model\Product#177 (3) {
-        private $productId => int(1)
-        private $name => string(41) "Domain-Driven Design in PHP"
-        private $money => class Ddd\Domain\Model\Money#174 (2) {
-            private $amount => string(3) "100"
-            private $currency => class Ddd\Domain\Model\Currency#175 (1){
-                private $isoCode => string(3) "USD"
-            }
+```php
+// ...
+$repository = $em->getRepository('Ddd\\Domain\\Model\\Product');
+$item = $repository->find(1);
+var_dump($item);
+
+/*
+class Ddd\Domain\Model\Product#177 (3) {
+    private $productId => int(1)
+    private $name => string(41) "Domain-Driven Design in PHP"
+    private $money => class Ddd\Domain\Model\Money#174 (2) {
+        private $amount => string(3) "100"
+        private $currency => class Ddd\Domain\Model\Currency#175 (1){
+            private $isoCode => string(3) "USD"
         }
     }
-    * /
+}
+* /
+```
 
 
 Last but not least, the [Doctrine DBAL 2 Documentation](http://docs.doctrine-project.org/projects/doctrine-orm/en/latest/reference/basic-mapping.html#doctrine-mapping-types) states that:
@@ -909,93 +963,99 @@ Let's try to improve on this solution. Think about a custom serialization proces
 
 One such way could be to persist the `Money` Value Object as a string in the database encoded in `amount|isoCode` format:
 
-    use Ddd\Domain\Model\Currency;
-    use Ddd\Domain\Model\Money;
-    use Doctrine\DBAL\Types\TextType;
-    use Doctrine\DBAL\Platforms\AbstractPlatform;
-    
-    class MoneyType extends TextType 
-    { 
-        const MONEY = 'money';
-    
-        public function convertToPHPValue(
-            $value,
-            AbstractPlatform $platform
-        ) {
-            $value = parent::convertToPHPValue($value, $platform);
-            $value = explode('|', $value);
-            return new Money(
-                $value[0],
-                new Currency($value[1])
-            );
-        }
-    
-        public function convertToDatabaseValue(
-            $value,
-            AbstractPlatform $platform
-        ) {
-            return implode(
-               '|',
-               [
-                   $value->amount(),
-                   $value->currency()->isoCode()
-               ]
-            );
-        }
-    
-        public function getName()
-        {
-            return self::MONEY;
-        }
+```php
+use Ddd\Domain\Model\Currency;
+use Ddd\Domain\Model\Money;
+use Doctrine\DBAL\Types\TextType;
+use Doctrine\DBAL\Platforms\AbstractPlatform;
+
+class MoneyType extends TextType 
+{ 
+    const MONEY = 'money';
+
+    public function convertToPHPValue(
+        $value,
+        AbstractPlatform $platform
+    ) {
+        $value = parent::convertToPHPValue($value, $platform);
+        $value = explode('|', $value);
+        return new Money(
+            $value[0],
+            new Currency($value[1])
+        );
     }
+
+    public function convertToDatabaseValue(
+        $value,
+        AbstractPlatform $platform
+    ) {
+        return implode(
+           '|',
+           [
+               $value->amount(),
+               $value->currency()->isoCode()
+           ]
+        );
+    }
+
+    public function getName()
+    {
+        return self::MONEY;
+    }
+}
+```
 
 Using Doctrine, you're required to register all Custom Types. It's common to use an `EntityManagerFactory` that centralizes this `EntityManager` creation.
 
 Alternatively, you could perform this step by bootstrapping your application:
 
-    use Doctrine\DBAL\Types\Type;
-    use Doctrine\ORM\EntityManager;
-    use Doctrine\ORM\Tools\Setup;
-    
-    class EntityManagerFactory 
+```php
+use Doctrine\DBAL\Types\Type;
+use Doctrine\ORM\EntityManager;
+use Doctrine\ORM\Tools\Setup;
+
+class EntityManagerFactory 
+{ 
+    public function build() 
     { 
-        public function build() 
-        { 
-            Type::addType( 
-                'money',
-                'Ddd\Infrastructure\Persistence\Doctrine\Type\MoneyType' 
-            );
-    
-            return EntityManager::create(
-                [
-                    'driver' => 'pdo_mysql',
-                    'user' => 'root',
-                    'password' => '',
-                    'dbname' => 'ddd',
-                ],
-                Setup::createXMLMetadataConfiguration(
-                    [__DIR__.'/config'],
-                    true
-                )
-            );
-        }
+        Type::addType( 
+            'money',
+            'Ddd\Infrastructure\Persistence\Doctrine\Type\MoneyType' 
+        );
+
+        return EntityManager::create(
+            [
+                'driver' => 'pdo_mysql',
+                'user' => 'root',
+                'password' => '',
+                'dbname' => 'ddd',
+            ],
+            Setup::createXMLMetadataConfiguration(
+                [__DIR__.'/config'],
+                true
+            )
+        );
     }
+}
+```
 
 Now we need to specify in the mapping that we want to use our Custom Type:
 
-    <?xml version = "1.0" encoding = "utf-8"?>
-    <doctrine-mapping>
-        <entity
-            name = "Product"
-            table = "product">
-    
-            <!-- ... -->
-            <field
-                name = "price"
-                type = "money"
-            />
-        </entity>
-    </doctrine-mapping>
+```xml
+<?xml version = "1.0" encoding = "utf-8"?>
+<doctrine-mapping>
+    <entity
+        name = "Product"
+        table = "product">
+
+        <!-- ... -->
+        <field
+            name = "price"
+            type = "money"
+        />
+    </entity>
+</doctrine-mapping>
+```
 
 ### Note
 
@@ -1003,12 +1063,14 @@ Now we need to specify in the mapping that we want to use our Custom Type:
 
 Let's check the database to see how the price was persisted using this approach:
 
-    mysql> select * from products \G
-    *************************** 1. row***************************
-    id: 1
-    name: Domain-Driven Design in PHP
-    price: 999|USD
-    1 row in set (0.00 sec)
+```
+mysql> select * from products \G
+*************************** 1. row***************************
+id: 1
+name: Domain-Driven Design in PHP
+price: 999|USD
+1 row in set (0.00 sec)
+```
 
 This approach is an improvement on the one before in terms of future refactoring. However, searching capabilities remain limited due to the format of the column. With the Doctrine Custom types, you can improve the situation a little, but it's still not the best option for building your DQL queries. See [Doctrine Custom Mapping Types](http://doctrine-orm.readthedocs.org/en/latest/cookbook/custom-mapping-types.html) for more information.
 
@@ -1020,33 +1082,35 @@ This approach is an improvement on the one before in terms of future refactoring
 
 Imagine that we'd now like to add a collection of prices to be persisted to our `Product` Entity. These prices could represent the different prices the product has borne throughout its lifetime or the product price in different currencies. This could be named `HistoricalPrice`, as shown below:
 
-    class HistoricalProduct extends Product 
-    { 
-        /** 
-         * @var Money[] 
-         */ 
-        protected $prices;
-    
-        public function __construct(
-            $aProductId, 
-            $aName, 
-            Money $aPrice,
-            array $somePrices
-        ){
-            parent::__construct($aProductId, $aName, $aPrice);
-            $this->setPrices($somePrices);
-        }
-    
-        private function setPrices(array $somePrices)
-        {
-            $this->prices = $somePrices;
-        }
-    
-        public function prices()
-        {
-            return $this->prices;
-        }
+```php
+class HistoricalProduct extends Product 
+{ 
+    /** 
+     * @var Money[] 
+     */ 
+    protected $prices;
+
+    public function __construct(
+        $aProductId, 
+        $aName, 
+        Money $aPrice,
+        array $somePrices
+    ){
+        parent::__construct($aProductId, $aName, $aPrice);
+        $this->setPrices($somePrices);
     }
+
+    private function setPrices(array $somePrices)
+    {
+        $this->prices = $somePrices;
+    }
+
+    public function prices()
+    {
+        return $this->prices;
+    }
+}
+```
 
 `HistoricalProduct` extends from `Product`, so it inherits the same behavior, plus the price collection functionality.
 
@@ -1066,37 +1130,49 @@ In case you want to persist and query an Entity by its related Value Objects, yo
 
 The main idea behind the Join Table strategy is to create a table that connects the owner Entity and its Value Objects. Let's see a database representation:
 
-    CREATE TABLE ` historical_products` (
-        `id` char( 36) COLLATE utf8mb4_unicode_ci NOT NULL,
-        `name` varchar( 255) COLLATE utf8mb4_unicode_ci NOT NULL,
-        `price_amount` int( 11 ) NOT NULL,
-        `price_currency` char( 3) COLLATE utf8mb4_unicode_ci NOT NULL,
-         PRIMARY KEY (`id`)
-    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+```mysql
+CREATE TABLE ` historical_products`
+(
+    `id`             char(36) COLLATE utf8mb4_unicode_ci     NOT NULL,
+    `name`           varchar(255) COLLATE utf8mb4_unicode_ci NOT NULL,
+    `price_amount`   int(11)                                 NOT NULL,
+    `price_currency` char(3) COLLATE utf8mb4_unicode_ci      NOT NULL,
+    PRIMARY KEY (`id`)
+) ENGINE = InnoDB
+  DEFAULT CHARSET = utf8mb4
+  COLLATE = utf8mb4_unicode_ci;
+```
 
 The `historical_products` table will look the same as products. Remember that `HistoricalProduct` extends `Product` Entity in order to easily show how to deal with persisting a collection. A new prices table is now required in order to persist all the different `Money` Value Objects that a `Product` Entity can handle:
 
-    CREATE TABLE `prices`(
-        `id` int(11) NOT NULL AUTO_INCREMENT,
-        `amount` int(11) NOT NULL,
-        `currency` char(3) COLLATE utf8mb4_unicode_ci NOT NULL,
-        PRIMARY KEY (`id`)
-    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+```mysql
+CREATE TABLE `prices`
+(
+    `id`       int(11)                            NOT NULL AUTO_INCREMENT,
+    `amount`   int(11)                            NOT NULL,
+    `currency` char(3) COLLATE utf8mb4_unicode_ci NOT NULL,
+    PRIMARY KEY (`id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+```
 
 
 Finally, a table that relates products and prices is needed:
 
-    CREATE TABLE `products_prices` (
-        `product_id` char( 36) COLLATE utf8mb4_unicode_ci NOT NULL,
-        `price_id` int( 11 ) NOT NULL,
-        PRIMARY KEY (`product_id`, `price_id`),
-        UNIQUE KEY `UNIQ_62F8E673D614C7E7` (`price_id`),
-        KEY `IDX_62F8E6734584665A` (`product_id`),
-        CONSTRAINT `FK_62F8E6734584665A` FOREIGN KEY (`product_id`)
-            REFERENCES `historical_products` (`id`),
-        CONSTRAINT `FK_62F8E673D614C7E7` FOREIGN KEY (`price_id`)
-            REFERENCES `prices`(`id`)
-    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+```mysql
+CREATE TABLE `products_prices`
+(
+    `product_id` char(36) COLLATE utf8mb4_unicode_ci NOT NULL,
+    `price_id`   int(11)                             NOT NULL,
+    PRIMARY KEY (`product_id`, `price_id`),
+    UNIQUE KEY `UNIQ_62F8E673D614C7E7` (`price_id`),
+    KEY `IDX_62F8E6734584665A` (`product_id`),
+    CONSTRAINT `FK_62F8E6734584665A` 
+        FOREIGN KEY (`product_id`) REFERENCES `historical_products` (`id`),
+    CONSTRAINT `FK_62F8E673D614C7E7` 
+        FOREIGN KEY (`price_id`) REFERENCES `prices` (`id`)
+) ENGINE = InnoDB
+  DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+```
 
 ##### Collection Backed by a Join Table with Doctrine
 
@@ -1108,135 +1184,141 @@ An issue with the second option is the amount of alterations required in order t
 
 In this scenario, we recommend using the first option. Let's review the changes required to implement it in the `Money` Value Object:
 
-    class Money 
-    { 
-        private $amount; 
-        private $currency;
-        private $surrogateId;
-        private $surrogateCurrencyIsoCode;
-    
-        public function __construct($amount, Currency $currency)
-        {
-            $this->setAmount($amount);
-            $this->setCurrency($currency);
-        }
-    
-        private function setAmount($amount)
-        {
-            $this->amount = $amount;
-        }
-    
-        private function setCurrency(Currency $currency)
-        {
-            $this->currency = $currency;
-            $this->surrogateCurrencyIsoCode =
-                $currency->isoCode();  
-        }
+```php
+class Money 
+{ 
+    private $amount;
+    private $currency;
+    private $surrogateId;
+    private $surrogateCurrencyIsoCode;
 
-        public function currency()
-        {
-           if (null === $this->currency) {
-               $this->currency = new Currency(
-                   $this->surrogateCurrencyIsoCode
-               );
-           }
-           return $this->currency;
-        } 
-    
-        public function amount()
-        {
-            return $this->amount;
-        }
-    
-        public function equals(Money $aMoney)
-        {
-            return
-                $this->amount() === $aMoney->amount() &&
-                $this->currency()->equals($this->currency());
-        }
+    public function __construct($amount, Currency $currency)
+    {
+        $this->setAmount($amount);
+        $this->setCurrency($currency);
     }
+
+    private function setAmount($amount)
+    {
+        $this->amount = $amount;
+    }
+
+    private function setCurrency(Currency $currency)
+    {
+        $this->currency = $currency;
+        $this->surrogateCurrencyIsoCode =
+            $currency->isoCode();  
+    }
+
+    public function currency()
+    {
+       if (null === $this->currency) {
+           $this->currency = new Currency(
+               $this->surrogateCurrencyIsoCode
+           );
+       }
+       return $this->currency;
+    } 
+
+    public function amount()
+    {
+        return $this->amount;
+    }
+
+    public function equals(Money $aMoney)
+    {
+        return
+            $this->amount() === $aMoney->amount() &&
+            $this->currency()->equals($this->currency());
+    }
+}
+```
 
 As seen above, two new attributes have been added. The first one, `surrogateId`, is not used by our Domain, but it's required for the persistence Infrastructure to persist this Value Object as an Entity in our Database. The second one, `surrogateCurrencyIsoCode`, holds the ISO code for the currency. Using these new attributes, it's really easy to map our Value Object with Doctrine.
 
 The `Money` mapping is quite straightforward:
 
-    <?xml version = "1.0" encoding = "utf-8"?>
-    <doctrine-mapping
-        xmlns="http://doctrine-project.org/schemas/orm/doctrine-mapping"
-        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-        xsi:schemaLocation="
-            http://doctrine-project.org/schemas/orm/doctrine-mapping
-        https://raw.github.com/doctrine/doctrine2/master/doctrine-mapping.xsd">
-    
-        <entity
-            name="Ddd\Domain\Model\Money"
-            table="prices">
-    
-            <id
-                name="surrogateId"
-                type="integer"
-                column="id">
-                <generator
-                    strategy="AUTO">
-                </generator>
-    
-            </id>
-            <field
-                name="amount"
-                type="integer"
-                column="amount"
-            />
-            <field
-                name="surrogateCurrencyIsoCode"
-                type="string"
-                column="currency"
-            />
-        </entity>
-    </doctrine-mapping>
+```xml
+<?xml version = "1.0" encoding = "utf-8"?>
+<doctrine-mapping
+    xmlns="http://doctrine-project.org/schemas/orm/doctrine-mapping"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="
+        http://doctrine-project.org/schemas/orm/doctrine-mapping
+    https://raw.github.com/doctrine/doctrine2/master/doctrine-mapping.xsd">
+
+    <entity
+        name="Ddd\Domain\Model\Money"
+        table="prices">
+
+        <id
+            name="surrogateId"
+            type="integer"
+            column="id">
+            <generator
+                strategy="AUTO">
+            </generator>
+
+        </id>
+        <field
+            name="amount"
+            type="integer"
+            column="amount"
+        />
+        <field
+            name="surrogateCurrencyIsoCode"
+            type="string"
+            column="currency"
+        />
+    </entity>
+</doctrine-mapping>
+```
 
 Using Doctrine, the `HistoricalProduct` Entity would have following mapping:
 
-    <?xml version="1.0" encoding="utf-8"?>
-    <doctrine-mapping 
-        xmlns="http://doctrine-project.org/schemas/orm/doctrine-mapping"
-        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-        xsi:schemaLocation="
-            http://doctrine-project.org/schemas/orm/doctrine-mapping
-        https://raw.github.com/doctrine/doctrine2/master/doctrine-mapping.xsd">
-    
-        <entity
-            name="Ddd\Domain\Model\HistoricalProduct" 
-            table="historical_products"
-            repository-class="
-                Ddd\Infrastructure\Domain\Model\DoctrineHistoricalProductRepository
-            ">
-            <many-to-many
-                field="prices"
-                target-entity="Ddd\Domain\Model\Money">
-    
-                <cascade>
-                    <cascade-all/>
-                </cascade>
-    
-                <join-table
-                    name="products_prices">
-                    <join-columns>
-                        <join-column
-                            name="product_id"
-                            referenced-column-name="id"
-                        />
-                    </join-columns>
-                    <inverse-join-columns>
-                        <join-column
-                            name="price_id"
-                            referenced-column-name="id"
-                            unique="true"
-                        />
-                    </inverse-join-columns>
-                </join-table>
-            </many-to-many>
-        </entity>
-    </doctrine-mapping>
+```xml
+<?xml version="1.0" encoding="utf-8"?>
+<doctrine-mapping 
+    xmlns="http://doctrine-project.org/schemas/orm/doctrine-mapping"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="
+        http://doctrine-project.org/schemas/orm/doctrine-mapping
+    https://raw.github.com/doctrine/doctrine2/master/doctrine-mapping.xsd">
+
+    <entity
+        name="Ddd\Domain\Model\HistoricalProduct" 
+        table="historical_products"
+        repository-class="
+            Ddd\Infrastructure\Domain\Model\DoctrineHistoricalProductRepository
+        ">
+        <many-to-many
+            field="prices"
+            target-entity="Ddd\Domain\Model\Money">
+
+            <cascade>
+                <cascade-all/>
+            </cascade>
+
+            <join-table
+                name="products_prices">
+                <join-columns>
+                    <join-column
+                        name="product_id"
+                        referenced-column-name="id"
+                    />
+                </join-columns>
+                <inverse-join-columns>
+                    <join-column
+                        name="price_id"
+                        referenced-column-name="id"
+                        unique="true"
+                    />
+                </inverse-join-columns>
+            </join-table>
+        </many-to-many>
+    </entity>
+</doctrine-mapping>
+```
 
 ##### Collection Backed by a Join Table with an Ad Hoc ORM
 
@@ -1270,7 +1352,6 @@ MySQL has done the same. As of _MySQL 5.7.8_, MySQL supports a native JSON data 
 If Relational Databases add support for document and nested document searches with high performance and with all the benefits of an **Atomicity**, **Consistency**, **Isolation**, **Durability**(**ACID**) philosophy, it could save a lot of complexity in many projects.
 
 
-
 Security
 --------
 
@@ -1279,4 +1360,3 @@ Security
 Another interesting detail of modeling your Domain concepts using Value Objects is regarding its security benefits. Consider an application within the context of selling flight tickets. If you deal with International Air Transport Association airport codes, also known as [IATA codes](https://en.wikipedia.org/wiki/International_Air_Transport_Association_airport_code), you can decide to use a string or model the concept using a Value Object. If you choose to go with the string, think about all the places where you'll be checking that the string is a valid IATA code. What's the chance you forget somewhere important? On the other hand, think about trying to instantiate new `IATA("BCN'; DROP TABLE users;--")`. If you centralize the _guards_ in the constructor and then pass an IATA Value Object into your model, avoiding SQL Injections or similar attacks gets easier.
 
 If you want to know more about the security side of Domain-Driven Design, you can follow [Dan Bergh Johnsson](https://twitter.com/danbjson) or read his [blog](http://dearjunior.blogspot.com.es/search/label/domain%20driven%20security).
-
