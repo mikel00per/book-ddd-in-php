@@ -3,7 +3,7 @@ Chapter 9. Factories
 
 Factories are a powerful abstraction. They help decouple the client from the details of how to interact with the Domain. The client doesn't need to know how to build complex objects and Aggregates, so you can use Factories to create whole Aggregates, thereby enforcing their invariants.
 
-Bookmark
+
 
 Factory Method on Aggregate Root
 --------------------------------
@@ -96,7 +96,7 @@ After talking with a Domain Expert, we came to the conclusion that a `Post` shou
         }
     }
 
-Bookmark
+
 
 Factory on Service
 ------------------
@@ -406,7 +406,7 @@ Once decoupled, we only need to inject the Factory into our Application Service:
         }
     }
 
-Bookmark
+
 
 Testing Factories
 -----------------
@@ -635,7 +635,7 @@ This solution is now flexible enough to cover any test case, including the possi
     }
 
 
-Bookmark
+
 
 Wrap-Up
 -------

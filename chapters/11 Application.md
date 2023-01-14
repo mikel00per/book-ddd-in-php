@@ -15,7 +15,7 @@ Conceptually, in order to register a new user, we need to:
 
 Let's go for it.
 
-Bookmark
+
 
 Requests
 --------
@@ -153,7 +153,7 @@ Application requests are data structures, not objects. Unit testing data structu
 
 Commands are an alternative to request objects. We could design a Service with multiple Application methods, and each one of them with the parameters you'd put inside the Request. This is OK for simple applications, but we'll worry about this topic later.
 
-Bookmark
+
 
 Anatomy of an Application Service
 ---------------------------------
@@ -592,7 +592,7 @@ This is great, as you'll get the benefits of invoking separate Application Servi
 
 One last option could be managing multiple Application Services within the same controller, though the controller logic could get a little bit dirty, as it'll handle and merge the responses to pass to the view.
 
-Bookmark
+
 
 Testing Application Services
 ----------------------------
@@ -708,7 +708,7 @@ Checking for a Domain Events submission might be interesting too. If creating a 
         }
     }
 
-Bookmark
+
 
 Transactions
 ------------
@@ -793,7 +793,7 @@ Now that we have the Doctrine implementation for transactional sessions, it woul
 
 A nice side effect of using Doctrine Session is that it automatically manages the flush method, so you don't need to add the flush inside your Domain or Infrastructure.
 
-Bookmark
+
 
 Security
 --------
@@ -802,7 +802,7 @@ Security
 
 In case you're wondering how to manage and handle user credentials and security in general, unless it's the responsibility of your Domain, we recommend letting the framework handle it. The user session is a concern of the delivery mechanism. Polluting the Domain with such concepts will make it harder to develop.
 
-Bookmark
+
 
 Domain Events
 -------------
@@ -820,7 +820,7 @@ Domain Event listeners have to be configured before the Application Service gets
 
 Most of the time, this will be done by configuring the Dependency Injection Container.
 
-Bookmark
+
 
 Command Handlers
 ----------------
@@ -873,7 +873,7 @@ Another interesting plug-in for [Tactician is Bernard](http://bernard.readthedoc
 
 Matthias Noback has developed another similar project, called [SimpleBus](http://simplebus.github.io/MessageBus/), that can be used as an alternative to Tactician. The main difference is that `SimpleBus` Command Handlers don't have a return value.
 
-Bookmark
+
 
 Wrap-Up
 -------

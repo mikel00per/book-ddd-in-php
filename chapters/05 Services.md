@@ -11,7 +11,7 @@ So when there are operations that need to be represented, but Entities and Value
 *   **Domain Services**: Operate only on types belonging to the Domain. They contain meaningful concepts that can be found within the Ubiquitous Language. They hold operations that don't fit well into Value Objects or Entities.
 *   **Infrastructure Services**: Are operations that fulfill infrastructure concerns, such as sending emails and logging meaningful data. In terms of Hexagonal Architecture, they live outside the Domain boundary.
 
-Bookmark
+
 
 Application Services
 --------------------
@@ -105,7 +105,7 @@ There are different strategies for returning content, but for now, consider that
 
 For creating your responses, you can use getters or public instance variables. Application Services should take care with transaction scopes and security. However, you'll delve into more detail about these and other things related to Application Services in the [Chapter 11](/chapters/11%20Application.md), _Application_.
 
-Bookmark
+
 
 Domain Services
 ---------------
@@ -161,7 +161,7 @@ Similarly, as in the case of the second example, we could create a Domain Servic
 
 A Domain Service can be defined as an operation that fulfills a Domain task and naturally doesn't fit into either an Entity or a Value Object. As concepts that represent operations in the Domain, Domain Services should be used by clients regardless of their run history. Domain Services don't hold any kind of state by themselves, so Domain Services are stateless operations.
 
-Bookmark
+
 
 Domain Services and Infrastructure Services
 -------------------------------------------
@@ -384,7 +384,7 @@ Defining different hashing strategies is as easy as implementing the `PasswordHa
     }
 
 
-Bookmark
+
 
 Testing Domain Services
 -----------------------
@@ -461,7 +461,7 @@ Now we can test all cases in the Domain Service:
         }
     }
 
-Bookmark
+
 
 Anemic Domain Models Vs Rich Domain Models
 ------------------------------------------
@@ -677,7 +677,7 @@ The way to avoid falling into an Anemic Domain Model is to, when starting a new 
 
 Just as is the case with Entities, Domain Services can also fire [Chapter 6](/chapters/06%20Domain-Events.md), _Domain-Events_. However, when events are mostly fired by Domain Services and not Entities, it's again an indicator that you may be creating an Anemic Domain Model.
 
-Bookmark
+
 
 Wrap-Up
 -------

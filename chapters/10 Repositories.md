@@ -7,7 +7,7 @@ Repositories act as storage locations, where a retrieved object is returned in t
 
 Once you've successfully retrieved the Aggregate from the Repository, every change you make is persisted, which removes the need to go back to the Repository.
 
-Bookmark
+
 
 Definition
 ----------
@@ -18,7 +18,7 @@ Martin Fowler defines a Repository as:
 
 The mechanism between the domain and data mapping layers, acting like an in-memory domain object collection. Client objects construct query specifications declaratively and submit them to Repository for satisfaction. Objects can be added to and removed from the Repository, as they can from a simple collection of objects, and the mapping code encapsulated by the Repository will carry out the appropriate operations behind the scenes. Conceptually, a Repository encapsulates the set of objects persisted in a data store and the operations performed over them, providing a more object-oriented view of the persistence layer. Repository also supports the objective of achieving a clean separation and one-way dependency between the domain and [data mapping layers](http://martinfowler.com/eaaCatalog/repository.html).
 
-Bookmark
+
 
 Repositories Are Not DAOs
 -------------------------
@@ -68,7 +68,7 @@ A DAO interface could have multiple implementations, which could range from usin
 
 As you can see, the more we add new methods to implement, the harder it becomes to unit test the DAO, and it becomes increasingly coupled to the User object. This problem will grow over time, with many other contributors collaborating in making the Big Ball of Mud even bigger.
 
-Bookmark
+
 
 Collection-Oriented Repositories
 --------------------------------
@@ -564,7 +564,7 @@ In the case of this Repository, we'll only need the `EntityManager` to retrieve 
 
 If you check some Doctrine examples out there, you may find that after running persist or remove, flush should be called. But as seen in our proposal, there's no call to `flush`. Flushing and dealing with transactions is delegated to the Application Service. That's why you can work with Doctrine, considering that flushing all the changes on Entities will happen at the end of the request. In terms of performance, one flush call is best.
 
-Bookmark
+
 
 Persistence-Oriented Repository
 -------------------------------
@@ -842,7 +842,7 @@ For some use cases, you'll require very specific queries that are compositions o
 
 If you find yourself creating many use case optimal finder methods, you may be introducing a common code smell. This could be an indication of a misjudged Aggregate boundary. If, however, you're confident that the boundaries are correct, it could be time to explore CQRS.
 
-Bookmark
+
 
 Querying Repositories
 ---------------------
@@ -1003,7 +1003,7 @@ And here's an example of how to query an `SQLPostRepository` implementation:
         }
     }
 
-Bookmark
+
 
 Managing Transactions
 ---------------------
@@ -1124,7 +1124,7 @@ Now we have everything to execute our use cases within a transaction:
     
     $response = $useCase->execute();
 
-Bookmark
+
 
 Testing Repositories
 --------------------
@@ -1294,7 +1294,7 @@ Now we can move on to test finding the latest posts by specifying a given date:
         }
     }
 
-Bookmark
+
 
 Testing Your Services with In-Memory Implementations
 ----------------------------------------------------
@@ -1315,7 +1315,7 @@ Setting up a fully persistent Repository implementation can be complex and resul
         }
     }
 
-Bookmark
+
 
 Wrap-Up
 -------

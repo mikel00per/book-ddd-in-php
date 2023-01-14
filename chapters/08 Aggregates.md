@@ -3,7 +3,7 @@ Chapter 8. Aggregates
 
 Aggregates are probably the most difficult building blocks of Domain-Driven Design. They're hard to understand, and they're even harder to properly design. But don't worry; we're here to help you. However, before jumping into Aggregates, there are some key concepts we need to go through first: transactions and concurrency strategies.
 
-Bookmark
+
 
 Introduction
 ------------
@@ -22,7 +22,7 @@ You may think that these kinds of data inconsistencies only occur in databases, 
 
 Keeping data consistent is a challenge. Not leaking infrastructure issues into the Domain is a bigger challenge. Aggregates aim to help you with both of these things.
 
-Bookmark
+
 
 Key Concepts
 ------------
@@ -338,7 +338,7 @@ Wow — that was a lot of information to take in. However, don't worry if you do
 
 To summarize, if you want to keep your data consistent, use transactions. However, be careful about overusing transactions or locking strategies because these can slow your Application down or make it unusable. If you want to have a really fast Application, optimistic concurrency can help you. Last but not least, some data can eventually be consistent. This means that we allow our data to not be consistent for a particular window of time. During that time, some inconsistencies are acceptable. Eventually, an asynchronous process will perform the final task to remove such inconsistencies.
 
-Bookmark
+
 
 What Is an Aggregate?
 ---------------------
@@ -373,7 +373,7 @@ Aggregate: A collection of objects that are bound together by a root entity, oth
 
 Example: When you drive a car, you do not have to worry about moving the wheels forward, making the engine combust with spark and fuel, etc.; you are simply driving the car. In this context, the car is an aggregate of several other objects and serves as the aggregate root to all of the other systems.
 
-Bookmark
+
 
 Why Aggregates?
 ---------------
@@ -410,7 +410,7 @@ NoSQL databases aren't affected as drastically by the impedance mismatch. They m
 
 For that reason, when persisting any object with a single representation (one document, so no multiple queries needed), it's easy to distribute those single units across several machines, called nodes, which make up a cluster of NoSQL databases. It's common knowledge that these databases are easy to distribute, which means that the style of databases is easy to scale horizontally.
 
-Bookmark
+
 
 A Bit of History
 ----------------
@@ -423,7 +423,7 @@ In a scenario such as this, deciding how to store your data is key. If you take 
 
 If you want to know more about the history of Aggregate Design outside of Domain-Driven Design, take a look at [NoSQL Distilled: A Brief Guide to the Emerging World of Polyglot Persistence](https://www.amazon.com/NoSQL-Distilled-Emerging-Polyglot-Persistence/dp/0321826620?).
 
-Bookmark
+
 
 Anatomy of an Aggregate
 -----------------------
@@ -488,7 +488,7 @@ An Aggregate is fetched and persisted using its own [Chapter 10](/chapters/10%20
 
 What are the cons of Aggregates? The problem when dealing with transactions is the possibility of performance issues and operation errors. We'll explore this in depth soon.
 
-Bookmark
+
 
 Aggregate Design Rules
 ----------------------
@@ -624,7 +624,7 @@ If, in a single request, you need to update two Aggregates, it may just be that 
 
 If both updates on different Aggregates don't need to be wrapped into a transaction, this means we can assume some delay between one update and the other. In such a scenario, a more Domain-Driven Design approach is to use Domain Events. When doing so, the first Aggregate update will fire a Domain Event. That event will be persisted in the same transaction as the Aggregate update and then published into our message queue. Later, a worker will take the event from the queue and perform the second Aggregate update. Such an approach pushes for Eventual Consistency, reduces the size of the transaction boundaries, improves performance, and reduces transaction errors.
 
-Bookmark
+
 
 Sample Application Service: User and Wishes
 -------------------------------------------
@@ -1254,7 +1254,7 @@ We'll go deeper into this in the [Chapter 11](/chapters/11%20Application.md), _A
 
 Render the Number of Wishes  As an exercise, consider that we want to render the number of wishes a user has made on their account page. How would you implement this, considering User and Wish don't form an Aggregate? How would you implement it if User and Wish did form an Aggregate? Consider how Eventual Consistency could help in your solutions.
 
-Bookmark
+
 
 Transactions
 ------------
@@ -1263,7 +1263,7 @@ Transactions
 
 We haven't shown `beginTransaction`, `commit`, or `rollback` in any of the examples. This is because transactions are handled at Application Service level. Don't worry for now; you'll find more details about this in [Chapter 11]( /chapters/11%20Application.md), _Application_.
 
-Bookmark
+
 
 Wrap Up
 -------

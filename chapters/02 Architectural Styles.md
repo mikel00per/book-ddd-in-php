@@ -7,7 +7,7 @@ For example, an Order Processing System can use Event Sourcing to track all the 
 
 This chapter presents an introduction to every relevant architecture style in the land of PHP, following the evolution from traditional old school PHP code to a more sophisticated architecture. Please note that although there are many other existing architecture styles, such as Data Fabric or SOA, we found some of them a bit too complex to introduce from the PHP perspective.
 
-Bookmark
+
 
 The Good Old Days
 -----------------
@@ -141,7 +141,7 @@ This style of coding is often referred to as the _Big Ball of Mud_ we mentioned 
 
 Nowadays, and although it is highly discouraged, there are still applications that use this procedural way of coding. The main disadvantage of this style of architecture is that there's no real Separation of Concerns — the maintenance and cost of evolving an application being developed this way increases drastically in relation to other well-known and proven architectures.
 
-Bookmark
+
 
 Layered Architecture
 --------------------
@@ -958,7 +958,7 @@ The `Post` instance and the recorded events are triggered and persisted in the s
 
 ****`To ORM or Not To ORM`****   One of the most common questions when implementing CQRS is if an **Object-Relational Mapper** (**ORM**) is really needed. We strongly believe that using an ORM for the Write Model is perfectly fine and has all of the advantages of using a tool, which will help us save a lot of work in case we use a relational database. But we shouldn't forget that we still need to persist and retrieve the Write Model's state in a relational database.
 
-Bookmark
+
 
 Event Sourcing
 --------------
@@ -1203,7 +1203,7 @@ We just need to take Aggregate snapshots periodically. We could do this synchron
 
 **`To ORM or Not To ORM`** It's clear from the use case of this architectural style that using an ORM just to persist / fetch events would be overkill. Even if we use a relational database for storing them, we only need to persist / fetch events from the data store.
 
-Bookmark
+
 
 Wrap-Up
 -------

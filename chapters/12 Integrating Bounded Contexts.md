@@ -7,7 +7,7 @@ Every enterprise application is typically composed of several areas in which the
 
 **`Dealing with Distributed Systems`**Dealing with distributed systems is **hard**. Breaking a system into independent autonomous parts has its benefits, but it also increases complexity. For example, the coordination and synchronization of distributed systems is not trivial, and as a result, should be considered carefully. As Martin Fowler said in the [PoEAA](https://www.martinfowler.com/books/eaa.html) book, the first law of distributed systems is always: **Don't distribute**.
 
-Bookmark
+
 
 Integration Through the Data Store
 ----------------------------------
@@ -30,7 +30,7 @@ We don't recommend using a Shared Kernel, as multiple teams can collide within t
 
 As you might imagine, this could lead to some degree of duplication, but that's a tradeoff that we're willing to make in order to reduce complexity. In Domain-Driven Design, we call these independent pieces **Bounded Contexts**.
 
-Bookmark
+
 
 Integration Relationships
 -------------------------
@@ -63,7 +63,7 @@ Consider again the e-commerce example and integration with a third-party shippin
 
 Eliminate the complexity of translation between BOUNDED CONTEXTS by slavishly adhering to the model of the upstream team. Although this cramps the style of the downstream designers and probably does not yield the ideal model for the application, choosing CONFORMITY enormously simplifies integration. Also, you will share a UBIQUITOUS LANGUAGE with your supplier team. The supplier is in the driver's seat, so it is good to make communication easy for them. Altruism may be sufficient to get them to share information with you. Eric Evans - _Domain-Driven Design:_ [Tackling Complexity in the Heart of Software](https://www.amazon.com/Domain-Driven-Design-Tackling-Complexity-Software/dp/0321125215).
 
-Bookmark
+
 
 Implementing Bounded Context Integrations
 -----------------------------------------
@@ -414,7 +414,7 @@ The exchange consists of an agent being in charge of delivering messages to the 
 
 With those two commands, Symfony will execute both consumers and they'll start listening for Domain Events. We've specified a limit of 1,000 messages to consume, as PHP isn't the best platform for executing long-running processes. It also might be a good idea to use something like [Supervisor](http://supervisord.org/) to monitor and restart processes periodically.
 
-Bookmark
+
 
 Wrap-Up
 -------

@@ -3,7 +3,7 @@ Chapter 13. Hexagonal Architecture with PHP
 
 > _The following article was posted in php|architect magazine in June 2014 by Carlos Buenosvinos._
 
-Bookmark
+
 
 Introduction
 ------------
@@ -14,7 +14,7 @@ With the rise of **Domain-Driven Design** (**DDD**), architectures promoting dom
 
 Your company is building a brainstorming system called _Idy_. Users add and rate ideas so the most interesting ones can be implemented in a company. It is Monday morning, another sprint is starting and you are reviewing some user stories with your team and your Product Owner. **As a not logged in user, I want to rate an idea and the author should be notified by email**, that's a really important one, isn't it?
 
-Bookmark
+
 
 First Approach
 --------------
@@ -87,7 +87,7 @@ Infrastructure is the **detail that makes your business rules work**. Obviously,
 
 All those `Zend_DB_Adapter` connections (or straight MySQL commands if that's your case) are asking to be promoted to some sort of object that encapsulates fetching and persisting Idea objects. They are begging for being a Repository.
 
-Bookmark
+
 
 Repositories and the Persistence Edge
 -------------------------------------
@@ -178,7 +178,7 @@ At this point, we can see in the landscape one of the edges of our hexagon, the 
 
 In order to make an effective separation between our _application boundary_ and the _infrastructure boundary_ we need an additional step. We need to explicitly decouple behavior from implementation using some sort of interface.
 
-Bookmark
+
 
 Decoupling Business and Persistence
 -----------------------------------
@@ -234,7 +234,7 @@ Easy, isn't it? We have extracted the `IdeaRepository` behavior into an interfac
 
 We can now exchange the repository used in the controller with any implementing the same interface. So, let's try a different implementation.
 
-Bookmark
+
 
 Migrating our Persistence to Redis
 ----------------------------------
@@ -304,7 +304,7 @@ Easy again. You've created a `RedisIdeaRepository` that implements `IdeaReposito
 
 As an exercise for the reader, try to create the `IdeaRepository` for SQLite, a file or an in-memory implementation using arrays. Extra points if you think about how ORM Repositories fit with Domain Repositories and how ORM _@annotations_ affect this architecture.
 
-Bookmark
+
 
 Decouple Business and Web Framework
 -----------------------------------
@@ -435,7 +435,7 @@ The main changes here are introducing two new objects, a Request and a Response.
 
 Ok, but wait, what's the real benefit? it is easier to change from one framework to other, or execute our UseCase from another _delivery mechanism_. Let's see this point.
 
-Bookmark
+
 
 Rating an Idea Using the API
 ----------------------------
@@ -485,7 +485,7 @@ _Man! I remember those 3 lines of code. They look exactly the same as the web ap
 
 We are providing our users with another way for rating an idea; another _delivery mechanism_. The main difference is where we created the `RateIdeaRequest` from. In the first example, it was from a ZF request and now it is from a Silex request using the parameters matched in the route.
 
-Bookmark
+
 
 Console App Rating
 ------------------
@@ -535,7 +535,7 @@ Again those 3 lines of code. As before, the UseCase and its business logic remai
 
 There is still a lot to do. As you may have heard, a real craftsman does TDD. We have already started our story so we must be ok with just testing after.
 
-Bookmark
+
 
 Testing Rating an Idea UseCase
 ------------------------------
@@ -714,7 +714,7 @@ When to use mocks? As a general rule, use mocks when crossing boundaries. In thi
 
 What about testing the infrastructure?
 
-Bookmark
+
 
 Testing Infrastructure
 ----------------------
@@ -774,7 +774,7 @@ This forces us to update the Controller to build the Redis connection, pass it t
 
 Now, it is all about creating mocks, test cases and having fun doing asserts.
 
-Bookmark
+
 
 Arggg, So Many Dependencies!
 ----------------------------
@@ -828,7 +828,7 @@ The controller has been modified to have access to the container, that's why it 
 
 In Listing 15, you can also find the XML file used to configure the Service Container. It is really easy to understand but if you need more information, take a look to the Symfony Service Container Component [site](http://symfony.com/doc/current/book/service_container.html) in.
 
-Bookmark
+
 
 Domain Services and Notification Hexagon Edge
 ---------------------------------------------
@@ -890,7 +890,7 @@ Repositories are not the only objects that may access your infrastructure and sh
 
 As an exercise, define the implementation details for the `AuthorNotifier` abstract service. Options are SwiftMailer or just plain `mail` calls. It is up to you.
 
-Bookmark
+
 
 Let's Recap
 -----------
@@ -903,7 +903,7 @@ The same UseCase objects can be used from different _delivery mechanisms_ in ord
 
 For testing, play with mocks that behave like all the interfaces defined so special cases or error flows can also be covered. Enjoy the good job done.
 
-Bookmark
+
 
 Hexagonal Architecture
 ----------------------
@@ -912,7 +912,7 @@ Hexagonal Architecture
 
 In almost all the blogs and books you will find drawings about concentric circles representing different areas of software. As Robert C. Martin explains in his _Clean Architecture_ post, the outer circle is where your infrastructure resides. The inner circle is where your Entities live. The overriding rule that makes this architecture work is **The Dependency Rule**. This rule says that source code dependencies can only point inwards. Nothing in an inner circle can know anything at all about something in an outer circle.
 
-Bookmark
+
 
 Key Points
 ----------
@@ -921,7 +921,7 @@ Key Points
 
 Use this approach if 100% unit test code coverage is important to your application. Also, if you want to be able to switch your storage strategy, web framework or any other type of third-party code. The architecture is especially useful for long-lasting applications that need to keep up with changing requirements.
 
-Bookmark
+
 
 What's Next?
 ------------

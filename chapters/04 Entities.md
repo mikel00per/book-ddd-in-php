@@ -3,7 +3,7 @@ Chapter 4. Entities
 
 We've talked about the benefits of trying to first model everything in the Domain as a Value Object. But when modeling the Domain, there will probably be situations where you'll find that some concept in the Ubiquitous Language demands a thread of Identity.
 
-Bookmark
+
 
 Introduction
 ------------
@@ -86,7 +86,7 @@ Or, consider the following in the case of an order:
         }
     }
 
-Bookmark
+
 
 Objects Vs. Primitive Types
 ---------------------------
@@ -167,7 +167,7 @@ Going back to the `Order`, it's time to update references to `OrderId`:
 
 Our Entity has an Identity modeled using a Value Object. Let's consider different ways of creating an `OrderId`.
 
-Bookmark
+
 
 Identity Operation
 ------------------
@@ -425,7 +425,7 @@ The other Bounded Context provides an interface to select the Identity from the 
 
 When synchronization is needed between the Entities of the Bounded Contexts, it can usually be achieved with an Event-Driven Architecture on each of the Bounded Contexts that need to be notified when the original Entity is changed.
 
-Bookmark
+
 
 Persisting Entities
 -------------------
@@ -689,7 +689,7 @@ With all the changes, we're finally ready, so let's take a look at the final map
     </doctrine-mapping>
 
 
-Bookmark
+
 
 Testing Entities
 ----------------
@@ -1126,7 +1126,7 @@ You can also use reflection techniques for building a new `Post` class with cust
 
 If you want to know more about testing patterns and approaches, take a look at the book _xUnit Test Patterns: Refactoring Test Code_ by Gerard Meszaros.
 
-Bookmark
+
 
 Validation
 ----------
@@ -1372,7 +1372,7 @@ We also need to change the signature of the validation method to the following:
 
 Validating object compositions can be complicated. As such, the preferred way of achieving this is through a Domain Service. The service then communicates with Repositories in order to retrieve the valid Aggregate. Due to the likely complex object graphs that can be created, an Aggregate could be in an intermediate state, requiring other Aggregates to be validated beforehand. We can use Domain Events to notify other parts of the system that a particular element has been validated.
 
-Bookmark
+
 
 Entities and Domain Events
 --------------------------
@@ -1433,7 +1433,7 @@ Domain Events can even be fired when a new instance of our Entity is created:
     }
 
 
-Bookmark
+
 
 Wrap-Up
 -------

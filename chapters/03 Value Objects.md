@@ -5,7 +5,7 @@ By using the `self` keyword, we don't The Value Objects are a fundamental buildi
 
 For example, a product price could be modeled using a Value Object. In this case, it's not representing a thing, but rather a value that allows us to measure how much Money a product is worth. The memory footprint for these objects is trivial to determine (calculated by their constituent parts) and there's very little overhead. As a result, new instance creation is favored over reference reuse, even when being used to represent the same value. Equality is then checked based on the comparability of the fields of both instances.
 
-Bookmark
+
 
 Definition
 ----------
@@ -26,7 +26,7 @@ Examples of Value Objects are numbers, text strings, dates, times, a person's fu
 
 **`Exercise`** Try to locate more examples of potential Value Objects in your current Domain.
 
-Bookmark
+
 
 Value Object vs. Entity
 -----------------------
@@ -42,7 +42,7 @@ Consider the following examples from [Wikipedia](http://en.wikipedia.org/wiki/Do
 
 **`Exercise`** Think about the concept of an address (street, number, zip code, and so on). What is a possible context where an address could be modeled as an Entity and not as a Value Object? Discuss your findings with a peer.
 
-Bookmark
+
 
 Currency and Money Example
 --------------------------
@@ -121,7 +121,7 @@ As a bonus, you might also notice that we're using [self encapsulation](http://m
 
 Now that you know the formal definition of Value Objects, let's dive deeper into some of the powerful features they offer.
 
-Bookmark
+
 
 Characteristics
 ---------------
@@ -355,7 +355,7 @@ So how can we fix this? Simple — by making sure that the Value Object remains 
 
 With this simple change, immutability is guaranteed. Each time two instances of `Money` are added together, a new resulting instance is returned. Other classes can perform any number of changes without affecting the original copy. Code free of side effects is easy to understand, easy to test, and less error prone.
 
-Bookmark
+
 
 Basic Types
 -----------
@@ -379,7 +379,7 @@ Consider the following code snippet:
 
 Although `$a` and `$b` are different variables stored in different memory locations, when compared, they're the same. They hold the same value, so we consider them equal. You can change the value of `$a` from `10` to `20` at any time that you want, making the new value `20` and eliminating the `10`. You can replace integer values as much as you want without consideration of the previous value because you're not modifying it; you're just replacing it. If you apply any operation — such as addition (That is. `$a + $b`) — to these variables, you get another new value that can be assigned to another variable or a previously defined one. When you pass `$a` to another function, except when explicitly passed by reference, you're passing a value. It doesn't matter if `$a` gets modified within that function, because in your current code, you'll still have the original copy. Value Objects behave as basic types.
 
-Bookmark
+
 
 Testing Value Objects
 ---------------------
@@ -431,7 +431,7 @@ Let's put this into practice and test the side-effect-free implementation of our
         // ...
     }
 
-Bookmark
+
 
 Persisting Value Objects
 ------------------------
@@ -1269,7 +1269,7 @@ MySQL has done the same. As of _MySQL 5.7.8_, MySQL supports a native JSON data 
 
 If Relational Databases add support for document and nested document searches with high performance and with all the benefits of an **Atomicity**, **Consistency**, **Isolation**, **Durability**(**ACID**) philosophy, it could save a lot of complexity in many projects.
 
-Bookmark
+
 
 Security
 --------

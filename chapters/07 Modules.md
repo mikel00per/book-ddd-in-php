@@ -9,7 +9,7 @@ In Domain-Driven Design, there's a tactical pattern for this: **modules**. Nowad
 
 Domain-Driven Design goes one step further toward packaging and grouping your classes together and gives semantic meaning to these building blocks. Indeed, **it treats modules as a part of the model**. As part of the model, it's important to find the best naming, group together Domain objects that are close to each other, and keep the Domain objects that aren't related decoupled. **Modules should not be treated as a way to separate code but as a way to separate meaningful concepts in the model**.
 
-Bookmark
+
 
 General Overview
 ----------------
@@ -18,7 +18,7 @@ General Overview
 
 As explained in the [chapter 1](/chapters/01%20Getting%20Started.md), _Getting Started with Domain-Driven Design_, our Domain is organized internally into Subdomains. Each Subdomain is ideally modeled and implemented by one Bounded Context, but sometimes more than one is needed. If well designed, each Bounded Context is an independent system that will be developed and managed by a team. Our suggestion is to implement each Bounded Context with a whole Application. This means that two Bounded Contexts won't live in the same code Repository. As such, they can be deployed independently, have a different development cycle, or even be developed using different languages. Inside your Bounded Contexts, you'll use modules to group Domain objects that hold a strong relation to one another.
 
-Bookmark
+
 
 Leverage Modules in PHP
 -----------------------
@@ -104,7 +104,7 @@ As you may have noticed in the examples, we split the `src` and `tests` folders.
 
 **`What about PHAR files?`** They could also be used, however, we don't recommend this. As an exercise, make a list of pros and cons for using PHAR files to model modules.
 
-Bookmark
+
 
 Bounded Contexts and Applications
 ---------------------------------
@@ -130,7 +130,7 @@ Beware that each Bounded Context name represents a meaningful concept in our e-c
 *   **Orders** to hold all the code related to the order processing systems. It will contain the finite-state machine in charge of processing orders.
 *   **Payments** to hold all the code related to payments, bills, and waybills.
 
-Bookmark
+
 
 Structuring Code in Modules
 ---------------------------
@@ -287,7 +287,7 @@ It can also use an output dependency to return the result:
 
 Our suggestion is to create modules around Application Services. Each module will hold its request and response. If you're using the Data Transformer as an output dependency, follow the Infrastructure approach as you would with the UI.
 
-Bookmark
+
 
 Wrap-Up
 -------
