@@ -7,7 +7,7 @@ When a significant process or transformation in the domain is not a natural resp
 
 So when there are operations that need to be represented, but Entities and Value Objects aren't the best place, you should consider modeling these operations as Services. In Domain-Driven Design, there are typically three different types of Services you'll encounter:
 
-*   **Application Services**: Operate on scalar types, transforming them into Domain types. A scalar type can be considered any type that's unknown to the Domain Model. This includes primitive types and types that don't belong to the Domain. We'll provide an overview in this chapter, but for a deeper look at this topic, check out the [Chapter 11](https://subscription.packtpub.com/book/application-development/9781787284944/11), _Application_.
+*   **Application Services**: Operate on scalar types, transforming them into Domain types. A scalar type can be considered any type that's unknown to the Domain Model. This includes primitive types and types that don't belong to the Domain. We'll provide an overview in this chapter, but for a deeper look at this topic, check out the [Chapter 11](/chapters/11%20Application.md), _Application_.
 *   **Domain Services**: Operate only on types belonging to the Domain. They contain meaningful concepts that can be found within the Ubiquitous Language. They hold operations that don't fit well into Value Objects or Entities.
 *   **Infrastructure Services**: Are operations that fulfill infrastructure concerns, such as sending emails and logging meaningful data. In terms of Hexagonal Architecture, they live outside the Domain boundary.
 
@@ -73,7 +73,7 @@ As you can see, we create a new instance of our Application Services, passing al
         }
     }
 
-Everything in the code is about the Domain problem we want to solve, and not about the specific technology we're using to solve it. With this approach, we can decouple the high-level policies from the low-level implementation details. The communication between the delivery mechanism and the Domain is carried by data structures called DTOs, which we introduced in the [Chapter 2](https://subscription.packtpub.com/book/application-development/9781787284944/2), _Architectural Styles_:
+Everything in the code is about the Domain problem we want to solve, and not about the specific technology we're using to solve it. With this approach, we can decouple the high-level policies from the low-level implementation details. The communication between the delivery mechanism and the Domain is carried by data structures called DTOs, which we introduced in the [Chapter 2](/chapters/02%20Architectural%20Styles.md), _Architectural Styles_:
 
     class SignUpUserRequest
     {
@@ -103,7 +103,7 @@ There are different strategies for returning content, but for now, consider that
 
 
 
-For creating your responses, you can use getters or public instance variables. Application Services should take care with transaction scopes and security. However, you'll delve into more detail about these and other things related to Application Services in the [Chapter 11](https://subscription.packtpub.com/book/application-development/9781787284944/11), _Application_.
+For creating your responses, you can use getters or public instance variables. Application Services should take care with transaction scopes and security. However, you'll delve into more detail about these and other things related to Application Services in the [Chapter 11](/chapters/11%20Application.md), _Application_.
 
 Bookmark
 
@@ -675,7 +675,7 @@ This leads to far richer classes, where behavior is the goal for code reuse. Thi
 
 The way to avoid falling into an Anemic Domain Model is to, when starting a new project or feature, think of the behavior first. Databases, ORMs, and so on are just implementation details, and we should strive to push the decision to use these tools as late in the development process as we can. In doing so, we can focus on the one true attribute that matters: the behavior.
 
-Just as is the case with Entities, Domain Services can also fire [Chapter 6](https://subscription.packtpub.com/book/application-development/9781787284944/6), _Domain-Events_. However, when events are mostly fired by Domain Services and not Entities, it's again an indicator that you may be creating an Anemic Domain Model.
+Just as is the case with Entities, Domain Services can also fire [Chapter 6](/chapters/06%20Domain-Events.md), _Domain-Events_. However, when events are mostly fired by Domain Services and not Entities, it's again an indicator that you may be creating an Anemic Domain Model.
 
 Bookmark
 

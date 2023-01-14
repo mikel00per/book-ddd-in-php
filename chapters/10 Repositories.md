@@ -232,7 +232,7 @@ And, as you would expect, it's handled as a collection:
     $post = $repository->postOfId($id);
     assert('Updated content' === $post->body());
 
-As you can see, from the collection's point of view, there's no need for a save method in the Repository. Changes affecting the object are correctly handled by the underlying persistence layer. Collection-oriented Repositories are the ones that don't need to add an Aggregate that was persisted before. This mainly happens with the Repositories that are memory based, but we also have ways to do this with the Persisted-Oriented Repositories. We'll look at this in a moment; additionally, we'll cover this more in depth in the [Chapter 11](https://subscription.packtpub.com/book/application-development/9781787284944/11), _Application_.
+As you can see, from the collection's point of view, there's no need for a save method in the Repository. Changes affecting the object are correctly handled by the underlying persistence layer. Collection-oriented Repositories are the ones that don't need to add an Aggregate that was persisted before. This mainly happens with the Repositories that are memory based, but we also have ways to do this with the Persisted-Oriented Repositories. We'll look at this in a moment; additionally, we'll cover this more in depth in the [Chapter 11]( /chapters/11%20Application.md), _Application_.
 
 The first step to design a Repository is to define a collection-like interface for it. The interface needs to define the usual collection methods, like so:
 
@@ -266,7 +266,7 @@ Another important aspect of Repositories are the finder methods, like the follow
         public function latestPosts(DateTimeImmutable $sinceADate);
     }
 
-As we suggested in [Chapter 4](https://subscription.packtpub.com/book/application-development/9781787284944/4), _Entities_, we prefer Application-Generated Identities. The best place to generate a new Identity for an Aggregate is its Repository. So to retrieve the globally unique ID for a `Post`, a logical place to include it is in `PostRepository`:
+As we suggested in [Chapter 4](/chapters/04%20Entities.md), _Entities_, we prefer Application-Generated Identities. The best place to generate a new Identity for an Aggregate is its Repository. So to retrieve the globally unique ID for a `Post`, a logical place to include it is in `PostRepository`:
 
     interface PostRepository
     { 

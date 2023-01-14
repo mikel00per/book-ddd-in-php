@@ -16,7 +16,7 @@ General Overview
 
 * * *
 
-As explained in the [chapter 1](https://subscription.packtpub.com/book/application-development/9781787284944/1), _Getting Started with Domain-Driven Design_, our Domain is organized internally into Subdomains. Each Subdomain is ideally modeled and implemented by one Bounded Context, but sometimes more than one is needed. If well designed, each Bounded Context is an independent system that will be developed and managed by a team. Our suggestion is to implement each Bounded Context with a whole Application. This means that two Bounded Contexts won't live in the same code Repository. As such, they can be deployed independently, have a different development cycle, or even be developed using different languages. Inside your Bounded Contexts, you'll use modules to group Domain objects that hold a strong relation to one another.
+As explained in the [chapter 1](/chapters/01%20Getting%20Started.md), _Getting Started with Domain-Driven Design_, our Domain is organized internally into Subdomains. Each Subdomain is ideally modeled and implemented by one Bounded Context, but sometimes more than one is needed. If well designed, each Bounded Context is an independent system that will be developed and managed by a team. Our suggestion is to implement each Bounded Context with a whole Application. This means that two Bounded Contexts won't live in the same code Repository. As such, they can be deployed independently, have a different development cycle, or even be developed using different languages. Inside your Bounded Contexts, you'll use modules to group Domain objects that hold a strong relation to one another.
 
 Bookmark
 
@@ -279,7 +279,7 @@ This example provides a naive implementation using the `DoctrineOrderRepository`
 
 ### Modules in the Application Layer
 
-We've seen Domain and Infrastructure modules, so now let's take a look at the Application layer. In Domain-Driven Design, we suggest using Application Services as a way of decoupling the client from both the Domain Model and the necessary knowledge on how to interact with it. As you'll see in [Chapter 11](https://subscription.packtpub.com/book/application-development/9781787284944/11),  _Application_, an Application Service is built with its dependencies, is executed with a DTO request, and returns a DTO response.
+We've seen Domain and Infrastructure modules, so now let's take a look at the Application layer. In Domain-Driven Design, we suggest using Application Services as a way of decoupling the client from both the Domain Model and the necessary knowledge on how to interact with it. As you'll see in [Chapter 11](/chapters/11%20Application.md),  _Application_, an Application Service is built with its dependencies, is executed with a DTO request, and returns a DTO response.
 
 It can also use an output dependency to return the result:
 

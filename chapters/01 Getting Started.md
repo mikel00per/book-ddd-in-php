@@ -35,7 +35,7 @@ Domain-Driven Design is an approach for delivering software, and it's focused on
 
 ### Ubiquitous Language
 
-Along with  [Chapter 12](https://subscription.packtpub.com/book/application-development/9781787284944/12), _Integrating_ _Bounded Contexts_, Ubiquitous Language is one of the main strengths of Domain-Driven Design.
+Along with  [Chapter 12](/chapters/12%20Integrating%20Bounded%20Contexts.md), _Integrating_ _Bounded Contexts_, Ubiquitous Language is one of the main strengths of Domain-Driven Design.
 
 ### Note
 

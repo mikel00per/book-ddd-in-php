@@ -484,7 +484,7 @@ Let's assume that the `UPDATE` statement that updates the line order works prope
 
 If you're using Elasticsearch, the situation is a bit different. You can map the order with a JSON document that holds order lines internally, so just a single request is needed. However, if you decide to map the order with one JSON document and each of its order lines with another JSON document, you're in trouble, as Elasticsearch doesn't support transactions. Ouch!
 
-An Aggregate is fetched and persisted using its own [Chapter 10](https://subscription.packtpub.com/book/application-development/9781787284944/10), _Repositories_. If two Entities don't belong to the same Aggregate, both will have their own Repository. If a true business invariant exists and two Entities belong to the same Aggregate, you'll only have one Repository. This Repository will be the one for the root Entity.
+An Aggregate is fetched and persisted using its own [Chapter 10](/chapters/10%20Repositories.md), _Repositories_. If two Entities don't belong to the same Aggregate, both will have their own Repository. If a true business invariant exists and two Entities belong to the same Aggregate, you'll only have one Repository. This Repository will be the one for the root Entity.
 
 What are the cons of Aggregates? The problem when dealing with transactions is the possibility of performance issues and operation errors. We'll explore this in depth soon.
 
@@ -604,7 +604,7 @@ Last but not least, when designing big Aggregates, because they may hold collect
 
 ### Reference Other Entities by Identity
 
-When two Entities don't form an Aggregate but are related, the best option to have Entities reference one another is by using _Identities_. Identities were already explained in the [Chapter 4](https://subscription.packtpub.com/book/application-development/9781787284944/4), _Entities_.
+When two Entities don't form an Aggregate but are related, the best option to have Entities reference one another is by using _Identities_. Identities were already explained in the [Chapter 4](/chapters/04%20Entities.md), _Entities_.
 
 Consider a `User` and their `Orders`, and assume we haven't found any true invariant. `User` and `Order` wouldn't be part of the same Aggregate. If you need to know which `User` owns a specific `Order`, you can probably ask the `Order` what its `UserId` is. `UserId` is a Value Object that holds the `User` Identity. We get the whole `User` by using its Repository, the `UserRepository`. This code generally lives in the Application Service.
 
@@ -709,7 +709,7 @@ That could work, but there's a problem performing the check in the Application S
             $content
     );
 
-If you've already read [Chapter 9](https://subscription.packtpub.com/book/application-development/9781787284944/9), _Factories_, then you have the solution. Factories help us keep the business invariants, and that's exactly what we need here.
+If you've already read [Chapter 9](/chapters/09%20Factories.md), _Factories_, then you have the solution. Factories help us keep the business invariants, and that's exactly what we need here.
 
 There's an implicit invariant saying that we're not allowed to make a wish without a valid user. Let's see how a factory can help us:
 
@@ -889,7 +889,7 @@ No relation is defined. After making a new wish, let's write some code for updat
         }
     }
 
-Because `User` and `Wish` don't form an Aggregate, in order to update the `Wish`, we need first to retrieve it using the `WishRepository`. Some extra checks ensure that only the owner can update the wish. As you may have seen, `$wish` is already an existing Entity in our Domain, so there's no need to add it back again using the Repository. However, in order to make changes durable, our ORM must be aware of the information updated and flush any remaining changes to the database after the work is done. Don't worry; we'll take a look closer at this in [Chapter 11](https://subscription.packtpub.com/book/application-development/9781787284944/11), _Application_. In order to complete the example, let's take a look at how to remove a wish:
+Because `User` and `Wish` don't form an Aggregate, in order to update the `Wish`, we need first to retrieve it using the `WishRepository`. Some extra checks ensure that only the owner can update the wish. As you may have seen, `$wish` is already an existing Entity in our Domain, so there's no need to add it back again using the Repository. However, in order to make changes durable, our ORM must be aware of the information updated and flush any remaining changes to the database after the work is done. Don't worry; we'll take a look closer at this in [Chapter 11](/chapters/11%20Application.md), _Application_. In order to complete the example, let's take a look at how to remove a wish:
 
     class RemoveWishService extends WishService
     {
@@ -970,7 +970,7 @@ Your QA tries making a wish feature two times and ends up with a user with two w
 
 Think as a debugger and consider two different requests getting the `if ($count > 3) {` line at the same time. Both of the requests will return false because the user has just two wishes. So both requests will create the `Wish` and both of the requests will add it into the database. The result is four wishes for one `User`. That's an inconsistency!
 
-We know what you're thinking. It's because we missed putting everything into a transaction. Well, imagine that a user with id 1 already has two wishes, so there's one remaining. Two HTTP requests to create two different wishes arrive at the same time. We start one database transaction per request (we'll review how to deal with transactions and requests in [Chapter 11](https://subscription.packtpub.com/book/application-development/9781787284944/11), _Application_). Consider all the queries that the previous PHP code is going to run against our database. Remember that you need to disable any auto-commit flag if you're using any Visual Database Tool:
+We know what you're thinking. It's because we missed putting everything into a transaction. Well, imagine that a user with id 1 already has two wishes, so there's one remaining. Two HTTP requests to create two different wishes arrive at the same time. We start one database transaction per request (we'll review how to deal with transactions and requests in [Chapter 11](/chapters/11%20Application.md), _Application_). Consider all the queries that the previous PHP code is going to run against our database. Remember that you need to disable any auto-commit flag if you're using any Visual Database Tool:
 
 ![](https://static.packt-cdn.com/products/9781787284944/graphics/Code1P.png)
 
@@ -1244,7 +1244,7 @@ Finally, let's see how we can get the wishes from a user:
 
 As mentioned before, especially in this scenario using Aggregates, returning a collection of Wishes is not the best solution. You should never return Domain Entities, as this will prevent code outside of your Application Services — such as Controllers or your UI — from unexpectedly modifying them. With Aggregates, it makes even more sense. Entities that aren't root — the ones that belong to the Aggregate but aren't root  — should appear private to others outside.
 
-We'll go deeper into this in the [Chapter 11](https://subscription.packtpub.com/book/application-development/9781787284944/11), _Application_. For now, to summarize, you have different options:
+We'll go deeper into this in the [Chapter 11](/chapters/11%20Application.md), _Application_. For now, to summarize, you have different options:
 
 *   The Application Service returns a DTO build accessing Aggregates information.
 *   The Application Service returns a DTO returned by the Aggregate.
@@ -1261,7 +1261,7 @@ Transactions
 
 * * *
 
-We haven't shown `beginTransaction`, `commit`, or `rollback` in any of the examples. This is because transactions are handled at Application Service level. Don't worry for now; you'll find more details about this in [Chapter 11](https://subscription.packtpub.com/book/application-development/9781787284944/11), _Application_.
+We haven't shown `beginTransaction`, `commit`, or `rollback` in any of the examples. This is because transactions are handled at Application Service level. Don't worry for now; you'll find more details about this in [Chapter 11]( /chapters/11%20Application.md), _Application_.
 
 Bookmark
 

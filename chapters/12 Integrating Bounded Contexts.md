@@ -127,7 +127,7 @@ We'll also fetch the user projection from Elasticsearch and serialize it to a fo
         }
     }
 
-As we explained in the [Chapter 2](https://subscription.packtpub.com/book/application-development/9781787284944/2), _Architectural Styles_ reads are treated as an Infrastructure concern, so there's no need to wrap them inside a Command / Command Handler flow.
+As we explained in the [Chapter 2](/chapters/02%20Architectural%20Styles.md), _Architectural Styles_ reads are treated as an Infrastructure concern, so there's no need to wrap them inside a Command / Command Handler flow.
 
 The resulting JSON+HAL representation of a user will be like this:
 
@@ -263,11 +263,11 @@ A better approach is to use a **messaging middleware**. With this solution, Cont
 
 **`Published Language`** Use a well-documented shared language that can express the necessary domain information as a common medium of communication, translating as necessary into and out of that language.  Eric Evans - _Domain-Driven Design:_ [Tackling Complexity in the Heart of Software](https://www.amazon.com/Domain-Driven-Design-Tackling-Complexity-Software/dp/0321125215).
 
-In thinking about the format of these messages and looking closer at our Domain Model, we realize we already have what we need: [Chapter 6](https://subscription.packtpub.com/book/application-development/9781787284944/6), _Domain-Events_. It's not necessary to define a new way of communicating between Bounded Contexts. Instead, we can just use Domain Events to define a common language across Contexts. The definition of _something that Domain Experts care about that just happened_ fits perfectly with what we're looking for: a formal Published Language.
+In thinking about the format of these messages and looking closer at our Domain Model, we realize we already have what we need: [Chapter 6](/chapters/06%20Domain-Events.md), _Domain-Events_. It's not necessary to define a new way of communicating between Bounded Contexts. Instead, we can just use Domain Events to define a common language across Contexts. The definition of _something that Domain Experts care about that just happened_ fits perfectly with what we're looking for: a formal Published Language.
 
 In our example, we could use RabbitMQ as a messaging middleware. This is probably one of the most reliable and robust messaging [AMQP](https://www.amqp.org/) protocols out there. We'll also incorporate the widely used PHP libraries [php-amqplib](https://github.com/php-amqplib/php-amqplib) and [RabbitMQBundle](https://github.com/php-amqplib/RabbitMqBundle).
 
-Let's start with the Will Context, as it's the one that triggers Events when the user signs up or when making a wish. As we've already seen in the [Chapter 6](https://subscription.packtpub.com/book/application-development/9781787284944/6), _Domain-Events_, **it's a good idea to store Domain Events into a persistent mechanism**, so we'll assume that's what was done. We need a message publisher to fetch and publish stored Domain Events from the Event store to the messaging middleware. We already did the integration with RabbitMQ in the [Chapter 6](https://subscription.packtpub.com/book/application-development/9781787284944/6), _Domain-Events_, so we just need to implement the code in the Gamification Context. We'll listen for Events triggered by the Will Context. As we're using the Symfony Framework, we take advantage of a Symfony package called RabbitMQBundle.
+Let's start with the Will Context, as it's the one that triggers Events when the user signs up or when making a wish. As we've already seen in the [Chapter 6](/chapters/06%20Domain-Events.md), _Domain-Events_, **it's a good idea to store Domain Events into a persistent mechanism**, so we'll assume that's what was done. We need a message publisher to fetch and publish stored Domain Events from the Event store to the messaging middleware. We already did the integration with RabbitMQ in the [Chapter 6](/chapters/06%20Domain-Events.md), _Domain-Events_, so we just need to implement the code in the Gamification Context. We'll listen for Events triggered by the Will Context. As we're using the Symfony Framework, we take advantage of a Symfony package called RabbitMQBundle.
 
 We define two message consumers for the _User Registered_ and _Wish Was Made_ events:
 
