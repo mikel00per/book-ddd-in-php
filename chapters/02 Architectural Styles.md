@@ -163,9 +163,9 @@ Another architecture paradigm and pattern that seeks the same purpose is the Mod
 
 Model-View-Controller is an architectural pattern and paradigm that divides the application into three main layers, described in the following points:
 
-*   **The Model**: Captures and centralizes all the Domain Model behavior. This layer manages all the data, logic, and business rules independently of the data representation. It has been said that **the Model layer is the heart and soul of every MVC application**.
-*   **The Controller**: Orchestrates interactions between the other layers, triggers actions on the Model in order to update its state, and refreshes the representations associated with the Model. Additionally, the Controller can send messages to the View layer in order to change the specific Model representation.
-*   **The View**: Exposes the differing representations of the Model layer and provides a way to trigger changes on the Model's state.
+> *   **The Model**: Captures and centralizes all the Domain Model behavior. This layer manages all the data, logic, and business rules independently of the data representation. It has been said that **the Model layer is the heart and soul of every MVC application**.
+> *   **The Controller**: Orchestrates interactions between the other layers, triggers actions on the Model in order to update its state, and refreshes the representations associated with the Model. Additionally, the Controller can send messages to the View layer in order to change the specific Model representation.
+> *   **The View**: Exposes the differing representations of the Model layer and provides a way to trigger changes on the Model's state.
 
 ![](https://static.packt-cdn.com/products/9781787284944/graphics/mvc.png)
 
@@ -277,7 +277,7 @@ The View is a layer that can both send and receive messages from the Model layer
 
 ### Note
 
-**`DTOs Instead of Model Instances?`** This is an old and active topic. Why create a DTO instead of giving an instance of the Model to the View layer? The main reason and the short answer is, again, Separation of Concerns. Letting the View inspect and use a Model instance leads to tight coupling between the View layer and the Model layer. In fact, a change in the Model layer can potentially break all the views that make use of the changed Model instances.
+> **`DTOs Instead of Model Instances?`** This is an old and active topic. Why create a DTO instead of giving an instance of the Model to the View layer? The main reason and the short answer is, again, Separation of Concerns. Letting the View inspect and use a Model instance leads to tight coupling between the View layer and the Model layer. In fact, a change in the Model layer can potentially break all the views that make use of the changed Model instances.
 
 ```php
 {% extends "base.html.twig" %}
@@ -313,10 +313,10 @@ The View is a layer that can both send and receive messages from the Model layer
 
 Most of the time, when the Model triggers a state change, it also notifies the related Views so that the UI is refreshed. In a typical web scenario, the synchronization between the Model and its representations can be a bit tricky because of the client-server nature. In these kind of environments, some JavaScript-defined interactions are usually needed to maintain that synchronization. For this reason, JavaScript MVC frameworks like the ones below have become widely popular in recent years:
 
-*   [AngularJS](https://angularjs.org/)
-*   [Ember.js](http://emberjs.com/)
-*   [Marionette.js](http://marionettejs.com/)
-*   [React](https://facebook.github.io/react/)
+> *   [AngularJS](https://angularjs.org/)
+> *   [Ember.js](http://emberjs.com/)
+> *   [Marionette.js](http://marionettejs.com/)
+> *   [React](https://facebook.github.io/react/)
 
 #### The Controller
 
@@ -368,17 +368,15 @@ As an example, with MVC, the `PostRepository` class from the previous example sh
 
 How can we fix this? As the Domain Model layer depends on concrete infrastructure implementations, the [Dependency Inversion Principle](https://en.wikipedia.org/wiki/Dependency_inversion_principle), or DIP, could be applied by relocating the Infrastructure layer on top of the other three layers.
 
-### Note
-
-**`The Dependency Inversion Principle`** High-level modules should not depend on low-level modules. Both should depend on abstractions. Abstractions should not depend on details. Details should depend on abstractions. _Robert C. Martin_
+> ### Note
+> **`The Dependency Inversion Principle`** High-level modules should not depend on low-level modules. Both should depend on abstractions. Abstractions should not depend on details. Details should depend on abstractions. _Robert C. Martin_
 
 By using the Dependency Inversion Principle, the architecture schema changes, and the Infrastructure layer — which can be referred to as the low-level module — now depends on the UI, the Application layer, and the Domain layer, which are the high-level modules. The dependency has been inverted.
 
 But what is Hexagonal Architecture, and how does it fit within all of this? Hexagonal Architecture (also known as Ports and Adapters) was defined by Alistair Cockburn in his book, [Hexagonal Architecture](http://alistair.cockburn.us/Hexagonal+architecture). It depicts the application as a hexagon, where each side represents a Port with one or more Adapters. A Port is a connector with a pluggable Adapter that transforms an outside input to something the inside application can understand. In terms of the DIP, a Port would be a high-level module, and an Adapter would be a low-level module. Furthermore, if the application needs to emit a message to the outside, it will also use a Port with an Adapter to send it and transform it into something that the outside can understand. For this reason, Hexagonal Architecture brings up the concept of symmetry in the application, and it's also the main reason why the schema of the architecture changes. It's often represented as a hexagon because it no longer makes sense to talk about a top layer or a bottom layer. Instead, Hexagonal Architecture talks mainly in terms of the outside and the inside.
 
-### Note
-
-There are great videos on YouTube by _Matthias Noback_ where he talks about Hexagonal Architecture. You may want to take a look at one of those for more [detailed information](https://www.youtube.com/watch?v=K1EJBmwg9EQ).
+> ### Note
+> There are great videos on YouTube by _Matthias Noback_ where he talks about Hexagonal Architecture. You may want to take a look at one of those for more [detailed information](https://www.youtube.com/watch?v=K1EJBmwg9EQ).
 
 #### Applying Hexagonal Architecture
 
@@ -478,14 +476,13 @@ When these techniques are abused, the construction of the UI views can become re
 
 Luckily, there's another approach. If the problem is having multiple and disparate views, we can exclude them from the Domain Model and start treating them as a purely infrastructural concern. This option is based on a design principle, the **Command Query Separation** (**CQS**). This principle was defined by Bertrand Meyer, and, in turn, it gave birth to a new architectural pattern named **Command Query Responsibility Segregation** (**CQRS**), as defined by Greg Young.
 
-### Note
-
-**`Command Query Separation (CQS)`**  _Asking a question should not change the answer_ - Bertrand Meyer This design principle states that every method should be either a command that performs an action, or a query that returns data to the caller, but not both, [Wikipedia](https://en.wikipedia.org/wiki/Command%E2%80%93query_separation)
+> ### Note
+> **`Command Query Separation (CQS)`**  _Asking a question should not change the answer_ - Bertrand Meyer This design principle states that every method should be either a command that performs an action, or a query that returns data to the caller, but not both, [Wikipedia](https://en.wikipedia.org/wiki/Command%E2%80%93query_separation)
 
 CQRS seeks an even more aggressive Separation of Concerns, splitting the Model in two:
 
-*   The **Write Model**: Also known as the **Command Model**, it performs the writes and takes responsibility for the true Domain behavior.
-*   The **Read Model**: It takes responsibility of the reads within the application and treats them as something that should be out of the Domain Model.
+> *   The **Write Model**: Also known as the **Command Model**, it performs the writes and takes responsibility for the true Domain behavior.
+> *   The **Read Model**: It takes responsibility of the reads within the application and treats them as something that should be out of the Domain Model.
 
 Every time someone triggers a command to the Write Model, this performs the write to the desired data store. Additionally, it triggers the Read Model update, in order to display the latest changes on the Read Model.
 
@@ -998,9 +995,8 @@ class DoctrinePostRepository implements PostRepository
 
 The `Post` instance and the recorded events are triggered and persisted in the same transaction. This ensures that no events are lost, as we'll project them to the Read Model if the transaction is successful. As a result, no inconsistencies will exist between the Write Model and the Read Model.
 
-### Note
-
-****`To ORM or Not To ORM`****   One of the most common questions when implementing CQRS is if an **Object-Relational Mapper** (**ORM**) is really needed. We strongly believe that using an ORM for the Write Model is perfectly fine and has all of the advantages of using a tool, which will help us save a lot of work in case we use a relational database. But we shouldn't forget that we still need to persist and retrieve the Write Model's state in a relational database.
+> ### Note
+> ****`To ORM or Not To ORM`****   One of the most common questions when implementing CQRS is if an **Object-Relational Mapper** (**ORM**) is really needed. We strongly believe that using an ORM for the Write Model is perfectly fine and has all of the advantages of using a tool, which will help us save a lot of work in case we use a relational database. But we shouldn't forget that we still need to persist and retrieve the Write Model's state in a relational database.
 
 
 Event Sourcing
@@ -1010,15 +1006,13 @@ Event Sourcing
 
 CQRS is a powerful and flexible architecture. There's an added benefit to it in regard to gathering and saving the Domain Events (which occurred during an Aggregate operation), giving you a high-level degree of detail of what's going on within your Domain. Domain Events are one of the key tactical patterns because of their significance within the Domain, as they describe past occurrences.
 
-### Note
-
-****`Be careful with recording too many events`**** An ever-growing number of events is a smell. It might reveal an addiction to event recording at the Domain, most likely incentivized by the business. As a rule of thumb, remember to keep it simple.
+> ### Note
+> ****`Be careful with recording too many events`**** An ever-growing number of events is a smell. It might reveal an addiction to event recording at the Domain, most likely incentivized by the business. As a rule of thumb, remember to keep it simple.
 
 By using CQRS, we've been able to record all the relevant events that occurred in the Domain Layer. The state of the Domain Model can be represented by reproducing the Domain Events we previously recorded. We just need a tool for storing all those events in a consistent way. We need an event store.
 
-### Note
-
-The fundamental idea behind Event Sourcing is to express the state of Aggregates as a linear sequence of events
+> ### Note
+> The fundamental idea behind Event Sourcing is to express the state of Aggregates as a linear sequence of events
 
 With CQRS, we partially achieved the following: The `Post` entity alters its state by using Domain Events, but it's persisted, as explained already, thereby mapping the object to a database table.
 
@@ -1255,9 +1249,8 @@ class EventStorePostRepository implements PostRepository
 }
 ```
 
-### Note
-
-**`To ORM or Not To ORM`** It's clear from the use case of this architectural style that using an ORM just to persist / fetch events would be overkill. Even if we use a relational database for storing them, we only need to persist / fetch events from the data store.
+> ### Note
+> **`To ORM or Not To ORM`** It's clear from the use case of this architectural style that using an ORM just to persist / fetch events would be overkill. Even if we use a relational database for storing them, we only need to persist / fetch events from the data store.
 
 
 Wrap-Up
@@ -1269,6 +1262,5 @@ As there are plenty of options for architectural styles, you may have gotten a b
 
 We've also seen CQRS and Event Sourcing as relatively flexible architectures that will help you in fighting serious complexity. CQRS and Event Sourcing both have their places, but don't let the _coolness factor_ distract you from the value they provide. As they both come with some overhead, you should have a technical reason for justifying their use. These architectural styles are indeed really useful, and the heuristics to start using them can be discovered in the number of finders on the Repositories for CQRS and the volume of triggered events for Event Sourcing. If the number of finder methods starts growing and Repositories become difficult to maintain, then it's time to consider the use of CQRS, in order to split read and write concerns. And after that, if the volume of events on each Aggregate operation tends to grow and the business is interested in more granular information, then an option to consider is whether a move toward Event Sourcing might pay off.
 
-### Note
-
-**`Extracted from a paper by Brian Foote and Joseph Yoder:`**_A BIG BALL OF MUD is haphazardly structured, sprawling, sloppy, duct-tape and bailing wire,_ [spaghetti code jungle](http://www.laputan.org/mud/mud.html#BigBallOfMud).
+> ### Note
+> **`Extracted from a paper by Brian Foote and Joseph Yoder:`**_A BIG BALL OF MUD is haphazardly structured, sprawling, sloppy, duct-tape and bailing wire,_ [spaghetti code jungle](http://www.laputan.org/mud/mud.html#BigBallOfMud).
