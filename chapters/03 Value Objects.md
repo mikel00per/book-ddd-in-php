@@ -20,9 +20,8 @@ A small Object such as a Money or the date range object. Their key property is t
 
 Examples of Value Objects are numbers, text strings, dates, times, a person's full name (composed of first name, middle name, last name, and title), currencies, colors, phone numbers, and postal addresses.
 
-### Note
-
-**`Exercise`** Try to locate more examples of potential Value Objects in your current Domain.
+> ### Note
+> **`Exercise`** Try to locate more examples of potential Value Objects in your current Domain.
 
 
 Value Object vs. Entity
@@ -32,12 +31,11 @@ Value Object vs. Entity
 
 Consider the following examples from [Wikipedia](http://en.wikipedia.org/wiki/Domain-driven_design#Building_blocks_of_DDD), in order to better understand the difference between Value Objects and Entities:
 
-*   **Value Object**: When people exchange dollar bills, they generally do not distinguish between each unique bill; they only are concerned about the face value of the dollar bill. In this context, dollar bills are Value Objects. However, the Federal Reserve may be concerned about each unique bill; in this context each bill would be an entity.
-*   **Entity**: Most airlines distinguish each seat uniquely on every flight. Each seat is an entity in this context. However, Southwest Airlines, EasyJet and Ryanair do not distinguish between every seat; all seats are the same. In this context, a seat is actually a Value Object.
+> *   **Value Object**: When people exchange dollar bills, they generally do not distinguish between each unique bill; they only are concerned about the face value of the dollar bill. In this context, dollar bills are Value Objects. However, the Federal Reserve may be concerned about each unique bill; in this context each bill would be an entity.
+> *   **Entity**: Most airlines distinguish each seat uniquely on every flight. Each seat is an entity in this context. However, Southwest Airlines, EasyJet and Ryanair do not distinguish between every seat; all seats are the same. In this context, a seat is actually a Value Object.
 
-### Note
-
-**`Exercise`** Think about the concept of an address (street, number, zip code, and so on). What is a possible context where an address could be modeled as an Entity and not as a Value Object? Discuss your findings with a peer.
+> ### Note
+> **`Exercise`** Think about the concept of an address (street, number, zip code, and so on). What is a possible context where an address could be modeled as an Entity and not as a Value Object? Discuss your findings with a peer.
 
 
 Currency and Money Example
@@ -77,9 +75,8 @@ class Currency
 
 One of the main goals of Value Objects is also the holy grail of Object-Oriented design: encapsulation. By following this pattern, you'll end up with a dedicated location to put all the validation, comparison logic, and behavior for a given concept.
 
-### Note
-
-**`Extra Validations for Currency`** In the previous code example, we can build a Currency with an AAA Currency ISO code. That isn't valid at all. Write a more specific rule that will check if the ISO Code is valid. A full list of valid currency ISO codes can be found [here](http://www.xe.com/iso4217.php). If you need help, take a look at the [Money](https://github.com/moneyphp/money) packagist library.
+> ### Note
+> **`Extra Validations for Currency`** In the previous code example, we can build a Currency with an AAA Currency ISO code. That isn't valid at all. Write a more specific rule that will check if the ISO Code is valid. A full list of valid currency ISO codes can be found [here](http://www.xe.com/iso4217.php). If you need help, take a look at the [Money](https://github.com/moneyphp/money) packagist library.
 
 Money is used to measure a specific amount of currency. It's modeled using an amount and a currency. Amount, in the case of the Money pattern, is implemented using an integer representation of the Currency's least-valuable fraction — For example   in the case of USD or EUR, cents.
 
@@ -177,9 +174,8 @@ class Money
 
 By using the `self` keyword, we don't couple the code with the class name. As such, a change to the class name or namespace won't affect these factory methods. This small implementation detail helps when refactoring the code at a later date.
 
-### Note
-
-**`static vs. self`** Using static over self can result in undesirable issues when a Value Object inherits from another Value Object.
+> ### Note
+> **`static vs. self`** Using static over self can result in undesirable issues when a Value Object inherits from another Value Object.
 
 Due to this immutability, we must consider how to handle mutable actions that are common place in a stateful context. If we require a state change, we now have to return a brand new Value Object representation with this change. If we want to increase the amount of, for example, a `Money` Value Object, we're required to instead return a new `Money` instance with the desired modifications.
 
@@ -237,9 +233,8 @@ This approach has some noticeable flaws, if say, for example, you want to valida
 
 With these factors in mind, this use case is a perfect candidate for being abstracted out into a Value Object. Using this abstraction not only gives you the opportunity to group related properties together, but it also allows you to create higher-order concepts and a more concrete Ubiquitous Language.
 
-### Note
-
-**`Exercise`**Discuss with a peer whether or not an email could be considered a Value Object. Does the context it's used in matter?
+> ### Note
+> **`Exercise`**Discuss with a peer whether or not an email could be considered a Value Object. Does the context it's used in matter?
 
 ### Value Equality
 
@@ -496,9 +491,8 @@ Assuming you have a [Chapter 10](../chapters/10%20Repositories.md), _Repositorie
 
 Now let's look at both the ad hoc ORM and the Doctrine implementations that could be used to persist a `Product` Entity containing Value Objects. We'll highlight the application of the Embedded Value and Serialized LOB patterns, along with the differences between persisting a single Value Object and a collection of them.
 
-### Note
-
-**`Why Doctrine?`** The [Doctrine](http://www.doctrine-project.org/projects/orm.html) is a great ORM. It solves 80 percent of the requirements a PHP application faces. It has a great community. With a correctly tuned setup, it can perform the same or even better than a bespoke ORM (without losing maintainability). We recommend using Doctrine in most cases when dealing with Entities and business logic. It will save you a lot of time and headaches.
+> ### Note
+> **`Why Doctrine?`** The [Doctrine](http://www.doctrine-project.org/projects/orm.html) is a great ORM. It solves 80 percent of the requirements a PHP application faces. It has a great community. With a correctly tuned setup, it can perform the same or even better than a bespoke ORM (without losing maintainability). We recommend using Doctrine in most cases when dealing with Entities and business logic. It will save you a lot of time and headaches.
 
 ### Persisting Single Value Objects
 
@@ -585,9 +579,8 @@ However, using the ad hoc ORM approach has its drawbacks. As explained in the [C
 
 This is one of the reasons why Doctrine uses internal proxies and `serialize` and `unserialize` methods to reconstitute an object with its attributes in a specific state without using its constructor. An Entity should only be created with the new operator once in its lifetime:
 
-### Note
-
-**`Constructors`**   Constructors don't need to include a parameter for each attribute in the object. Think about a blog post. A constructor may need an id and a title; however, internally it can also be setting its status attribute to draft. When publishing the post, a publish method should be called in order to alter its status accordingly and set a published date.
+> ### Note
+> **`Constructors`**   Constructors don't need to include a parameter for each attribute in the object. Think about a blog post. A constructor may need an id and a title; however, internally it can also be setting its status attribute to draft. When publishing the post, a publish method should be called in order to alter its status accordingly and set a published date.
 
 If your intention is still to roll out your own ORM, be ready to solve some fundamental problems such as Events, different constructors, Value Objects, lazy load relations, and so on. That's why we recommend giving Doctrine a try for Domain-Driven Design applications.
 
@@ -773,9 +766,8 @@ As you can see, there are two new attributes: one for the amount, and another fo
 </doctrine-mapping>
 ```
 
-### Note
-
-**`Surrogate Attributes`** These two new fields don't strictly belong to the Domain, as they don't refer to Infrastructure details. Rather, they're a necessity due to the lack of embeddable support in Doctrine. There are alternatives that can push these two attributes outside the pure Domain; however, this approach is simpler, easier, and, as a tradeoff, acceptable. There's another use of surrogate attributes in this book; you can find it in  the sub-section _Surrogate Identity_ of the section _Identity Operation_ of [Chapter 4](../chapters/04%20Entities.md)_, Entities_.
+> ### Note
+> **`Surrogate Attributes`** These two new fields don't strictly belong to the Domain, as they don't refer to Infrastructure details. Rather, they're a necessity due to the lack of embeddable support in Doctrine. There are alternatives that can push these two attributes outside the pure Domain; however, this approach is simpler, easier, and, as a tradeoff, acceptable. There's another use of surrogate attributes in this book; you can find it in  the sub-section _Surrogate Identity_ of the section _Identity Operation_ of [Chapter 4](../chapters/04%20Entities.md)_, Entities_.
 
 If we wanted to push these two attributes outside of the Domain, this could be achieved through the use of an [Abstract Factory](http://en.wikipedia.org/wiki/Abstract_factory_pattern). First, we need to create a new Entity, `DoctrineProduct`, in our Infrastructure folder. This Entity will extend from `Product` Entity. All surrogate fields will be placed in the new class, and methods such as price or `setPrice` should be reimplemented. We'll map Doctrine to use the new `DoctrineProduct` as opposed to the `Product` Entity.
 
@@ -1057,9 +1049,8 @@ Now we need to specify in the mapping that we want to use our Custom Type:
 </doctrine-mapping>
 ```
 
-### Note
-
-**`Why Use XML Mapping?`** Thanks to the XSD schema validation in the headers of the XML mapping file, many **Integrated Development Environment** (**IDEs**) setups provide auto-complete functionality for all the elements and attributes present in the mapping definition. However, in other parts of the book, we use YAML to show a different syntax.
+> ### Note
+> **`Why Use XML Mapping?`** Thanks to the XSD schema validation in the headers of the XML mapping file, many **Integrated Development Environment** (**IDEs**) setups provide auto-complete functionality for all the elements and attributes present in the mapping definition. However, in other parts of the book, we use YAML to show a different syntax.
 
 Let's check the database to see how the price was persisted using this approach:
 
@@ -1074,9 +1065,8 @@ price: 999|USD
 
 This approach is an improvement on the one before in terms of future refactoring. However, searching capabilities remain limited due to the format of the column. With the Doctrine Custom types, you can improve the situation a little, but it's still not the best option for building your DQL queries. See [Doctrine Custom Mapping Types](http://doctrine-orm.readthedocs.org/en/latest/cookbook/custom-mapping-types.html) for more information.
 
-### Note
-
-**`Time to Discuss`** Think about and discuss with a peer how would you create a Doctrine Custom Type using JMS to `serialize` and `unserialize` a Value Object.
+> ### Note
+> **`Time to Discuss`** Think about and discuss with a peer how would you create a Doctrine Custom Type using JMS to `serialize` and `unserialize` a Value Object.
 
 #### Persisting a Collection of Value Objects
 
@@ -1120,9 +1110,8 @@ As in the previous sections, serialization is a plausible approach if you don't 
 
 Serializing a collection of Value Objects into a single column is most likely the easiest solution. Everything that was previously explained in the section about persisting a single Value Object applies in this situation. With Doctrine, you can use an Object or Custom Type — with some additional considerations to bear in mind: Value Objects should be small in size, but if you wish to persist a large collection, be sure to consider the maximum column length and the maximum row width that your database engine can handle.
 
-### Note
-
-**`Exercise`** Come up with both `Doctrine` Object Type and `Doctrine Custom` Type implementation strategies for persisting a Product with different prices.
+> ### Note
+> **`Exercise`** Come up with both `Doctrine` Object Type and `Doctrine Custom` Type implementation strategies for persisting a Product with different prices.
 
 #### Collection Backed by a Join Table
 
@@ -1324,17 +1313,15 @@ Using Doctrine, the `HistoricalProduct` Entity would have following mapping:
 
 It's possible to do the same with an Ad hoc ORM, where Cascade `INSERTS` and `JOIN` queries are required. It's important to be careful about how the removal of Value Objects is handled, in order to not leave orphan  the `Money` Value Objects.
 
-### Note
-
-**`Exercise`** Think up a solution for `DbalHistoricalRepository` that would handle the persist method.
+> ### Note
+> **`Exercise`** Think up a solution for `DbalHistoricalRepository` that would handle the persist method.
 
 #### Collection Backed by a Database Entity
 
 Database Entity is the same solution as Join Table, with the addition of the Value Object that's only managed by the owner Entity. In the current scenario, consider that the `Money` Value Object is only used by the `HistoricalProduct` Entity; a Join Table would be overly complex. So the same result could be achieved using a one-to-many database relation.
 
-### Note
-
-**`Exercise`** Think of the mapping required between `HistoricalProduct` and `Money` if a Database Entity approach is used.
+> ### Note
+> **`Exercise`** Think of the mapping required between `HistoricalProduct` and `Money` if a Database Entity approach is used.
 
 ### NoSQL
 
