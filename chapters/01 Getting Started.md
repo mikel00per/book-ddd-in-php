@@ -3,9 +3,8 @@ Chapter 1. Getting Started with Domain-Driven Design
 
 So what is all the fuss about? If you've already read books on this topic by Vaughn Vernon and Eric Evans, you're probably familiar with what we're about to say, as we borrow heavily from their definitions and explanations. **Domain-Driven Design** (**DDD**), is an approach that helps us succeed in understanding and building software model designs. It provides us with _strategic_ and _tactical_ modeling tools to aid designing high-quality software that meets our business goals.
 
-### Note
-
-The main goal of this book is to show you PHP code examples of the Domain-Driven Design tactical patterns. If you want to learn more about the strategic patterns and the main Domain-Driven Design, you should read [Domain Driven Design Distilled](https://www.amazon.com/Domain-Driven-Design-Distilled-Vaughn-Vernon/dp/0134434420) by _Vaughn Vernon_ or [Domain-Driven Design Reference: Definitions and Pattern Summaries](https://www.amazon.com/Domain-Driven-Design-Reference-Definitions-Summaries/dp/1457501198) by _Eric Evans_.
+> ### Note
+> The main goal of this book is to show you PHP code examples of the Domain-Driven Design tactical patterns. If you want to learn more about the strategic patterns and the main Domain-Driven Design, you should read [Domain Driven Design Distilled](https://www.amazon.com/Domain-Driven-Design-Distilled-Vaughn-Vernon/dp/0134434420) by _Vaughn Vernon_ or [Domain-Driven Design Reference: Definitions and Pattern Summaries](https://www.amazon.com/Domain-Driven-Design-Reference-Definitions-Summaries/dp/1457501198) by _Eric Evans_.
 
 More importantly, _Domain-Driven Design is not about technology_. Instead, it's about developing knowledge around business and using technology to provide value. Only once you're capable of understanding the business your company works within will you be able to participate in the software model discovery process to produce a Ubiquitous Language.
 
@@ -35,16 +34,15 @@ Domain-Driven Design is an approach for delivering software, and it's focused on
 
 Along with  [Chapter 12](../chapters/12%20Integrating%20Bounded%20Contexts.md), _Integrating_ _Bounded Contexts_, Ubiquitous Language is one of the main strengths of Domain-Driven Design.
 
-### Note
-
-**`In Terms of Context`** For now, consider that a Bounded Context is a conceptual boundary around a system. The Ubiquitous Language inside a boundary has a specific contextual meaning. Concepts outside of this context can have different meanings.
+> ### Note
+> **`In Terms of Context`** For now, consider that a Bounded Context is a conceptual boundary around a system. The Ubiquitous Language inside a boundary has a specific contextual meaning. Concepts outside of this context can have different meanings.
 
 So, how to find, explore and capture this very special language, the following pointers would highlight the same:
 
-*   Identify key business processes, their inputs, and their outputs
-*   Create a glossary of terms and definitions
-*   Capture important software concepts with some kind of documentation
-*   Share and expand upon the collected knowledge with the rest of the team (Developers and Domain Experts)
+> *   Identify key business processes, their inputs, and their outputs
+> *   Create a glossary of terms and definitions
+> *   Capture important software concepts with some kind of documentation
+> *   Share and expand upon the collected knowledge with the rest of the team (Developers and Domain Experts)
 
 Since Domain-Driven Design was born, new techniques for improving the process of building the Ubiquitous Language have emerged. The most important one, which is used regularly now, is Event Storming.
 
@@ -52,11 +50,11 @@ Since Domain-Driven Design was born, new techniques for improving the process of
 
 Alberto Brandolini explains Event Storming and its advantages in a [blog post](http://ziobrando.blogspot.com.es/2013/11/introducing-event-storming.html), and he does it far more succinctly than we could.Event Storming is a workshop format for quickly exploring complex business domains:
 
-*   It is **powerful**: It has allowed me and many practitioners to come up with a comprehensive model of a complete business flow in hours instead of weeks.
-*   It is **engaging**: The whole idea is to bring people with the questions and people who know the answer in the same room and to build a model together.
-*   It is **efficient**: The resulting model is perfectly aligned with a Domain-Driven Design implementation style (particularly fitting an Event Sourcing approach), and allows for a quick determination of Context and Aggregate boundaries.
-*   It is **easy**: The notation is ultra-simple. No complex UML that might cut off participants from the heart of the discussion.
-*   It is **fun**: I always had a great time leading the workshops, people are energized and deliver more than they expected. The right questions arise, and the atmosphere is the right one.
+> *   It is **powerful**: It has allowed me and many practitioners to come up with a comprehensive model of a complete business flow in hours instead of weeks.
+> *   It is **engaging**: The whole idea is to bring people with the questions and people who know the answer in the same room and to build a model together.
+> *   It is **efficient**: The resulting model is perfectly aligned with a Domain-Driven Design implementation style (particularly fitting an Event Sourcing approach), and allows for a quick determination of Context and Aggregate boundaries.
+> *   It is **easy**: The notation is ultra-simple. No complex UML that might cut off participants from the heart of the discussion.
+> *   It is **fun**: I always had a great time leading the workshops, people are energized and deliver more than they expected. The right questions arise, and the atmosphere is the right one.
 
 If you want to know more about Event Storming, check out Brandolini's book, [Introducing EventStorming](https://leanpub.com/introducing_eventstorming).
 
@@ -134,9 +132,8 @@ Each SCS must include data and logic. To really implement any meaningful feature
 
 An SCS should make its features usable to end-users by its own UI. Therefore the SCS should have no shared UI with other SCSs. SCSs might still have links to each other. However, asynchronous integration means that the SCS should still work even if the UI of another SCS is not available. To avoid tight coupling an SCS should share no business code with other SCSs. It might be fine to create a pull-request for an SCS or use common libraries, example: database drivers or oAuth clients.
 
-### Note
-
-**`Exercise`** Discuss the pros and cons of such distributed architectures with your workmates. Think about using different languages, deployment processes, infrastructure responsibilities, and so on.
+> ### Note
+> **`Exercise`**: Discuss the pros and cons of such distributed architectures with your workmates. Think about using different languages, deployment processes, infrastructure responsibilities, and so on.
 
 
 Wrap-Up
