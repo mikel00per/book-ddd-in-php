@@ -3,8 +3,6 @@ Chapter 4. Entities
 
 We've talked about the benefits of trying to first model everything in the Domain as a Value Object. But when modeling the Domain, there will probably be situations where you'll find that some concept in the Ubiquitous Language demands a thread of Identity.
 
-
-
 Introduction
 ------------
 
@@ -12,8 +10,8 @@ Introduction
 
 Clear examples of objects requiring an Identity include:
 
-*   A **person**. A person always has an Identity and it's always the same in terms of their name or identification card.
-*   An **order** in an e-commerce system. In such a context, every new order created has its own Identity and it's the same over time.
+> *   A **person**. A person always has an Identity and it's always the same in terms of their name or identification card.
+> *   An **order** in an e-commerce system. In such a context, every new order created has its own Identity and it's the same over time.
 
 These concepts have an Identity that endures over time. No matter how many times data in the concepts changes, their Identities remain the same. That's what makes them Entities and not Value Objects. In terms of PHP implementation, they would be plain old classes. For example, consider the following in the case of a person:
 
@@ -95,8 +93,8 @@ Objects Vs. Primitive Types
 
 Most of the time, the Identity of an Entity is represented as a primitive type — usually a string or an integer. But using a Value Object to represent it has more advantages:
 
-*   Value Objects are immutable, so they can't be modified.
-*   Value Objects are complex types that can have custom behaviors, something which primitive types can't have. Take, as an example, **the equality operation**. With Value Objects, equality operations can be modeled and encapsulated in their own classes, making concepts go from implicit to explicit.
+> *   Value Objects are immutable, so they can't be modified.
+> *   Value Objects are complex types that can have custom behaviors, something which primitive types can't have. Take, as an example, **the equality operation**. With Value Objects, equality operations can be modeled and encapsulated in their own classes, making concepts go from implicit to explicit.
 
 Let's see a possible implementation for `OrderId`, the `Order` Identity that has evolved into a Value Object:
 
@@ -272,9 +270,9 @@ Every project always faces the decision of which ORM should be used. There are a
 
 Most of them are [Active Record](http://www.martinfowler.com/eaaCatalog/activeRecord.html) implementations. An Active Record implementation is fine mostly for CRUD applications, but it's not the ideal solution for Rich Domain Models for the following reasons:
 
-*   The Active Record pattern assumes a one-to-one relation between an Entity and a database table. So it couples the design of the database to the design of the object system**.** And in a Rich Domain Model, sometimes Entities are constructed with information that may come from different data sources.
-*   Advanced things like collections and inheritance are tricky to implement.
-*   Most of the implementations force the use, through inheritance, of some sort of constructions that impose several conventions. This can lead to persistence leakage into the Domain Model by coupling the Domain Model with the ORM. The only Active Record implementation we've seen that doesn't impose inheriting from a base class is `[Castle ActiveRecord](http://docs.castleproject.org/Active%20Record.MainPage.ashx)` from  `[Castle Project](http://www.castleproject.org/)`, a .NET framework. While this leads to some degree of separation between persistence and Domain concerns in the produced Entities, it doesn't decouple the low-level persistence details from high-level Domain design.
+> *   The Active Record pattern assumes a one-to-one relation between an Entity and a database table. So it couples the design of the database to the design of the object system**.** And in a Rich Domain Model, sometimes Entities are constructed with information that may come from different data sources.
+> *   Advanced things like collections and inheritance are tricky to implement.
+> *   Most of the implementations force the use, through inheritance, of some sort of constructions that impose several conventions. This can lead to persistence leakage into the Domain Model by coupling the Domain Model with the ORM. The only Active Record implementation we've seen that doesn't impose inheriting from a base class is [Castle ActiveRecord](http://docs.castleproject.org/Active%20Record.MainPage.ashx) from  [Castle Project](http://www.castleproject.org/), a .NET framework. While this leads to some degree of separation between persistence and Domain concerns in the produced Entities, it doesn't decouple the low-level persistence details from high-level Domain design.
 
 As mentioned in the previous chapter, currently the best ORM for PHP is [Doctrine](http://doctrine-project.org) , which is an implementation of the [Data Mapper pattern](http://www.martinfowler.com/eaaCatalog/dataMapper.html). Data Mapper decouples persistence concerns from Domain concerns, leading to persistence-free Entities. This makes the tool the best for someone wanting to build a Rich Domain Model.
 
@@ -335,9 +333,8 @@ Now, it's just a matter of using it:
          'Domain-Driven Design in PHP'
      ); 
 
-### Note
-
-**`Exercise`** Think about other Domains where Identities are built in and model one.
+> ### Note
+> **`Exercise`** Think about other Domains where Identities are built in and model one.
 
 ### Application Generates Identity
 
@@ -347,9 +344,8 @@ According to [Wikipedia](https://en.wikipedia.org/wiki/Universally_unique_identi
 
 The intent of UUIDs is to enable distributed systems to uniquely identify information without significant central coordination. In this context the word unique should be taken to mean _practically unique_ rather than _guaranteed unique_. Since the identifiers have a finite size, it is possible for two differing items to share the same identifier. This is a form of hash collision. The identifier size and generation process need to be selected so as to make this sufficiently improbable in practice. Anyone can create a UUID and use it to identify something with reasonable confidence that the same identifier will never be unintentionally created by anyone to identify something else. Information labeled with  UUIDs can therefore be later combined into a single database without needing to resolve identifier (ID) conflicts.
 
-### Note
-
-There are several libraries in PHP that generate UUIDs, and they can be found at Packagist: [https://packagist.org/search/?q=uuid](https://packagist.org/search/?q=uuid). The best recommendation is the one developed by Ben Ramsey at the following  link: [https://github.com/ramsey/uuid](https://github.com/ramsey/uuid) because it has tons of watchers on GitHub and millions of installations on Packagist.
+> ### Note
+> There are several libraries in PHP that generate UUIDs, and they can be found at Packagist: [https://packagist.org/search/?q=uuid](https://packagist.org/search/?q=uuid). The best recommendation is the one developed by Ben Ramsey at the following  link: [https://github.com/ramsey/uuid](https://github.com/ramsey/uuid) because it has tons of watchers on GitHub and millions of installations on Packagist.
 
 The preferred place to put the creation of the Identity would be inside a Repository (we'll go deeper into this in the [Chapter 10](../chapters/10%20Repositories.md), _Repositories_:
 
@@ -426,7 +422,6 @@ The other Bounded Context provides an interface to select the Identity from the 
 When synchronization is needed between the Entities of the Bounded Contexts, it can usually be achieved with an Event-Driven Architecture on each of the Bounded Contexts that need to be notified when the original Entity is changed.
 
 
-
 Persisting Entities
 -------------------
 
@@ -472,9 +467,8 @@ To do so, we'll bring back the `Order` class discussed earlier in this chapter.
 
 When Doctrine was released, a catchy way of showing how to map objects in the code examples was by using annotations.
 
-### Note
-
-**`What's an annotation?`** An annotation is a special form of metadata. In PHP, it's put under source code comments. For example, _PHPDocumentor_ makes use of annotations to build API information, and `PHPUnit` uses some annotations to specify data providers or to provide expectations about exceptions thrown by a piece of code:
+> ### Note
+> *`What's an annotation?`** An annotation is a special form of metadata. In PHP, it's put under source code comments. For example, _PHPDocumentor_ makes use of annotations to build API information, and `PHPUnit` uses some annotations to specify data providers or to provide expectations about exceptions thrown by a piece of code:
 
 `class SumTest extends PHPUnit_Framework_TestCase {`    `/** @dataProvider aMethodName */`    `public function testAddition() {`        `//...`     `}` `}`
 
@@ -1120,12 +1114,10 @@ You can also use reflection techniques for building a new `Post` class with cust
         ]
     )
 
-### Note
-
-**`Share and Discuss`** Discuss with your workmates how to properly unit test your Entities with fixed `DateTimes` and come up with additional alternatives.
+> ### Note
+> **`Share and Discuss`** Discuss with your workmates how to properly unit test your Entities with fixed `DateTimes` and come up with additional alternatives.
 
 If you want to know more about testing patterns and approaches, take a look at the book _xUnit Test Patterns: Refactoring Test Code_ by Gerard Meszaros.
-
 
 
 Validation
@@ -1371,7 +1363,6 @@ We also need to change the signature of the validation method to the following:
 ### Validating Object Compositions
 
 Validating object compositions can be complicated. As such, the preferred way of achieving this is through a Domain Service. The service then communicates with Repositories in order to retrieve the valid Aggregate. Due to the likely complex object graphs that can be created, an Aggregate could be in an intermediate state, requiring other Aggregates to be validated beforehand. We can use Domain Events to notify other parts of the system that a particular element has been validated.
-
 
 
 Entities and Domain Events
