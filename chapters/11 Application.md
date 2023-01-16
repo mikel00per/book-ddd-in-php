@@ -33,29 +33,31 @@ Application Service method signatures use only primitive types (`int`, `strings`
 
 The implementation for a DTO that holds the data required for the Application Service could be something like this:
 
-    namespace Lw\Application\Service\User;
-    
-    class SignUpUserRequest
+```php
+namespace Lw\Application\Service\User;
+
+class SignUpUserRequest
+{
+    private $email;
+    private $password;
+
+    public function __construct($email, $password)
     {
-        private $email;
-        private $password;
-    
-        public function __construct($email, $password)
-        {
-            $this->email = $email;
-            $this->password = $password;
-        }
-    
-        public function email()
-        {
-            return $this->email;
-        }
-    
-        public function password()
-        {
-            return $this->password;
-        }
+        $this->email = $email;
+        $this->password = $password;
     }
+
+    public function email()
+    {
+        return $this->email;
+    }
+
+    public function password()
+    {
+        return $this->password;
+    }
+}
+```
 
 As you see, `SignUpUserRequest` has no behavior, only data. This could have come from an HTML form or an API endpoint, though we don't care which.
 
@@ -65,68 +67,72 @@ Creating a request from the delivery mechanism, your favorite framework, should 
 
 With Symfony, we can extract the data we need from Request object from the `HttpFoundation` component:
 
-    // ...
-    class UsersController extends Controller
+```php
+// ...
+class UsersController extends Controller
+{
+    /**
+     * @Route('/signup', name = 'signup')
+     * @param Request $request
+     * @return Response
+     */
+    public function signUpAction(Request $request)
     {
-        /**
-         * @Route('/signup', name = 'signup')
-         * @param Request $request
-         * @return Response
-         */
-        public function signUpAction(Request $request)
-        {
-            // ...
-            $signUpUserRequest = new SignUpUserRequest(
-                $request->get('email'),
-                $request->get('password')
-            );
-            // ...
-        }
-    // ...
+        // ...
+        $signUpUserRequest = new SignUpUserRequest(
+            $request->get('email'),
+            $request->get('password')
+        );
+        // ...
+    }
+// ...
+```
 
 On a more elaborate Silex application that uses the `Form` component to capture and validate parameters, it would look like this:
 
-    // ...
-    $app->match('/signup', function (Request $request) use ($app) {
-        $form = $app['sign_up_form'];
-        $form->handleRequest($request);
-    
-        if ($form->isValid()) {
-            $data = $form->getData();
-    
-            try {
-                $app['sign_in_user_application_service']->execute(
-                    new SignUpUserRequest(
-                         $data['email'],
-                         $data['password']
+```php
+// ...
+$app->match('/signup', function (Request $request) use ($app) {
+    $form = $app['sign_up_form'];
+    $form->handleRequest($request);
+
+    if ($form->isValid()) {
+        $data = $form->getData();
+
+        try {
+            $app['sign_in_user_application_service']->execute(
+                new SignUpUserRequest(
+                     $data['email'],
+                     $data['password']
+                )
+            );
+
+            return $app->redirect(
+                $app['url_generator']->generate('login')
+            );
+        } catch (UserAlreadyExistsException $e) {
+            $form
+                ->get('email')
+                ->addError(
+                    new FormError(
+                        'Email is already registered by another user'
                     )
                 );
-    
-                return $app->redirect(
-                    $app['url_generator']->generate('login')
+        } catch (Exception $e) {
+            $form
+                ->addError(
+                    new FormError(
+                      'There was an error, please get in touch with us'
+                    )
                 );
-            } catch (UserAlreadyExistsException $e) {
-                $form
-                    ->get('email')
-                    ->addError(
-                        new FormError(
-                            'Email is already registered by another user'
-                        )
-                    );
-            } catch (Exception $e) {
-                $form
-                    ->addError(
-                        new FormError(
-                          'There was an error, please get in touch with us'
-                        )
-                    );
-            }
         }
-    
-        return $app['twig']->render('signup.html.twig', [
-            'form' => $form->createView(),
-        ]);
-    });
+    }
+
+    return $app['twig']->render('signup.html.twig', [
+        'form' => $form->createView(),
+    ]);
+});
+```
 
 ### Request Design
 
@@ -162,41 +168,43 @@ Once we have the data encapsulated in a request, it's time for the business logi
 
 The first thing to do is to extract the necessary information from the request, That is, the `email` and `password`. At a high level, we need to check if there's an existing user with a particular email. If this isn't the case, then we create and add the user to the `UserRepository`. In the special case of finding a user with the same email, we raise an exception so the client can treat it their own way — by displaying an error, retrying, or just ignoring it:
 
-    namespace Lw\Application\Service\User;
-    
-    use Ddd\Application\Service\ApplicationService;
-    use Lw\Domain\Model\User\User;
-    use Lw\Domain\Model\User\UserAlreadyExistsException;
-    use Lw\Domain\Model\User\UserRepository;
-    
-    class SignUpUserService
+```php
+namespace Lw\Application\Service\User;
+
+use Ddd\Application\Service\ApplicationService;
+use Lw\Domain\Model\User\User;
+use Lw\Domain\Model\User\UserAlreadyExistsException;
+use Lw\Domain\Model\User\UserRepository;
+
+class SignUpUserService
+{
+    private $userRepository;
+
+    public function __construct(UserRepository $userRepository) 
     {
-        private $userRepository;
-    
-        public function __construct(UserRepository $userRepository) 
-        {
-            $this->userRepository = $userRepository;
-        }
-    
-        public function execute(SignUpUserRequest $request)
-        {
-            $email = $request->email();
-            $password = $request->password();
-    
-            $user = $this->userRepository->ofEmail($email);
-            if ($user) {
-                throw new UserAlreadyExistsException();
-            }
-    
-            $this->userRepository->add(
-                new User(
-                    $this->userRepository->nextIdentity(),
-                    $email ,
-                    $password
-                )
-            );
-        }
+        $this->userRepository = $userRepository;
     }
+
+    public function execute(SignUpUserRequest $request)
+    {
+        $email = $request->email();
+        $password = $request->password();
+
+        $user = $this->userRepository->ofEmail($email);
+        if ($user) {
+            throw new UserAlreadyExistsException();
+        }
+
+        $this->userRepository->add(
+            new User(
+                $this->userRepository->nextIdentity(),
+                $email ,
+                $password
+            )
+        );
+    }
+}
+```
 
 Nice! If you're wondering what this `UserRepository` thing is doing in the constructor, we'll show you that next.
 
@@ -217,18 +225,20 @@ Depending on abstractions, we'll make our Application Service immune to low-leve
 
 Instantiating just your Application Service is easy, but building the dependency tree might be tricky, depending on how complicated the dependencies are to build. For such a purpose, most frameworks come with a Dependency Injection Container. Without one, you'll end up with something like the following code somewhere in your controller:
 
-    $redisClient = new Predis\Client([
-        'scheme' => 'tcp',
-        'host' => '10.0.0.1',
-        'port' => 6379
-    ]);
-    
-    $userRepository = new RedisUserRepository($redisClient);
-    $signUp = new SignUpUserService($userRepository);
-    $signUp->execute(new SignUpUserRequest(
-        'user@example.com',
-        'password'
-    ));
+```php
+$redisClient = new Predis\Client([
+    'scheme' => 'tcp',
+    'host' => '10.0.0.1',
+    'port' => 6379
+]);
+
+$userRepository = new RedisUserRepository($redisClient);
+$signUp = new SignUpUserService($userRepository);
+$signUp->execute(new SignUpUserRequest(
+    'user@example.com',
+    'password'
+));
+```
 
 We decided to use the [Redis](http://redis.io/) implementation for the `UserRepository`. In the previous code example, we built all dependencies needed for building a Repository that uses Redis internally. Those dependencies are: a [Predis](https://github.com/nrk/predis) client, and all parameters to connect to our Redis server. This is not only inefficient, but it also spreads duplication across controllers.
 
@@ -242,68 +252,72 @@ You could refactor the construction logic into a Factory, or you could use a Dep
 
 Let's see how would we build dependencies in Silex:
 
-    $app = new \Silex\Application();
-    $app['redis_parameters'] = [
-         'scheme' => 'tcp',
-         'host' => '127.0.0.1',
-         'port' => 6379
-    ];
-    
-    $app['redis'] = $app->share(function ($app) {
-        return new Predis\Client($app['redis_parameters']);
-    });
-    
-    $app['user_repository'] = $app->share(function($app) {
-        return new RedisUserRepository(
-            $app['redis']
-        );
-    });
-    
-    $app['sign_up_user_application_service'] = $app->share(function($app) {
-        return new SignUpUserService(
-            $app['user_repository']
-        );
-    });
-    
+```php
+$app = new \Silex\Application();
+$app['redis_parameters'] = [
+     'scheme' => 'tcp',
+     'host' => '127.0.0.1',
+     'port' => 6379
+];
+
+$app['redis'] = $app->share(function ($app) {
+    return new Predis\Client($app['redis_parameters']);
+});
+
+$app['user_repository'] = $app->share(function($app) {
+    return new RedisUserRepository(
+        $app['redis']
+    );
+});
+
+$app['sign_up_user_application_service'] = $app->share(function($app) {
+    return new SignUpUserService(
+        $app['user_repository']
+    );
+});
+
+// ...
+
+$app->match('/signup' ,function (Request $request) use ($app) {
     // ...
-    
-    $app->match('/signup' ,function (Request $request) use ($app) {
-        // ...
-        $app['sign_up_user_application_service']->execute(
-            new SignUpUserRequest(
-                $request->get('email'),
-                $request->get('password')
-            )
-        );
-        // ...
-    });
+    $app['sign_up_user_application_service']->execute(
+        new SignUpUserRequest(
+            $request->get('email'),
+            $request->get('password')
+        )
+    );
+    // ...
+});
+```
 
 As you can see, `$app` is used as the Service Container. We register all the components needed, along with their dependencies. `sign_up_user_application_service` depends on the definitions made above. Changing the implementation for the `user_repository` is as easy as returning something else (MySQL, MongoDB, and so on.), so we don't need to change the Service code at all.
 
 The equivalent for a Symfony application looks like this:
 
-    <?xml version=" 1.0" ?>
-    <container xmlns="http://symfony.com/schema/dic/services"
-        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-        xsi:schemaLocation="
-            http://symfony.com/schema/dic/services
-            http://symfony.com/schema/dic/services/services-1.0.xsd">
-        <services>
-            <service
-                id="sign_up_user_application_service"
-                class="SignUpUserService">
-                <argument type="service" id="user_repository" />
-            </service>
-    
-            <service
-                id="user_repository"
-                class="RedisUserRepository">
-                <argument type="service">
-                    <service class="Predis\Client" />
-                </argument>
-            </service>
-        </services> 
-    </container>
+```xml
+<?xml version=" 1.0" ?>
+<container xmlns="http://symfony.com/schema/dic/services"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="
+        http://symfony.com/schema/dic/services
+        http://symfony.com/schema/dic/services/services-1.0.xsd">
+    <services>
+        <service
+            id="sign_up_user_application_service"
+            class="SignUpUserService">
+            <argument type="service" id="user_repository" />
+        </service>
+
+        <service
+            id="user_repository"
+            class="RedisUserRepository">
+            <argument type="service">
+                <service class="Predis\Client" />
+            </argument>
+        </service>
+    </services> 
+</container>
+```
 
 Now that you have the definition of your Application Service in the Symfony Service Container, getting it later is pretty straightforward. All delivery mechanisms — Web Controllers, REST Controllers, and even Console Commands — share the same definition. The Service is available on any class implementing the `ContainerAware` interface. Getting the Service is as easy as calling `$this->get('sign_up_user_application_service'`.
 
@@ -321,14 +335,16 @@ There are two different approaches for invoking Application Services: a dedicate
 
 This is our preferred approach, and probably the one that fits all scenarios:
 
-    class SignUpUserService 
-    { 
-        // ...
-        public function execute(SignUpUserRequest $request)
-        {
-           // ...
-        }
+```php
+class SignUpUserService 
+{ 
+    // ...
+    public function execute(SignUpUserRequest $request)
+    {
+       // ...
     }
+}
+```
 
 Using a dedicated class per Application Service makes the code more robust against external changes (Single Responsibility Principle). There are fewer reasons to change the class, as the Service does one and only one thing. The Application Service will be easier to test, seeing as it does less things. It's easier to implement a common Application Service contract, making class decoration easier (check out Sub section _Transactions_ of [Chapter 10](../chapters/10%20Repositories.md),  _Repositories_ ). This will also result in higher cohesion, as all dependencies are exclusively dedicated to a single use case.
 
@@ -338,24 +354,26 @@ The `execution` method could have a more expressive name, like `signUp`. However
 
 Sometimes it might be a good idea to group cohesive Application Services under the same class:
 
-    class UserService
+```php
+class UserService
+{
+    // ...
+    public function signUp(SignUpUserRequest $request)
     {
         // ...
-        public function signUp(SignUpUserRequest $request)
-        {
-            // ...
-        }
-    
-        public function signIn(SignUpUserRequest $request)
-        {
-            // ...
-        }
-    
-        public function logOut(LogOutUserRequest $request)
-        {
-            // ...
-        }
     }
+
+    public function signIn(SignUpUserRequest $request)
+    {
+        // ...
+    }
+
+    public function logOut(LogOutUserRequest $request)
+    {
+        // ...
+    }
+}
+```
 
 We don't recommend such an approach, as not all Application Services are 100 percent cohesive. Some Services will require different dependencies, and you'll end up with Application Services depending on things they don't need. Another issue is that this kind of class grows fast. As it violates the Single Responsibility Principle, there will be multiple reasons to change and maybe even break it.
 
@@ -363,38 +381,42 @@ We don't recommend such an approach, as not all Application Services are 100 per
 
 After signing up, we might be thinking about redirecting the user to a profile page. The natural way of passing the required information back to the controller is to return the User Entity directly from the Service:
 
-    class SignUpUserService
+```php
+class SignUpUserService
+{
+    // ...
+
+    public function execute(SignUpUserRequest $request)
     {
-        // ...
-    
-        public function execute(SignUpUserRequest $request)
-        {
-            $user = new User(
-                $this->userRepository->nextIdentity(),
-                $email,
-                $password
-            );
-    
-            $this->userRepository->add($user);
-    
-            return $user;
-        }
+        $user = new User(
+            $this->userRepository->nextIdentity(),
+            $email,
+            $password
+        );
+
+        $this->userRepository->add($user);
+
+        return $user;
     }
+}
+```
 
 Then, from the controller, we would pick up the `id` field and redirect to some other place. However, think twice about what we've just done. We returned a full-featured Entity to the controller, which will allow the delivery mechanism to bypass the Application Layer and interact directly with the Domain.
 
 Imagine the `User` Entity offers an `updateEmailAddress` method. You could try to prevent it, but at some point in the future, somebody might think about using it:
 
-    $app-> match( '/signup' , function (Request $request) use ($app) {
-       // ...
-       $user = $app['sign_up_user_application_service']->execute(
-           new SignUpUserRequest(
-               $request->get('email'),
-               $request->get('password'))
-       );
-       $user->updateEmailAddress('shouldnotupdate@email.com');
-       // ...
-    });
+```php
+$app-> match( '/signup' , function (Request $request) use ($app) {
+   // ...
+   $user = $app['sign_up_user_application_service']->execute(
+       new SignUpUserRequest(
+           $request->get('email'),
+           $request->get('password'))
+   );
+   $user->updateEmailAddress('shouldnotupdate@email.com');
+   // ...
+});
+```
 
 Not only that, but the data that the presentation layer needs is not the same that the Domain manages. We don't want to evolve and couple the Domain layer around the presentation layer. Instead, we want them to evolve freely.
 
@@ -404,76 +426,84 @@ To do this, we need a flexible way of decoupling both layers.
 
 We could return sterile data structures with the information the presentation layer needs. As we've seen before, DTOs fit with this scenario. We just need to compose them in the Application Service and return them to the client:
 
-    class UserDTO
+```php
+class UserDTO
+{
+    private $email ;
+    // ...
+
+    public function __construct(User $user)
     {
-        private $email ;
+        $this->email = $user->email ();
         // ...
-    
-        public function __construct(User $user)
-        {
-            $this->email = $user->email ();
-            // ...
-        }
-    
-        public function email ()
-        {
-            return $this->email ;
-        }
     }
+
+    public function email ()
+    {
+        return $this->email ;
+    }
+}
+```
 
 The `UserDTO` will expose whatever read-only data we need from the `User` Entity on the presentation layer, thereby avoiding exposing behavior:
 
-    class SignUpUserService
+```php
+class SignUpUserService
+{
+    public function execute(SignUpUserRequest $request)
     {
-        public function execute(SignUpUserRequest $request)
-        {
-            // ...
-    
-            $user = // ...
-    
-            return new UserDTO($user);
-        }
+        // ...
+
+        $user = // ...
+
+        return new UserDTO($user);
     }
+}
+```
 
 Mission accomplished. Now we could pass parameters to the template engine and transform them into widgets, tags, or subtemplates, or do whatever we want with the data on the presentation side:
 
-    $app->match('/signup' , function (Request $request) use ($app) {
-        /**
-         * @var UserDTO $user
-         */
-        $userDto=$app['sign_up_user_application_service']->execute(
-            new SignUpUserRequest(
-                $request->get('email'),
-                $request->get('password')
-            )
-        );
-    
-        // ...
-    });
+```php
+$app->match('/signup' , function (Request $request) use ($app) {
+    /**
+     * @var UserDTO $user
+     */
+    $userDto=$app['sign_up_user_application_service']->execute(
+        new SignUpUserRequest(
+            $request->get('email'),
+            $request->get('password')
+        )
+    );
+
+    // ...
+});
+```
 
 However, letting the Application Service decide how to build the DTO reveals another limitation. As building the DTO depends exclusively on the Application Service, adapting the DTO to different clients will be very difficult. Consider the data needed for a redirect on a Web Controller and the data needed for a REST response for the same use case. Not the same data at all.
 
 Let's allow the client to define how to build the DTO by passing a specific DTO Assembler:
 
-    class SignUpUserService
-    {
-        private $userDtoAssembler;
-    
-        public function __construct(
-            UserRepository $userRepository,
-            UserDTOAssembler $userDtoAssembler
-        ) {
-            $this->userRepository = $userRepository;
-            $this->userDtoAssembler = $userDtoAssembler;
-        }
-    
-        public function execute(SignUpUserRequest $request)
-        {
-            $user = // ...
-    
-            return $this->userDtoAssembler->assemble($user);
-        }
+```php
+class SignUpUserService
+{
+    private $userDtoAssembler;
+
+    public function __construct(
+        UserRepository $userRepository,
+        UserDTOAssembler $userDtoAssembler
+    ) {
+        $this->userRepository = $userRepository;
+        $this->userDtoAssembler = $userDtoAssembler;
     }
+
+    public function execute(SignUpUserRequest $request)
+    {
+        $user = // ...
+
+        return $this->userDtoAssembler->assemble($user);
+    }
+}
+```
 
 Now the client can customize the response by passing a specific `UserDTOAssembler`.
 
@@ -483,15 +513,17 @@ There are some cases where generating intermediate DTOs for more complex respons
 
 Transformers help reduce this overhead by transforming high-level Domain concepts into low-level client details. Let's see an example:
 
-    interface UserDataTransformer
-    {
-        public function write(User $user);
-    
-        /**
-         * @return mixed
-         */
-        public function read();
-    }
+```php
+interface UserDataTransformer
+{
+    public function write(User $user);
+
+    /**
+     * @return mixed
+     */
+    public function read();
+}
+```
 
 Consider the case of generating different data representations for a given product. Usually, the product information is served through a web interface (HTML), but we might be interested in offering other formats, like XML, JSON, or CSV. This might enable integrations with other Services.
 
@@ -501,55 +533,59 @@ DTOs are a clean and simple solution that could be passed to template engines fo
 
 Data Transformers might be a better approach on specific cases. These are just black boxes with Domain concepts (Aggregates, Entities, and so on.) as inputs and read-only representations (XML, JSON, CSV, and so on.) as outputs. These transformers could be really easy to test:
 
-    class JsonUserDataTransformer implements UserDataTransformer
+```php
+class JsonUserDataTransformer implements UserDataTransformer
+{
+    private $data;
+
+    public function write(User $user)
     {
-        private $data;
-    
-        public function write(User $user)
-        {
-            // More complex logic could be placed here
-            // As using JMSSerializer, native json, etc.
-            $this->data = json_encode($user);
-        }
-    
-        /**
-         * @return string
-         */
-        public function read()
-        {
-            return $this->data;
-        }
+        // More complex logic could be placed here
+        // As using JMSSerializer, native json, etc.
+        $this->data = json_encode($user);
     }
+
+    /**
+     * @return string
+     */
+    public function read()
+    {
+        return $this->data;
+    }
+}
+```
 
 That was easy. Wondering how the XML or CSV one would look? Let's see how to integrate the Data Transformer with our Application Service:
 
-    class SignUpUserService
-    {
-        private $userRepository;
-        private $userDataTransformer;
-    
-        public function __construct(
-            UserRepository $userRepository,
-            UserDataTransformer $userDataTransformer
-        ) {
-            $this->userRepository = $userRepository;
-            $this->userDataTransformer = $userDataTransformer;
-        }
-    
-        public function execute(SignUpUserRequest $request)
-        {
-            $user = // ...
-            $this->userDataTransformer()->write($user);
-        }
-    
-        /**
-         * @return UserDataTransformer
-         */
-        public function userDataTransformer()
-        {
-            return $this->userDataTransformer;
-        } 
+```php
+class SignUpUserService
+{
+    private $userRepository;
+    private $userDataTransformer;
+
+    public function __construct(
+        UserRepository $userRepository,
+        UserDataTransformer $userDataTransformer
+    ) {
+        $this->userRepository = $userRepository;
+        $this->userDataTransformer = $userDataTransformer;
     }
+
+    public function execute(SignUpUserRequest $request)
+    {
+        $user = // ...
+        $this->userDataTransformer()->write($user);
+    }
+
+    /**
+     * @return UserDataTransformer
+     */
+    public function userDataTransformer()
+    {
+        return $this->userDataTransformer;
+    } 
+}
+```
 
 That's similar to the DTO Assembler approach, but this time without returning a concrete value. The Data Transformer is being used to hold and interact with the data.
 
@@ -595,113 +631,116 @@ Testing Application Services
 
 As you're interested in testing the behavior of the Application Service itself, there's no need to turn it into an integration test with complicated setups going against a real database. You're not interested in testing the low-level details, so most of the time, a unit test will be enough:
 
-    class SignUpUserServiceTest extends \PHPUnit_Framework_TestCase
+```php
+class SignUpUserServiceTest extends \PHPUnit_Framework_TestCase
+{
+    /**
+     * @var \Lw\Domain\Model\User\UserRepository
+     */
+    private $userRepository;
+
+    /**
+     * @var SignUpUserService
+     */
+    private $signUpUserService;
+
+    public function setUp()
     {
-        /**
-         * @var \Lw\Domain\Model\User\UserRepository
-         */
-        private $userRepository;
-    
-        /**
-         * @var SignUpUserService
-         */
-        private $signUpUserService;
-    
-        public function setUp()
-        {
-            $this->userRepository = new InMemoryUserRepository();
-            $this->signUpUserService = new SignUpUserService(
-                $this->userRepository
-            );
-        }
-    
-        /**
-         * @test
-         * @expectedException   
-         *     \Lw\Domain\Model\User\UserAlreadyExistsException
-         */
-        public function alreadyExistingEmailShouldThrowAnException()
-        {
-            $this->executeSignUp();
-            $this->executeSignUp();
-        }
-    
-        private function executeSignUp()
-        {
-            return $this->signUpUserService->execute(
-                new SignUpUserRequest(
-                    'user@example.com',
-                    'password'
-                )
-            );
-        }
-    
-        /**
-         * @test
-         */
-        public function afterUserSignUpItShouldBeInTheRepository()
-        {
-            $user = $this->executeSignUp();
-    
-            $this->assertSame(
-                $user,
-                $this->userRepository->ofId($user->id())
-            );
-        }
+        $this->userRepository = new InMemoryUserRepository();
+        $this->signUpUserService = new SignUpUserService(
+            $this->userRepository
+        );
     }
+
+    /**
+     * @test
+     * @expectedException   
+     *     \Lw\Domain\Model\User\UserAlreadyExistsException
+     */
+    public function alreadyExistingEmailShouldThrowAnException()
+    {
+        $this->executeSignUp();
+        $this->executeSignUp();
+    }
+
+    private function executeSignUp()
+    {
+        return $this->signUpUserService->execute(
+            new SignUpUserRequest(
+                'user@example.com',
+                'password'
+            )
+        );
+    }
+
+    /**
+     * @test
+     */
+    public function afterUserSignUpItShouldBeInTheRepository()
+    {
+        $user = $this->executeSignUp();
+
+        $this->assertSame(
+            $user,
+            $this->userRepository->ofId($user->id())
+        );
+    }
+}
+```
 
 We've used an in-memory implementation for the `User` Repository. This is what is called a Fake: a fully functional implementation for the Repository that will make our test work as a unit. We don't need to go to the database to test the behavior of this class. That would make our test slow and fragile.
 
 Checking for a Domain Events submission might be interesting too. If creating a user fires a user registered event, ensuring it's been triggered might be a good idea:
 
-    class SignUpUserServiceTest extends \PHPUnit_Framework_TestCase
+```php
+class SignUpUserServiceTest extends \PHPUnit_Framework_TestCase
+{
+    // ...
+
+    /**
+     * @test
+     */
+    public function itShouldPublishUserRegisteredEvent()
     {
-        // ...
-    
-        /**
-         * @test
-         */
-        public function itShouldPublishUserRegisteredEvent()
-        {
-            $subscriber = new SpySubscriber();
-            $id = DomainEventPublisher::instance()->subscribe($subscriber);
-    
-            $user = $this->executeSignUp();
-            $userId = $user->id();
-    
-            DomainEventPublisher::instance()->unsubscribe($id);
-            $this->assertUserRegisteredEventPublished(
-                $subscriber, $userId
-            );
-        }  
-    
-        private function assertUserRegisteredEventPublished(
+        $subscriber = new SpySubscriber();
+        $id = DomainEventPublisher::instance()->subscribe($subscriber);
+
+        $user = $this->executeSignUp();
+        $userId = $user->id();
+
+        DomainEventPublisher::instance()->unsubscribe($id);
+        $this->assertUserRegisteredEventPublished(
             $subscriber, $userId
-        ) {
-            $this->assertInstanceOf(
-                'UserRegistered', $subscriber->domainEvent
-            );
-            $this->assertTrue(
-                $subscriber->domainEvent->userId()->equals($userId)
-            );
-        }
+        );
+    }  
+
+    private function assertUserRegisteredEventPublished(
+        $subscriber, $userId
+    ) {
+        $this->assertInstanceOf(
+            'UserRegistered', $subscriber->domainEvent
+        );
+        $this->assertTrue(
+            $subscriber->domainEvent->userId()->equals($userId)
+        );
     }
-    
-    class SpySubscriber implements DomainEventSubscriber
+}
+
+class SpySubscriber implements DomainEventSubscriber
+{
+    public $domainEvent;
+
+    public function handle($aDomainEvent)
     {
-        public $domainEvent;
-    
-        public function handle($aDomainEvent)
-        {
-            $this->domainEvent = $aDomainEvent;
-        }
-    
-        public function isSubscribedTo($aDomainEvent)
-        {
-            return true;
-        }
+        $this->domainEvent = $aDomainEvent;
     }
 
+    public function isSubscribedTo($aDomainEvent)
+    {
+        return true;
+    }
+}
+```
 
 
 Transactions
@@ -715,75 +754,83 @@ The best way of handling transactions is to not handle them at all. We could wra
 
 We've implemented a solution to this problem in one of our repositories, and you can check it out [here](https://github.com/dddinphp/ddd):
 
-    interface TransactionalSession
-    {
-        /**
-         * @return mixed
-         */
-        public function executeAtomically(callable $operation);
-    }
+```php
+interface TransactionalSession
+{
+    /**
+     * @return mixed
+     */
+    public function executeAtomically(callable $operation);
+}
+```
 
 This contract takes a piece of code and executes it atomically. Depending on your persistence mechanism, you'll end up with different implementations.
 
 Let's see how we could do it with Doctrine ORM:
 
-    class DoctrineSession implements TransactionalSession
+```php
+class DoctrineSession implements TransactionalSession
+{
+    private $entityManager;
+
+    public function __construct(EntityManager $entityManager)
     {
-        private $entityManager;
-    
-        public function __construct(EntityManager $entityManager)
-        {
-            $this->entityManager = $entityManager;
-        }
-    
-        public function executeAtomically(callable $operation)
-        {
-            return $this->entityManager->transactional($operation);
-        }
+        $this->entityManager = $entityManager;
     }
+
+    public function executeAtomically(callable $operation)
+    {
+        return $this->entityManager->transactional($operation);
+    }
+}
+```
 
 This is how a client would use the previous code:
 
-    /** @var EntityManager $em */
-    $nonTxApplicationService = new SignUpUserService(
-        $em->getRepository('BoundedContext\Domain\Model\User\User')
-    );
-    
-    $txApplicationService = new TransactionalApplicationService(
-        $nonTxApplicationService,
-        new DoctrineSession($em)
-    );
-    
-    $response = $txApplicationService->execute(
-        new SignUpUserRequest(
-            'user@example.com',
-            'password'
-        )
-    );
+```php
+/** @var EntityManager $em */
+$nonTxApplicationService = new SignUpUserService(
+    $em->getRepository('BoundedContext\Domain\Model\User\User')
+);
+
+$txApplicationService = new TransactionalApplicationService(
+    $nonTxApplicationService,
+    new DoctrineSession($em)
+);
+
+$response = $txApplicationService->execute(
+    new SignUpUserRequest(
+        'user@example.com',
+        'password'
+    )
+);
+```
 
 Now that we have the Doctrine implementation for transactional sessions, it would be great to create a Decorator for our Application Services. With this approach, we make transactional requests transparent to the Domain:
 
-    class TransactionalApplicationService implements ApplicationService
-    {
-        private $session;
-        private $service;
-    
-        public function __construct(
-            ApplicationService $service, TransactionalSession $session
-        ) {
-            $this->session = $session;
-            $this->service = $service;
-        }
-    
-        public function execute(BaseRequest $request)
-        {
-            $operation = function () use ($request) {
-                return $this->service->execute($request);
-            };
-    
-            return $this->session->executeAtomically($operation);
-        }
+```php
+class TransactionalApplicationService implements ApplicationService
+{
+    private $session;
+    private $service;
+
+    public function __construct(
+        ApplicationService $service, TransactionalSession $session
+    ) {
+        $this->session = $session;
+        $this->service = $service;
     }
+
+    public function execute(BaseRequest $request)
+    {
+        $operation = function () use ($request) {
+            return $this->service->execute($request);
+        };
+
+        return $this->session->executeAtomically($operation);
+    }
+}
+```
 
 A nice side effect of using Doctrine Session is that it automatically manages the flush method, so you don't need to add the flush inside your Domain or Infrastructure.
 
@@ -803,12 +850,14 @@ Domain Events
 
 Domain Event listeners have to be configured before the Application Service gets executed, or nobody will be noticed. There are situations where you'll have to be explicit and configure the listener before executing the Application Service:
 
-    // ...
-    $subscriber = new SpySubscriber();
-    DomainEventPublisher::instance()->subscribe($subscriber);
-    
-    $applicationService = // ...
-    $applicationService->execute(...);
+```php
+// ...
+$subscriber = new SpySubscriber();
+DomainEventPublisher::instance()->subscribe($subscriber);
+
+$applicationService = // ...
+$applicationService->execute(...);
+```
 
 Most of the time, this will be done by configuring the Dependency Injection Container.
 
@@ -832,27 +881,29 @@ Tactician is a Command Bus library, which allows you to use the Command pattern 
 
 Let's see an example from the [Tactician](http://tactician.thephpleague.com/) website:
 
-    // You build a simple message object like this:
-    class PurchaseProductCommand
+```php
+// You build a simple message object like this:
+class PurchaseProductCommand
+{
+    protected $productId;
+    protected $userId;
+
+    // ...and constructor to assign those properties...
+}
+
+// And a Handler class that expects it:
+class PurchaseProductHandler
+{
+    public function handle(PurchaseProductCommand $command)
     {
-        protected $productId;
-        protected $userId;
-    
-        // ...and constructor to assign those properties...
+        // use command to update your models, etc
     }
-    
-    // And a Handler class that expects it:
-    class PurchaseProductHandler
-    {
-        public function handle(PurchaseProductCommand $command)
-        {
-            // use command to update your models, etc
-        }
-    }
-    // And then in your Controllers, you can fill in the command using your favorite
-    // form or serializer library, then drop it in the CommandBus and you're done!
-    $command = new PurchaseProductCommand(42, 29);
-    $commandBus->handle($command);
+}
+// And then in your Controllers, you can fill in the command using your favorite
+// form or serializer library, then drop it in the CommandBus and you're done!
+$command = new PurchaseProductCommand(42, 29);
+$commandBus->handle($command);
+```
 
 That's it. Tactician is the `$commandBus` Service. It does all the plumbing for finding the right handler and method, which can avoid a lot of boilerplate code. Here, Commands and Handlers are just normal classes, but you can configure whichever one fits your app better.
 
