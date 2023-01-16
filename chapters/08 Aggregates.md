@@ -4,7 +4,6 @@ Chapter 8. Aggregates
 Aggregates are probably the most difficult building blocks of Domain-Driven Design. They're hard to understand, and they're even harder to properly design. But don't worry; we're here to help you. However, before jumping into Aggregates, there are some key concepts we need to go through first: transactions and concurrency strategies.
 
 
-
 Introduction
 ------------
 
@@ -21,7 +20,6 @@ In general, data inconsistencies occur when we deal with our persistence mechani
 You may think that these kinds of data inconsistencies only occur in databases, but that's not true. For example, if we use a document-oriented database such as Elasticsearch, we can have data inconsistency between two documents. Furthermore, most of the NoSQL persistence storage systems don't support ACID transactions. This means you can't persist or update more than one document in a single operation. So, if we make different requests to Elasticsearch, one may fail, leaving the data persisted in Elasticsearch inconsistent.
 
 Keeping data consistent is a challenge. Not leaking infrastructure issues into the Domain is a bigger challenge. Aggregates aim to help you with both of these things.
-
 
 
 Key Concepts
@@ -140,14 +138,14 @@ However for Pessimistic Locking to work you have to disable the Auto-Commit Mode
 
 Doctrine 2 currently supports two pessimistic lock modes:
 
-*   Pessimistic Write `Doctrine\DBAL\LockMode::PESSIMISTIC_WRITE`, locks the underlying database rows for concurrent Read and Write Operations.
-*   Pessimistic Read `Doctrine\DBAL\LockMode::PESSIMISTIC_READ`, locks other concurrent requests that attempt to update or lock rows in write mode.
+> *   Pessimistic Write `Doctrine\DBAL\LockMode::PESSIMISTIC_WRITE`, locks the underlying database rows for concurrent Read and Write Operations.
+> *   Pessimistic Read `Doctrine\DBAL\LockMode::PESSIMISTIC_READ`, locks other concurrent requests that attempt to update or lock rows in write mode.
 
 You can use pessimistic locks in three different scenarios:
 
-*   Using `EntityManager#find($className, $id, \Doctrine\DBAL\LockMode::PESSIMISTIC_WRITE)` or `EntityManager#find($className, $id, \Doctrine\DBAL\LockMode::PESSIMISTIC_READ)`
-*   Using `EntityManager#lock($entity, \Doctrine\DBAL\LockMode::PESSIMISTIC_WRITE)` or `EntityManager#lock($entity, \Doctrine\DBAL\LockMode::PESSIMISTIC_READ)`
-*   Using `Query#setLockMode(\Doctrine\DBAL\LockMode::PESSIMISTIC_WRITE)` or `Query#setLockMode(\Doctrine\DBAL\LockMode::PESSIMISTIC_READ)`
+> *   Using `EntityManager#find($className, $id, \Doctrine\DBAL\LockMode::PESSIMISTIC_WRITE)` or `EntityManager#find($className, $id, \Doctrine\DBAL\LockMode::PESSIMISTIC_READ)`
+> *   Using `EntityManager#lock($entity, \Doctrine\DBAL\LockMode::PESSIMISTIC_WRITE)` or `EntityManager#lock($entity, \Doctrine\DBAL\LockMode::PESSIMISTIC_READ)`
+> *   Using `Query#setLockMode(\Doctrine\DBAL\LockMode::PESSIMISTIC_WRITE)` or `Query#setLockMode(\Doctrine\DBAL\LockMode::PESSIMISTIC_READ)`
 
 #### Optimistic Concurrency Control
 
@@ -306,10 +304,10 @@ According to [Doctrine 2 ORM](http://doctrine-orm.readthedocs.io/projects/doctri
 
 You can easily get the optimistic locking workflow wrong if you compare the wrong versions. Say you have Alice and Bob editing a hypothetical blog post:
 
-*   Alice reads the headline of the blog post being "Foo", at optimistic lock version 1 (`GET` Request)
-*   Bob reads the headline of the blog post being "Foo", at optimistic lock version 1 (`GET` Request)
-*   Bob updates the headline to "Bar", upgrading the optimistic lock version to 2 (`POST` Request of a Form)
-*   Alice updates the headline to "Baz", ... (`POST` Request of a Form)
+> *   Alice reads the headline of the blog post being "Foo", at optimistic lock version 1 (`GET` Request)
+> *   Bob reads the headline of the blog post being "Foo", at optimistic lock version 1 (`GET` Request)
+> *   Bob updates the headline to "Bar", upgrading the optimistic lock version to 2 (`POST` Request of a Form)
+> *   Alice updates the headline to "Baz", ... (`POST` Request of a Form)
 
 Now at the last stage of this scenario the blog post has to be read again from the database before Alice's headline can be applied. At this point you will want to check if the blog post is still at version 1 (which it is not in this scenario).
 
@@ -337,7 +335,6 @@ And the change headline action (`POST` Request):
 Wow — that was a lot of information to take in. However, don't worry if you don't completely understand everything. The more you work with Aggregates and Domain-Driven Design, the more you'll encounter moments when transactionality has to be considered in designing your Application.
 
 To summarize, if you want to keep your data consistent, use transactions. However, be careful about overusing transactions or locking strategies because these can slow your Application down or make it unusable. If you want to have a really fast Application, optimistic concurrency can help you. Last but not least, some data can eventually be consistent. This means that we allow our data to not be consistent for a particular window of time. During that time, some inconsistencies are acceptable. Eventually, an asynchronous process will perform the final task to remove such inconsistencies.
-
 
 
 What Is an Aggregate?
@@ -372,7 +369,6 @@ From [https://en.wikipedia.org/wiki/Domain-driven\_design#Building\_blocks\_of\_
 Aggregate: A collection of objects that are bound together by a root entity, otherwise known as an aggregate root. The aggregate root guarantees the consistency of changes being made within the aggregate by forbidding external objects from holding references to its members.
 
 Example: When you drive a car, you do not have to worry about moving the wheels forward, making the engine combust with spark and fuel, etc.; you are simply driving the car. In this context, the car is an aggregate of several other objects and serves as the aggregate root to all of the other systems.
-
 
 
 Why Aggregates?
@@ -411,7 +407,6 @@ NoSQL databases aren't affected as drastically by the impedance mismatch. They m
 For that reason, when persisting any object with a single representation (one document, so no multiple queries needed), it's easy to distribute those single units across several machines, called nodes, which make up a cluster of NoSQL databases. It's common knowledge that these databases are easy to distribute, which means that the style of databases is easy to scale horizontally.
 
 
-
 A Bit of History
 ----------------
 
@@ -422,7 +417,6 @@ Around the beginning of the 21st century, companies such as Amazon and Google gr
 In a scenario such as this, deciding how to store your data is key. If you take an Entity and spread its information throughout multiple servers, in multiple nodes of a cluster, the effort needed to control transactions is high. The same thing applies if you want to fetch an Entity. So if you can design your Entity in a way that is persisted in the node of a cluster, it makes things much easier. That's one of the reasons why Aggregate Design is so important.
 
 If you want to know more about the history of Aggregate Design outside of Domain-Driven Design, take a look at [NoSQL Distilled: A Brief Guide to the Emerging World of Polyglot Persistence](https://www.amazon.com/NoSQL-Distilled-Emerging-Polyglot-Persistence/dp/0321826620?).
-
 
 
 Anatomy of an Aggregate
@@ -470,9 +464,9 @@ According to [Wikipedia](https://en.wikipedia.org/wiki/Law_of_Demeter):
 
 The **Law of Demeter** (**LoD**) or principle of least knowledge is a design guideline for developing software, particularly object-oriented programs. In its general form, the LoD is a specific case of loose coupling...and can be succinctly summarized in each of the following ways:
 
-*   Each unit should have only limited knowledge about other units: only units "closely" related to the current unit.
-*   Each unit should only talk to its friends; don't talk to strangers.
-*   Only talk to your immediate friends.
+> *   Each unit should have only limited knowledge about other units: only units "closely" related to the current unit.
+> *   Each unit should only talk to its friends; don't talk to strangers.
+> *   Only talk to your immediate friends.
 
 The fundamental notion is that a given object should assume as little as possible about the structure or properties of anything else (including its subcomponents), in accordance with the principle of "information hiding".
 
@@ -1246,14 +1240,13 @@ As mentioned before, especially in this scenario using Aggregates, returning a c
 
 We'll go deeper into this in the [Chapter 11](../chapters/11%20Application.md), _Application_. For now, to summarize, you have different options:
 
-*   The Application Service returns a DTO build accessing Aggregates information.
-*   The Application Service returns a DTO returned by the Aggregate.
-*   The Application Service uses an Output dependency where it writes the Aggregate. Such an Output dependency will handle the transformation to a DTO or other format.
+> *   The Application Service returns a DTO build accessing Aggregates information.
+> *   The Application Service returns a DTO returned by the Aggregate.
+> *   The Application Service uses an Output dependency where it writes the Aggregate. Such an Output dependency will handle the transformation to a DTO or other format.
 
 ### Note
 
 Render the Number of Wishes  As an exercise, consider that we want to render the number of wishes a user has made on their account page. How would you implement this, considering User and Wish don't form an Aggregate? How would you implement it if User and Wish did form an Aggregate? Consider how Eventual Consistency could help in your solutions.
-
 
 
 Transactions
@@ -1262,7 +1255,6 @@ Transactions
 * * *
 
 We haven't shown `beginTransaction`, `commit`, or `rollback` in any of the examples. This is because transactions are handled at Application Service level. Don't worry for now; you'll find more details about this in [Chapter 11]( ../chapters/11%20Application.md), _Application_.
-
 
 
 Wrap Up
