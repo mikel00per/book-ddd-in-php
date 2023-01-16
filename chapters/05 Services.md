@@ -7,9 +7,9 @@ When a significant process or transformation in the domain is not a natural resp
 
 So when there are operations that need to be represented, but Entities and Value Objects aren't the best place, you should consider modeling these operations as Services. In Domain-Driven Design, there are typically three different types of Services you'll encounter:
 
-*   **Application Services**: Operate on scalar types, transforming them into Domain types. A scalar type can be considered any type that's unknown to the Domain Model. This includes primitive types and types that don't belong to the Domain. We'll provide an overview in this chapter, but for a deeper look at this topic, check out the [Chapter 11](../chapters/11%20Application.md), _Application_.
-*   **Domain Services**: Operate only on types belonging to the Domain. They contain meaningful concepts that can be found within the Ubiquitous Language. They hold operations that don't fit well into Value Objects or Entities.
-*   **Infrastructure Services**: Are operations that fulfill infrastructure concerns, such as sending emails and logging meaningful data. In terms of Hexagonal Architecture, they live outside the Domain boundary.
+> *   **Application Services**: Operate on scalar types, transforming them into Domain types. A scalar type can be considered any type that's unknown to the Domain Model. This includes primitive types and types that don't belong to the Domain. We'll provide an overview in this chapter, but for a deeper look at this topic, check out the [Chapter 11](../chapters/11%20Application.md), _Application_.
+> *   **Domain Services**: Operate only on types belonging to the Domain. They contain meaningful concepts that can be found within the Ubiquitous Language. They hold operations that don't fit well into Value Objects or Entities.
+> *   **Infrastructure Services**: Are operations that fulfill infrastructure concerns, such as sending emails and logging meaningful data. In terms of Hexagonal Architecture, they live outside the Domain boundary.
 
 
 
@@ -114,8 +114,8 @@ Domain Services
 
 Throughout conversations with Domain Experts, you'll come across concepts in the Ubiquitous Language that can't be neatly represented as either an Entity or a Value Object, such as:
 
-*   Users being able to sign into systems by themselves
-*   A shopping cart being able to become an order by itself
+> *   Users being able to sign into systems by themselves
+> *   A shopping cart being able to become an order by itself
 
 The preceding example are two concrete concepts, neither of which can naturally be bound to either an Entity or a Value Object. Further highlighting this oddity, we can attempt to model the behavior as follows:
 
@@ -686,8 +686,8 @@ Wrap-Up
 
 As we've seen, Services represent operations inside our system, and we can differentiate between three versions of them:
 
-*   **Application Services**: Help coordinate requests from the outside world into the Domain. These Services should not contain Domain logic. Transactions are handled in the application level; wrapping your services inside transnational decorators will make your code transaction agnostic.
-*   **Domain Services**: Operate with Domain concepts only, which are expressed by the Ubiquitous Language. Remember to postpone implementation details and think of behavior first, as abuse of Domain Services will lead to Anemic Domain Models and bad Object-Oriented Design.
-*   **Infrastructure Services**: Operate over Infrastructure, doing things like sending emails or logging information.
+> *   **Application Services**: Help coordinate requests from the outside world into the Domain. These Services should not contain Domain logic. Transactions are handled in the application level; wrapping your services inside transnational decorators will make your code transaction agnostic.
+> *   **Domain Services**: Operate with Domain concepts only, which are expressed by the Ubiquitous Language. Remember to postpone implementation details and think of behavior first, as abuse of Domain Services will lead to Anemic Domain Models and bad Object-Oriented Design.
+> *   **Infrastructure Services**: Operate over Infrastructure, doing things like sending emails or logging information.
 
 Our most important recommendation is that you should consider all your options before deciding on creating a Domain Service. First try to move your business logic inside an Entity or Value. Check with some workmates. Review again. If, after different approaches, the best option is creating a Domain Service, go for it.
