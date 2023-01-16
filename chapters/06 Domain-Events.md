@@ -69,9 +69,8 @@ Things happen. Not all of them are interesting, and some may be worth recording 
 
 By funneling inputs to a system into streams of Domain Events, you can keep a record of all the inputs to a system. This helps you organize your processing logic, and it also allows you to keep an audit log of the inputs to the system.
 
-### Note
-
-**`Exercise`** Try to locate examples of potential Domain Events in your current Domain.
+> ### Note
+> **`Exercise`** Try to locate examples of potential Domain Events in your current Domain.
 
 ### Real-World Example
 
@@ -154,9 +153,8 @@ Consider the differences in the Ubiquitous Language when we discuss the side eff
 
 As we mentioned already, Domain Events talk about the past and describe changes in your Domain that have already occurred. By definition, it's impossible to change the past, unless you're Marty McFly and have a DeLorean, which is probably not the case. So just remember that Domain Events are immutable.
 
-### Note
-
-**`Symfony Event Dispatcher`** Some PHP frameworks support Events. However, don't confuse those Events with Domain Events; they're different in characteristics and goals. For example, Symfony has the Event Dispatcher component, and if you need to implement an Event system for a state machine, you can rely on it. In Symfony, the transformation from requests to responses is handled by Events too. However, Symfony Events are mutable, and each of the listeners is capable of modifying, adding to, or updating the information in the Event.
+> ### Note
+> **`Symfony Event Dispatcher`** Some PHP frameworks support Events. However, don't confuse those Events with Domain Events; they're different in characteristics and goals. For example, Symfony has the Event Dispatcher component, and if you need to implement an Event system for a state machine, you can rely on it. In Symfony, the transformation from requests to responses is handled by Events too. However, Symfony Events are mutable, and each of the listeners is capable of modifying, adding to, or updating the information in the Event.
 
 Modeling Events
 ---------------
@@ -202,9 +200,8 @@ Now let's model the new user registration Event using the following code. As we 
 
 The minimum amount of information required to notify subscribers about the creation of new users is the `UserId`. With this information, any process, command, or Application Service — from either the same Bounded Context or a different one — may react to this Event.
 
-### Note
-
-**`As a Rule of Thumb`**
+> ### Note
+> **`As a Rule of Thumb`**
 
 *   Domain Events are usually designed as immutable
 *   The Constructor will initialize the full state of the Domain Event.
@@ -247,9 +244,8 @@ Above, we've added the email address. Adding more information to a Domain Event 
 
 Do you remember the gamification example? In order to create a user of the gamification platform, probably called Player, the UserId from the e-commerce Bounded Context was probably enough. But what happens if the gamification platform has to notify the users by email about being rewarded? In this case, the email address is also mandatory. So if the email address is included in the original Domain Event, we're done. If that's not the case, the gamification Bounded Context needs to request this information from the e-commerce Bounded Context via REST or SOA integration.
 
-### Note
-
-**`Why Not the Whole User Entity?`** Wondering if you should include the whole User Entity from your Bounded Context in the Domain Event? Our suggestion is that you don't. Domain Events might be used to communicate messages internally to a given Bounded Context or externally to other Bounded Contexts. In other words, what can be a `Seller` in a C2C e-commerce product catalog Bounded Context can be an `Author` of a product review in a product feedback one. Both can share the same ID or email, but `Seller` and `Author` are different concepts representing different Entities from different Bounded Contexts. So Entities from one Bounded Context have no meaning or a totally different one in another Bounded Context.
+> ### Note
+> **`Why Not the Whole User Entity?`** Wondering if you should include the whole User Entity from your Bounded Context in the Domain Event? Our suggestion is that you don't. Domain Events might be used to communicate messages internally to a given Bounded Context or externally to other Bounded Contexts. In other words, what can be a `Seller` in a C2C e-commerce product catalog Bounded Context can be an `Author` of a product review in a product feedback one. Both can share the same ID or email, but `Seller` and `Author` are different concepts representing different Entities from different Bounded Contexts. So Entities from one Bounded Context have no meaning or a totally different one in another Bounded Context.
 
 Doctrine Events
 ---------------
@@ -505,9 +501,8 @@ In general, constructing an object from plain data such as an array is called **
 
 According to [Wikipedia](https://en.wikipedia.org/wiki/Template_method_pattern):
 
-### Note
-
-The template method pattern is a behavioral design pattern that defines the program skeleton of an algorithm in an operation, deferring some steps to subclasses:
+> ### Note
+> The template method pattern is a behavioral design pattern that defines the program skeleton of an algorithm in an operation, deferring some steps to subclasses:
 
     class User
     {
@@ -574,9 +569,8 @@ Remember to be careful with this approach; you might fetch invalid objects from 
 
 With this approach, the parent constructor isn't called and User attributes must be protected. Other alternatives are Reflection, passing flags in the constructor, using a proxy library like [Proxy-Manager](https://packagist.org/packages/ocramius/proxy-manager), or using an ORM like Doctrine.
 
-### Note
-
-**`Other Strategy for Publishing Domain Events`** As you can see in the previous example, we're using a static class for publishing our Domain Events. Other people, as an alternative, and especially when using [Event Sourcing](http://martinfowler.com/eaaDev/EventSourcing.html), will suggest that Entities hold all the fired Events internally within a field. In order to access all the Events, a getter is used in the Aggregate. This is also a valid approach. However, sometimes it's a bit difficult to keep track of which Entities have fired an Event. It can also be difficult to fire Events from places that aren't just Entities, example: Domain Services. On the plus side, testing if an Entity has fired an Event is much easier.
+> ### Note
+> **`Other Strategy for Publishing Domain Events`** As you can see in the previous example, we're using a static class for publishing our Domain Events. Other people, as an alternative, and especially when using [Event Sourcing](http://martinfowler.com/eaaDev/EventSourcing.html), will suggest that Entities hold all the fired Events internally within a field. In order to access all the Events, a getter is used in the Aggregate. This is also a valid approach. However, sometimes it's a bit difficult to keep track of which Entities have fired an Event. It can also be difficult to fire Events from places that aren't just Entities, example: Domain Services. On the plus side, testing if an Entity has fired an Event is much easier.
 
 ### Publishing your Domain Events from Domain or Application Services
 
@@ -708,9 +702,8 @@ This is the correct place to subscribe the listener responsible for persisting t
 
 With this setup, each time an Aggregate publishes a Domain Event, it will get persisted into the database. Mission accomplished.
 
-### Note
-
-**`Exercise`** If you're working with Symfony, Laravel, or another PHP framework, find a way to subscribe globally specific subscribers for performing tasks around your Domain Events.
+> ### Note
+> **`Exercise`** If you're working with Symfony, Laravel, or another PHP framework, find a way to subscribe globally specific subscribers for performing tasks around your Domain Events.
 
 In case you want to perform any action on all Domain Events when the request is about to finish, you can create a Listener that will store all published Domain Events in memory. If you add a getter to that Listener to return all Domain Events, you can then decide what to do. This can be useful if you don't want to or if you can't persist the Events in the same transaction, as suggested before.
 
@@ -970,9 +963,8 @@ The `mostRecentPublishedMessageId` method returns the ID of last `PublishedMessa
 
 This code is quite straightforward. The only edge case we have to consider is when no Domain Event has already been published.
 
-### Note
-
-**`Why an Exchange Name?`** We'll see this in more detail in the [Chapter 12](../chapters/12%20Integrating%20Bounded%20Contexts.md), _Integrating Bounded Contexts_. However, when a system is running and a new Bounded Context comes into play, you might be interested in resending all the Domain Events to the new Bounded Context. So keeping track of the last Domain Event published and the channel where it was sent might come in handy later.
+> ### Note
+> **`Why an Exchange Name?`** We'll see this in more detail in the [Chapter 12](../chapters/12%20Integrating%20Bounded%20Contexts.md), _Integrating Bounded Contexts_. However, when a system is running and a new Bounded Context comes into play, you might be interested in resending all the Domain Events to the new Bounded Context. So keeping track of the last Domain Event published and the channel where it was sent might come in handy later.
 
 In order to keep track of published Domain Events, we need an exchange name and a notification ID. Here's a possible implementation:
 
@@ -1257,9 +1249,8 @@ As you can see in the previous example, we're exposing a set of Domain Events in
 
 Another point is the name. If you want to use the `classname` of the Domain Event, it may work in most cases. The problem is when a team decides to change the name of the class because of a refactoring. In this case, all Bounded Contexts listening to that name would stop working. This problem only occurs if you publish different Domain Events in the same queue. If you publish each Domain Event type in a different queue, it's not a real problem, but if you choose this approach, you'll face a different set of problems, such as receiving unordered events. Like in many other instances, there's a tradeoff involved. We strongly recommend you read _Enterprise Integration Patterns:_ [Designing, Building, and Deploying Messaging Solutions](http://www.amazon.com/Enterprise-Integration-Patterns-Designing-Addison-Wesley-ebook/dp/B007MQLL4E). In this book, you'll learn different patterns for integrating multiple applications using asynchronous methods. Because Domain Events are messages sent in an integration channel, all messaging patterns also apply to them.
 
-### Note
-
-**`Exercise`** Think about the pros and cons of having a REST API for Domain Events. Consider Bounded Context coupling. You can also try to implement a REST API for your current application.
+> ### Note
+> **`Exercise`** Think about the pros and cons of having a REST API for Domain Events. Consider Bounded Context coupling. You can also try to implement a REST API for your current application.
 
 Wrap-Up
 -------
