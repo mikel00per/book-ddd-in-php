@@ -3,10 +3,8 @@ Chapter 12. Integrating Bounded Contexts
 
 Every enterprise application is typically composed of several areas in which the company operates. Areas such as _billing_, _inventory_, _shipping management_, _catalog_, and so on are common examples. The easiest manner in which to manage all these concerns may seem to lean toward a **monolithic system**. But, you might wonder, does it have to be this way? What if any friction garnered between teams working on these separate areas could be reduced by splitting this big monolithic application into smaller, independent chunks? In this chapter, we'll explore how to do this, so be prepared for insights and heuristics around **strategical design**.
 
-### Note
-
-**`Dealing with Distributed Systems`** Dealing with distributed systems is **hard**. Breaking a system into independent autonomous parts has its benefits, but it also increases complexity. For example, the coordination and synchronization of distributed systems is not trivial, and as a result, should be considered carefully. As Martin Fowler said in the [PoEAA](https://www.martinfowler.com/books/eaa.html) book, the first law of distributed systems is always: **Don't distribute**.
-
+> ### Note
+> **`Dealing with Distributed Systems`** Dealing with distributed systems is **hard**. Breaking a system into independent autonomous parts has its benefits, but it also increases complexity. For example, the coordination and synchronization of distributed systems is not trivial, and as a result, should be considered carefully. As Martin Fowler said in the [PoEAA](https://www.martinfowler.com/books/eaa.html) book, the first law of distributed systems is always: **Don't distribute**.
 
 
 Integration Through the Data Store
@@ -22,14 +20,12 @@ Another less technical problem that could develop is in regard to the Ubiquitous
 
 Going back to the e-commerce system, imagine we want to introduce the concept of a t-shirt. Within the catalogue Context, a t-shirt would be a _product_ with properties like _color_, _size_, _material_, and maybe some fancy _pictures_. In the _inventory_ system, however, we don't really want to concern ourselves with these things. Here, a _product_ has a different meaning, where we care about different properties like _weight_, _location in the warehouse_, or _dimensions_. Mixing both Contexts together will tangle concepts and complicate the design. In Domain-Driven Design terms, mixing concepts in this manner is what is called a Shared Kernel.
 
-### Note
-
-**`Shared Kernel`** Designate some subset of the domain model that the teams agree to share. Of course this includes, along with this subset of the model, the subset of code or of the database design associated with that part of the model. This explicitly shared stuff has special status, and shouldn't be changed without consultation with the other team. Integrate a functional system frequently, but somewhat less often than the pace of CONTINUOUS INTEGRATION within the teams. At these integrations, run the tests of both teams.  Eric Evans - [Domain-Driven Design: Tackling Complexity in the Heart of Software](https://www.amazon.com/Domain-Driven-Design-Tackling-Complexity-Software/dp/0321125215)
+> ### Note
+> **`Shared Kernel`** Designate some subset of the domain model that the teams agree to share. Of course this includes, along with this subset of the model, the subset of code or of the database design associated with that part of the model. This explicitly shared stuff has special status, and shouldn't be changed without consultation with the other team. Integrate a functional system frequently, but somewhat less often than the pace of CONTINUOUS INTEGRATION within the teams. At these integrations, run the tests of both teams.  Eric Evans - [Domain-Driven Design: Tackling Complexity in the Heart of Software](https://www.amazon.com/Domain-Driven-Design-Tackling-Complexity-Software/dp/0321125215)
 
 We don't recommend using a Shared Kernel, as multiple teams can collide within the development of it, which not only results in maintenance issues but also becomes a point of friction. However, if you opt to use a Shared Kernel, changes should be agreed upon beforehand and between all parties involved. Conceptually, this approach has other problems, such as people seeing it as a bag to place _stuff_ that doesn't belong anywhere else, and this grows indefinitely. A better way of dealing with the ever-growing complexity of the monolith is to break it up in different autonomous pieces, such as communicating through REST, RPC, or messaging systems. This requires drawing clear boundaries, with each Context likely ending up with its own Infrastructure—data stores, servers, messaging middleware, and so on — and even its own team.
 
 As you might imagine, this could lead to some degree of duplication, but that's a tradeoff that we're willing to make in order to reduce complexity. In Domain-Driven Design, we call these independent pieces **Bounded Contexts**.
-
 
 
 Integration Relationships
@@ -41,9 +37,8 @@ Integration Relationships
 
 When there's a unidirectional integration between two Bounded Contexts, where one acts as a provider (**upstream**) and the other as a client (**downstream**), we'll end up with **Customer - Supplier Development Teams**.
 
-### Note
-
-Establish a clear customer/supplier relationship between the two teams. In planning sessions, make the downstream team play the customer role to the upstream team. Negotiate and budget tasks for downstream requirements so that everyone understands the commitment and schedule. Jointly develop automated acceptance tests that will validate the interface expected. Add these tests to the upstream team's test suite, to be run as part of its' continuous integration. This testing will free the upstream team to make changes without fear of side effects downstream. Eric Evans - [Domain-Driven Design: Tackling Complexity in the Heart of Software](https://www.amazon.com/Domain-Driven-Design-Tackling-Complexity-Software/dp/0321125215).
+> ### Note
+> Establish a clear customer/supplier relationship between the two teams. In planning sessions, make the downstream team play the customer role to the upstream team. Negotiate and budget tasks for downstream requirements so that everyone understands the commitment and schedule. Jointly develop automated acceptance tests that will validate the interface expected. Add these tests to the upstream team's test suite, to be run as part of its' continuous integration. This testing will free the upstream team to make changes without fear of side effects downstream. Eric Evans - [Domain-Driven Design: Tackling Complexity in the Heart of Software](https://www.amazon.com/Domain-Driven-Design-Tackling-Complexity-Software/dp/0321125215).
 
 Customer - Supplier Development Teams are the most common way of integrating Bounded Contexts and usually represent a win-win situation when teams work closely.
 
@@ -51,18 +46,15 @@ Customer - Supplier Development Teams are the most common way of integrating Bou
 
 Continuing with the e-commerce example, think about reporting revenue to an old legacy retailer financial system. The integration could be incredibly expensive, resulting in it not being worth the effort to implement. In Domain-Driven Design strategic terms, this is known as **Separate Ways**.
 
-### Note
-
-Integration is always expensive. Sometimes the benefit is small. So Declare a BOUNDED CONTEXT to have no connection to the others at all, allowing developers to find simple, specialized solutions within this small scope. Eric Evans - _Domain-Driven Design:_ [Tackling Complexity in the Heart of Software](https://www.amazon.com/Domain-Driven-Design-Tackling-Complexity-Software/dp/0321125215).
+> ### Note
+> Integration is always expensive. Sometimes the benefit is small. So Declare a BOUNDED CONTEXT to have no connection to the others at all, allowing developers to find simple, specialized solutions within this small scope. Eric Evans - _Domain-Driven Design:_ [Tackling Complexity in the Heart of Software](https://www.amazon.com/Domain-Driven-Design-Tackling-Complexity-Software/dp/0321125215).
 
 ### Conformist
 
 Consider again the e-commerce example and integration with a third-party shipping service. Both Domains differ in models, teams, and Infrastructure. The team responsible for maintaining the third-party shipping service will not participate in your product planning or provide any solutions to the e-commerce system. These teams don't have a close relationship. We could choose to accept and _conform_ to their Domain Model. In strategic design, this is what we call a **Conformist Integration**.
 
-### Note
-
-Eliminate the complexity of translation between BOUNDED CONTEXTS by slavishly adhering to the model of the upstream team. Although this cramps the style of the downstream designers and probably does not yield the ideal model for the application, choosing CONFORMITY enormously simplifies integration. Also, you will share a UBIQUITOUS LANGUAGE with your supplier team. The supplier is in the driver's seat, so it is good to make communication easy for them. Altruism may be sufficient to get them to share information with you. Eric Evans - _Domain-Driven Design:_ [Tackling Complexity in the Heart of Software](https://www.amazon.com/Domain-Driven-Design-Tackling-Complexity-Software/dp/0321125215).
-
+> ### Note
+> Eliminate the complexity of translation between BOUNDED CONTEXTS by slavishly adhering to the model of the upstream team. Although this cramps the style of the downstream designers and probably does not yield the ideal model for the application, choosing CONFORMITY enormously simplifies integration. Also, you will share a UBIQUITOUS LANGUAGE with your supplier team. The supplier is in the driver's seat, so it is good to make communication easy for them. Altruism may be sufficient to get them to share information with you. Eric Evans - _Domain-Driven Design:_ [Tackling Complexity in the Heart of Software](https://www.amazon.com/Domain-Driven-Design-Tackling-Complexity-Software/dp/0321125215).
 
 
 Implementing Bounded Context Integrations
@@ -76,9 +68,8 @@ To make things easier, we'll assume Bounded Contexts have a Customer - Supplier 
 
 With modern RPC, we refer to RPC through RESTful resources. A Bounded Context reveals a clear interface to interact with to the outside world. It exposes resources that could be manipulated through HTTP verbs. We could say that the Bounded Context offers a set of services and operations. In strategical terms, this is what is called an **Open Host Service**.
 
-### Note
-
-**`Open Host Service`** Define a protocol that gives access to your subsystem as a set of SERVICES. Open the protocol so that all who need to integrate with you can use it. Enhance and expand the protocol to handle new integration requirements, except when a single team has idiosyncratic needs. Then, use a one-off translator to augment the protocol for that special case so that the shared protocol can stay simple and coherent. Eric Evans - _Domain-Driven Design:_ [Tackling Complexity in the Heart of Software](https://www.amazon.com/Domain-Driven-Design-Tackling-Complexity-Software/dp/0321125215)_._
+> ### Note
+> **`Open Host Service`** Define a protocol that gives access to your subsystem as a set of SERVICES. Open the protocol so that all who need to integrate with you can use it. Enhance and expand the protocol to handle new integration requirements, except when a single team has idiosyncratic needs. Then, use a one-off translator to augment the protocol for that special case so that the shared protocol can stay simple and coherent. Eric Evans - _Domain-Driven Design:_ [Tackling Complexity in the Heart of Software](https://www.amazon.com/Domain-Driven-Design-Tackling-Complexity-Software/dp/0321125215)_._
 
 Let's explore an example provided within the [Last Wishes application](https://github.com/dddinphp/last-wishes) that comes with this book's GitHub organization.
 
@@ -144,9 +135,8 @@ The resulting JSON+HAL representation of a user will be like this:
 
 Now we're in a good position to integrate both Contexts. We just need to write the client in the Will Context for consuming the endpoint we've just created. Should we mix both Domain Models? Digesting the Gamification Context directly will mean adapting the Will Context to the Gamification one, resulting in a **Conformist** integration. However, separating these concerns seems worth the effort. We need a layer for guaranteeing the integrity and the consistency of the Domain Model within the Will Context, and we need to translate _points_ (Gamification) to _badges_ (Will). In Domain-Driven Design, this translation mechanism is what's called an **Anti-Corruption layer**.
 
-### Note
-
-**`Anti-Corruption Layer`** Create an isolating layer to provide clients with functionality in terms of their own domain model. The layer talks to the other system through its existing interface, requiring little or no modification to the other system. Internally, the layer translates in both directions as necessary between the two models. Eric Evans - _Domain-Driven Design:_ [Tackling Complexity in the Heart of Software.](https://www.amazon.com/Domain-Driven-Design-Tackling-Complexity-Software/dp/0321125215)
+> ### Note
+> **`Anti-Corruption Layer`** Create an isolating layer to provide clients with functionality in terms of their own domain model. The layer talks to the other system through its existing interface, requiring little or no modification to the other system. Internally, the layer translates in both directions as necessary between the two models. Eric Evans - _Domain-Driven Design:_ [Tackling Complexity in the Heart of Software.](https://www.amazon.com/Domain-Driven-Design-Tackling-Complexity-Software/dp/0321125215)
 
 So, what does the Anti-Corruption layer look like? Most of the time, Services will be interacting with a combination of Adapters and Facades. The Services encapsulate and hide the low-level complexities behind these transformations. Facades aid in hiding and encapsulating access details required for fetching data from the Gamification model. Adapters translate between models, often using specialized Translators.
 
@@ -259,9 +249,8 @@ We could go for another Open Host Service with a pull strategy. The Will Context
 
 A better approach is to use a **messaging middleware**. With this solution, Contexts could push messages to a middleware (often a message queue). Interested parties will be able to subscribe, inspect, and consume information on demand in a decoupled fashion. In order to do this, we need a **specialized, shared, and common communication language**, so all the parties can understand the information transmitted. This is what's called the **Published Language**.
 
-### Note
-
-**`Published Language`** Use a well-documented shared language that can express the necessary domain information as a common medium of communication, translating as necessary into and out of that language.  Eric Evans - _Domain-Driven Design:_ [Tackling Complexity in the Heart of Software](https://www.amazon.com/Domain-Driven-Design-Tackling-Complexity-Software/dp/0321125215).
+> ### Note
+> **`Published Language`** Use a well-documented shared language that can express the necessary domain information as a common medium of communication, translating as necessary into and out of that language.  Eric Evans - _Domain-Driven Design:_ [Tackling Complexity in the Heart of Software](https://www.amazon.com/Domain-Driven-Design-Tackling-Complexity-Software/dp/0321125215).
 
 In thinking about the format of these messages and looking closer at our Domain Model, we realize we already have what we need: [Chapter 6](../chapters/06%20Domain-Events.md), _Domain-Events_. It's not necessary to define a new way of communicating between Bounded Contexts. Instead, we can just use Domain Events to define a common language across Contexts. The definition of _something that Domain Experts care about that just happened_ fits perfectly with what we're looking for: a formal Published Language.
 
@@ -413,7 +402,6 @@ The exchange consists of an agent being in charge of delivering messages to the 
     > php app/console rabbitmq:consumer --messages=1000 last_will_wish_was_made
 
 With those two commands, Symfony will execute both consumers and they'll start listening for Domain Events. We've specified a limit of 1,000 messages to consume, as PHP isn't the best platform for executing long-running processes. It also might be a good idea to use something like [Supervisor](http://supervisord.org/) to monitor and restart processes periodically.
-
 
 
 Wrap-Up
