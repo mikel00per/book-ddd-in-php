@@ -128,12 +128,12 @@ While modeling a Ubiquitous Language concept in code, you should always favor Va
 
 Keeping this in mind, you can determine whether the concept in question can be modeled as a Value Object if:
 
-*   It measures, quantifies, or describes a thing in the Domain
-*   It can be kept immutable
-*   It models a conceptual whole by composing related attributes as an integral unit
-*   It can be compared with others through value equality
-*   It is completely replaceable when the measurement or description changes
-*   It supplies its collaborators with side-effect-free behavior
+> *   It measures, quantifies, or describes a thing in the Domain
+> *   It can be kept immutable
+> *   It models a conceptual whole by composing related attributes as an integral unit
+> *   It can be compared with others through value equality
+> *   It is completely replaceable when the measurement or description changes
+> *   It supplies its collaborators with side-effect-free behavior
 
 ### Measures, Quantifies, or Describes
 
