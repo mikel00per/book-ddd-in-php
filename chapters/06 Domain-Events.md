@@ -7,9 +7,9 @@ Domain Events are Events related to Domain changes. Domain Events are things tha
 
 In Domain-Driven Design, Domain Events are fundamental building blocks that help:
 
-*   Communicate with other Bounded Contexts.
-*   Improve performance and scalability, pushing for eventual consistency.
-*   Serve as historical checkpoints.
+> *   Communicate with other Bounded Contexts.
+> *   Improve performance and scalability, pushing for eventual consistency.
+> *   Serve as historical checkpoints.
 
 Domain Events represent the essence of asynchronous communication. For more on this topic, we recommend the book _Enterprise Integration Patterns:_  [Designing, Building, and Deploying Messaging Solutions](http://www.amazon.com/Enterprise-Integration-Patterns-Designing-Deploying/dp/0321200683) by Gregor Hohpe and Bobby Woolf.
 
@@ -202,13 +202,13 @@ The minimum amount of information required to notify subscribers about the creat
 
 > ### Note
 > **`As a Rule of Thumb`**
-
-*   Domain Events are usually designed as immutable
-*   The Constructor will initialize the full state of the Domain Event.
-*   Domain Events will have getters to access their attributes
-*   Include the identity of the Aggregate that performs the action
-*   Include other Aggregate identities related to the first one
-*   Include parameters that caused the Event (if useful)
+> 
+> *   Domain Events are usually designed as immutable
+> *   The Constructor will initialize the full state of the Domain Event.
+> *   Domain Events will have getters to access their attributes
+> *   Include the identity of the Aggregate that performs the action
+> *   Include other Aggregate identities related to the first one
+> *   Include parameters that caused the Event (if useful)
 
 But what happens if your Domain experts from the same Bounded Context or a different one need more information? Let's see the same Domain Event modeled with more information — for example, the email address:
 
@@ -323,11 +323,11 @@ Persisting Domain Events
 
 Persisting Events is always a good idea. Some of you may be wondering why you shouldn't publish Domain Events directly to a messaging or logging system. This is because persisting them has interesting benefits:
 
-*   You can expose your Domain Events to other Bounded Contexts through a REST interface.
-*   You can persist the Domain Event and the Aggregate changes in the same database transaction before pushing them to RabbitMQ. (You don't want to send notifications about something that didn't happen, just as you don't want to miss a notification about something that did happen.)
-*   Business Intelligence can use this data to analyze, forecast, or trend.
-*   You can audit your Entity changes.
-*   For Event Sourcing, you can reconstitute Aggregates from Domain Events.
+> *   You can expose your Domain Events to other Bounded Contexts through a REST interface.
+> *   You can persist the Domain Event and the Aggregate changes in the same database transaction before pushing them to RabbitMQ. (You don't want to send notifications about something that didn't happen, just as you don't want to miss a notification about something that did happen.)
+> *   Business Intelligence can use this data to analyze, forecast, or trend.
+> *   You can audit your Entity changes.
+> *   For Event Sourcing, you can reconstitute Aggregates from Domain Events.
 
 ### Event Store
 
@@ -465,9 +465,9 @@ Domain Events should be published when the fact they represent occurs. For insta
 
 Following the newspaper metaphor:
 
-*   **Modeling** a Domain Event is like writing a news article
-*   **Publishing** a Domain Event is like printing the article in the paper
-*   **Spreading** a Domain Event is like delivering the newspaper so everyone can read the article
+> *   **Modeling** a Domain Event is like writing a news article
+> *   **Publishing** a Domain Event is like printing the article in the paper
+> *   **Spreading** a Domain Event is like delivering the newspaper so everyone can read the article
 
 The recommended approach for publishing Domain Events is to use a simple Listener-Observer pattern to implement a `DomainEventPublisher`.
 
