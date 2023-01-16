@@ -7,14 +7,13 @@ In this chapter, we'll explore how to implement Application Services, understand
 
 Conceptually, in order to register a new user, we need to:
 
-*   Get an email and password from the client
-*   Check if the email is already in use
-*   Create a new user
-*   Add this new user to the existing user set
-*   Return the user we've just created
+> *   Get an email and password from the client
+> *   Check if the email is already in use
+> *   Create a new user
+> *   Add this new user to the existing user set
+> *   Return the user we've just created
 
 Let's go for it.
-
 
 
 Requests
@@ -154,7 +153,6 @@ Application requests are data structures, not objects. Unit testing data structu
 Commands are an alternative to request objects. We could design a Service with multiple Application methods, and each one of them with the parameters you'd put inside the Request. This is OK for simple applications, but we'll worry about this topic later.
 
 
-
 Anatomy of an Application Service
 ---------------------------------
 
@@ -202,9 +200,8 @@ The first thing to do is to extract the necessary information from the request, 
 
 Nice! If you're wondering what this `UserRepository` thing is doing in the constructor, we'll show you that next.
 
-### Note
-
-**`**Handling Exceptions**`**Exceptions raised by Application Services are a way of communicating unusual cases and flows to the client. Exceptions on this layer are related to business logic (like not finding a user), and not implementation details (like `PDOException`, `PredisException`, or `DoctrineException`).
+> ### Note
+> **`**Handling Exceptions**`**Exceptions raised by Application Services are a way of communicating unusual cases and flows to the client. Exceptions on this layer are related to business logic (like not finding a user), and not implementation details (like `PDOException`, `PredisException`, or `DoctrineException`).
 
 ### Dependency Inversion
 
@@ -237,13 +234,11 @@ We decided to use the [Redis](http://redis.io/) implementation for the `UserRepo
 
 You could refactor the construction logic into a Factory, or you could use a Dependency Injection Container — most modern frameworks come with it.
 
-### Note
+> ### Note
+> **`Is It Bad to Use a Dependency Injection Container?`**Not at all. Dependency Injection Containers are just a tool. They help by abstracting away the complexities of building your dependencies. They come in handy for building Infrastructure artifacts. Symfony offers a complete solution.
 
-**`Is It Bad to Use a Dependency Injection Container?`**Not at all. Dependency Injection Containers are just a tool. They help by abstracting away the complexities of building your dependencies. They come in handy for building Infrastructure artifacts. Symfony offers a complete solution.
-
-### Note
-
-Take into account the fact that passing the entire container as a whole to one of the Services is a bad practice. That would be like coupling the entire context of your application with the Domain. If a Service needs specific objects, build them from your framework and pass them as dependencies into the Service, but don't make that Service aware of the entire context.
+> ### Note
+> Take into account the fact that passing the entire container as a whole to one of the Services is a bad practice. That would be like coupling the entire context of your application with the Domain. If a Service needs specific objects, build them from your framework and pass them as dependencies into the Service, but don't make that Service aware of the entire context.
 
 Let's see how would we build dependencies in Silex:
 
@@ -593,7 +588,6 @@ This is great, as you'll get the benefits of invoking separate Application Servi
 One last option could be managing multiple Application Services within the same controller, though the controller logic could get a little bit dirty, as it'll handle and merge the responses to pass to the view.
 
 
-
 Testing Application Services
 ----------------------------
 
@@ -794,14 +788,12 @@ Now that we have the Doctrine implementation for transactional sessions, it woul
 A nice side effect of using Doctrine Session is that it automatically manages the flush method, so you don't need to add the flush inside your Domain or Infrastructure.
 
 
-
 Security
 --------
 
 * * *
 
 In case you're wondering how to manage and handle user credentials and security in general, unless it's the responsibility of your Domain, we recommend letting the framework handle it. The user session is a concern of the delivery mechanism. Polluting the Domain with such concepts will make it harder to develop.
-
 
 
 Domain Events
@@ -819,7 +811,6 @@ Domain Event listeners have to be configured before the Application Service gets
     $applicationService->execute(...);
 
 Most of the time, this will be done by configuring the Dependency Injection Container.
-
 
 
 Command Handlers
@@ -872,7 +863,6 @@ A cool thing about Tactician (and Command Buses in general) is that they're real
 Another interesting plug-in for [Tactician is Bernard](http://bernard.readthedocs.org/) integration. Bernard is an asynchronous job queue that allows you to leave some tasks for later processing. Heavy processes block the response. Most of the time, we can branch and delay their execution for later. For the best experience, answer the customer as fast as possible and let them know once the branched processes are done.
 
 Matthias Noback has developed another similar project, called [SimpleBus](http://simplebus.github.io/MessageBus/), that can be used as an alternative to Tactician. The main difference is that `SimpleBus` Command Handlers don't have a return value.
-
 
 
 Wrap-Up
