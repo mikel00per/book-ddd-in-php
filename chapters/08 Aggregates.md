@@ -53,21 +53,23 @@ Transactions are a fundamental concept of all database systems. The essential po
 
 For example, consider a bank database that contains balances for various customer accounts, as well as total deposit balances for branches. Suppose that we want to record a payment of $100.00 from Alice's account to Bob's account. Simplifying outrageously, the SQL commands for this might look like:
 
-    UPDATE accounts
-        SET balance = balance - 100.00
-    WHERE name = 'Alice';
-    
-    UPDATE branches
-        SET balance = balance - 100.00
-    WHERE name = (SELECT branch_name FROM accounts WHERE name ='Alice');
-    
-    UPDATE accounts
-        SET balance = balance + 100.00
-    WHERE name = 'Bob';
-    
-    UPDATE branches
-        SET balance = balance + 100.00
-    WHERE name = (SELECT branch_name FROM accounts WHERE name ='Bob');
+```mysql
+UPDATE accounts
+SET balance = balance - 100.00
+WHERE name = 'Alice';
+
+UPDATE branches
+SET balance = balance - 100.00
+WHERE name = (SELECT branch_name FROM accounts WHERE name = 'Alice');
+
+UPDATE accounts
+SET balance = balance + 100.00
+WHERE name = 'Bob';
+
+UPDATE branches
+SET balance = balance + 100.00
+WHERE name = (SELECT branch_name FROM accounts WHERE name = 'Bob');
+```
 
 The details of these commands are not important here. The important point is that there are several separate updates involved to accomplish this rather simple operation. Our bank's officers will want to be assured that either all these updates happen, or none of them happen. It would certainly not do for a system failure to result in Bob receiving $100.00 that was not debited from Alice. Nor would Alice long remain a happy customer if she was debited without Bob being credited. We need a guarantee that if something goes wrong partway through the operation, none of the steps executed so far will take effect. Grouping the updates into a transaction gives us this guarantee. A transaction is said to be atomic: from the point of view of other transactions, it either happens completely or not at all.
 
@@ -77,12 +79,14 @@ Another important property of transactional databases is closely related to the 
 
 In PostgreSQL, for example, a transaction is set up by surrounding the SQL commands of the transaction with `BEGIN` and `COMMIT` commands. So our banking transaction would actually look like:
 
-    BEGIN;
-    UPDATE accounts 
-        SET balance = balance - 100.00 
-    WHERE name = 'Alice';
-    -- etc etc
-    COMMIT;
+```php
+BEGIN;
+UPDATE accounts 
+    SET balance = balance - 100.00 
+WHERE name = 'Alice';
+-- etc etc
+COMMIT;
+```
 
 If, partway through the transaction, we decide we do not want to commit (perhaps we just noticed that Alice's balance went negative), we can issue the command `ROLLBACK` instead of `COMMIT`, and all our updates so far will be canceled.
 
@@ -169,20 +173,25 @@ We can take advantage of the \_version number to ensure that conflicting changes
 
 Let's create a new blog post:
 
-        PUT /website/blog/1/_create
-        { 
-           "title": "My first blog entry",
-           "text": "Just trying this out..." 
-        } 
+```http request
+    PUT /website/blog/1/_create
+    { 
+       "title": "My first blog entry",
+       "text": "Just trying this out..." 
+    }
+```
 
 The response body tells us that this newly created document has \_version number 1. Now imagine that we want to edit the document: we load its data into a web form, make our changes, and then save the new version.
 
 First we retrieve the document:
 
-        GET /website/blog/1
+```http request
+    GET /website/blog/1
+```
 
 The response body includes the same \_version number of 1:
 
+```json
     { 
         "index": "website", 
         "type": "blog", 
@@ -194,44 +203,49 @@ The response body includes the same \_version number of 1:
             "text": "Just trying this out..." 
         } 
     }
+```
 
 Now, when we try to save our changes by reindexing the document, we specify the version to which our changes should be applied. We want this update to succeed only if the current \_version of this document in our index is version 1:
 
-       PUT /website/blog/1?version=1
-       { 
-          "title": "My first blog entry", 
-          "text": "Starting to get the hang of this..."  
-       }
+```http request
+   PUT /website/blog/1?version=1
+   { 
+      "title": "My first blog entry", 
+      "text": "Starting to get the hang of this..."  
+   }
+```
 
 This request succeeds, and the response body tells us that the \_version has been incremented to 2:
 
-       { 
-          "index": "website", 
-          "type": "blog", 
-          "id": "1", 
-          "version": 2,
-          "created": false 
-       }
+```json
+{
+    "index": "website",
+    "type": "blog",
+    "id": "1",
+    "version": 2,
+    "created": false
+}
+```
 
 However, if we were to rerun the same index request, still specifying `version=1`, Elasticsearch would respond with a `409` Conflict HTTP response code, and a body like the following:
 
-    {
-        "error": {
-            "root_cause": [{ 
-                 "type": "version_conflict_engine_exception",
-                 "reason":
-                     "[blog][1]: version conflict,current[2],provided [1]",   
-                 "index": "website",
-                 "shard": "3"
-            }],
-            "type": "version_conflict_engine_exception" ,
-            "reason":
-                "[blog][1]:version conflict,current [2],provided[1]",
-            "index": "website",
-            "shard": "3"
-        },
-        "status": 409
-    }
+```json
+{
+    "error": {
+        "root_cause": [{ 
+             "type": "version_conflict_engine_exception",
+             "reason": "[blog][1]: version conflict,current[2],provided [1]",   
+             "index": "website",
+             "shard": "3"
+        }],
+        "type": "version_conflict_engine_exception" ,
+        "reason": "[blog][1]:version conflict,current [2],provided[1]",
+        "index": "website",
+        "shard": "3"
+    },
+    "status": 409
+}
+```
 
 This tells us that the current \_version number of the document in Elasticsearch is 2, but that we specified that we were updating version 1.
 
@@ -249,13 +263,15 @@ Doctrine has integrated support for automatic optimistic locking via a version f
 
 You designate a version field in an entity as follows. In this example we'll use an integer:
 
-       class User
-       { 
-           // ... 
-           /** @Version @Column(type="integer") */ 
-           private $version; 
-           // ... 
-       }
+```php
+    class User
+    { 
+        // ... 
+        /** @Version @Column(type="integer") */ 
+        private $version; 
+        // ... 
+    }
+```
 
 When a version conflict is encountered during `EntityManager#flush()`, an `OptimisticLockException` is thrown and the active transaction rolled back (or marked for rollback). This exception can be caught and handled. Potential responses to an `OptimisticLockException` are to present the conflict to the user or to refresh or reload objects in a new transaction and then retrying the transaction.
 
@@ -263,28 +279,32 @@ With PHP promoting a share-nothing architecture, the time between showing an upd
 
 You can always verify the version of an entity during a request either when calling `EntityManager#find()`:
 
-    use Doctrine\DBAL\LockMode; 
-    use Doctrine\ORM\OptimisticLockException;
-    
-    $theEntityId = 1;
-    $expectedVersion = 184;
-    try{
-       $entity = $em->find(
-           'User',
-           $theEntityId,
-           LockMode::OPTIMISTIC,
-           $expectedVersion
-       );
-       // do the work
-       $em->flush();
-    } catch (OptimisticLockException $e){
-        echo
-            'Sorry, someone has already changed this entity.' .
-            'Please apply the changes again!';
-    }
+```php
+use Doctrine\DBAL\LockMode; 
+use Doctrine\ORM\OptimisticLockException;
+
+$theEntityId = 1;
+$expectedVersion = 184;
+
+try {
+    $entity = $em->find(
+        'User',
+        $theEntityId,
+        LockMode::OPTIMISTIC,
+        $expectedVersion
+    );
+    // do the work
+    $em->flush();
+} catch (OptimisticLockException $e) {
+    echo
+        'Sorry, someone has already changed this entity.' .
+        'Please apply the changes again!';
+}
+```
 
 Or you can use `EntityManager#lock()` to find out:
 
+```php
     use DoctrineDBALLockMode; 
     use DoctrineORMOptimisticLockException;
     
@@ -299,6 +319,7 @@ Or you can use `EntityManager#lock()` to find out:
             'Sorry, someone has already changed this entity.' .
             'Please apply the changes again!';
     }
+```
 
 According to [Doctrine 2 ORM](http://doctrine-orm.readthedocs.io/projects/doctrine-orm/en/latest/reference/transactions-and-concurrency.html#important-implementation-notes) [Document](http://doctrine-orm.readthedocs.io/projects/doctrine-orm/en/latest/reference/transactions-and-concurrency.html#important-implementation-notes)[ation's](http://doctrine-orm.readthedocs.io/projects/doctrine-orm/en/latest/reference/transactions-and-concurrency.html#important-implementation-notes)  important implementation notes:
 
@@ -315,22 +336,24 @@ Using optimistic locking correctly, you have to add the version as an additional
 
 See the example code, The form (`GET` Request):
 
-    $post = $em->find('BlogPost', 123456);
-    echo '<input type="hidden" name="id" value="' .
-             $post->getId() . '"/>';
-    echo '<input type="hidden" name="version" value="' .
-             $post->getCurrentVersion() . '" />';
+```php
+$post = $em->find('BlogPost', 123456);
+echo '<input type="hidden" name="id" value="' . $post->getId() . '"/>';
+echo '<input type="hidden" name="version" value="' . $post->getCurrentVersion() . '" />';
+```
 
 And the change headline action (`POST` Request):
 
-    $postId = (int) $_GET['id']; 
-    $postVersion = (int) $_GET['version'];                
-    $post = $em->find(
-        'BlogPost',
-        $postId,
-        DoctrineDBALLockMode::OPTIMISTIC,
-        $postVersion
-    );
+```php
+$postId = (int) $_GET['id']; 
+$postVersion = (int) $_GET['version'];                
+$post = $em->find(
+    'BlogPost',
+    $postId,
+    DoctrineDBALLockMode::OPTIMISTIC,
+    $postVersion
+);
+```
 
 Wow — that was a lot of information to take in. However, don't worry if you don't completely understand everything. The more you work with Aggregates and Domain-Driven Design, the more you'll encounter moments when transactionality has to be considered in designing your Application.
 
@@ -434,25 +457,31 @@ Consider an e-commerce application, website, and so on. Users can place orders, 
 
 What could happen if you update a line amount but not the order amount? Data inconsistency. To fix this, any modification to any Entity or Value Object within the Aggregate is performed through the root Entity. Most PHP developers we've worked with are more comfortable building objects and then handling their relationships from the client code, rather than pushing the business logic inside the Entities:
 
-    $order = ...
-    $orderLine = new OrderLine(
-        'Domain-Driven Design in PHP', 24.99
-    );
-    $order->addOrderLine($orderLine);
+```php
+$order = ...
+$orderLine = new OrderLine(
+    'Domain-Driven Design in PHP', 24.99
+);
+$order->addOrderLine($orderLine);
+```
 
 As seen in the previous code example, newbie or even average developers generally build child objects first and then relate them to the parent object using a setter. Consider the following approach:
 
-    $order = ...
-    $orderLine = $order->addOrderLine(
-        'Domain-Driven Design in PHP', 24.99
-    );
+```php
+$order = ...
+$orderLine = $order->addOrderLine(
+    'Domain-Driven Design in PHP', 24.99
+);
+```
 
 Or, consider this approach:
 
-    $order = ...
-    $order->addOrderLine(
-        'Domain-Driven Design in PHP', 24.99
-    );
+```php
+$order = ...
+$order->addOrderLine(
+    'Domain-Driven Design in PHP', 24.99
+);
+```
 
 These approaches are very interesting because they follow two Software Design principles: Tell-Don't-Ask and Law of Demeter.
 
@@ -483,7 +512,6 @@ An Aggregate is fetched and persisted using its own [Chapter 10](../chapters/10%
 What are the cons of Aggregates? The problem when dealing with transactions is the possibility of performance issues and operation errors. We'll explore this in depth soon.
 
 
-
 Aggregate Design Rules
 ----------------------
 
@@ -495,78 +523,82 @@ When designing an Aggregate, there are some rules and considerations to follow i
 
 First of all, what's an invariant? An invariant is a rule that must be true and consistent during code execution. For example, a [stack](https://en.wikipedia.org/wiki/Stack_(abstract_data_type)) is a **LIFO** (**Last In, First Out**) data structure that we can _push_ items into and _pop_ items out of. We can also ask how many items are inside of the stack; this is what's called the size of the stack. Consider a pure PHP implementation without using any specific PHP array functions such as `array_pop`:
 
-    class Stack 
-    {   
-        private $data;
-    
-        public function __construct()
-        {
-            $this->data = [];
-        }
-    
-        public function push($value)
-        {
-            $this->data[] = $value;
-        }
-    
-        public function size()
-        {
-            $size = 0;
-            for ($i = 0; $i < count($this->data); $i++) {
-                $size++;
-            }
-    
-            return $size;
-        }
-    
-        /**
-         * @return mixed
-         */
-        public function pop()
-        {
-            $topIndex = $this->size() - 1;
-            $top = $this->data[$topIndex];
-            unset($this->data[$topIndex]);
-            return $top;
-        }
+```php
+class Stack 
+{   
+    private $data;
+
+    public function __construct()
+    {
+        $this->data = [];
     }
+
+    public function push($value)
+    {
+        $this->data[] = $value;
+    }
+
+    public function size()
+    {
+        $size = 0;
+        for ($i = 0; $i < count($this->data); $i++) {
+            $size++;
+        }
+
+        return $size;
+    }
+
+    /**
+     * @return mixed
+     */
+    public function pop()
+    {
+        $topIndex = $this->size() - 1;
+        $top = $this->data[$topIndex];
+        unset($this->data[$topIndex]);
+        return $top;
+    }
+}
+```
 
 Consider the previous `size` method implementation. It's far from perfect, but it works. However, as it's implemented in the code above, it's a CPU-intensive and high-cost call. Luckily, there's an option to improve this method, by introducing a private attribute to keep track of the number of elements in the internal array:
 
-    class Stack 
-    { 
-        private $data;
-        private $size;
-    
-        public function __construct()
-        {
-            $this->data = [];
-            $this->size = 0;
-        }
-    
-        public function push($value)
-        {
-            $this->data[] = $value;
-            $this->size++;
-        }
-    
-        public function size()
-        {
-           return $this->size;
-        }
-    
-        /**
-         * @return mixed
-         */
-        public function pop()
-        {
-            $topIndex = $this->size--;
-            $top = $this->data[$topIndex];
-            unset($this->data[$topIndex]);
-    
-            return $top;
-        }
+```php
+class Stack 
+{ 
+    private $data;
+    private $size;
+
+    public function __construct()
+    {
+        $this->data = [];
+        $this->size = 0;
     }
+
+    public function push($value)
+    {
+        $this->data[] = $value;
+        $this->size++;
+    }
+
+    public function size()
+    {
+       return $this->size;
+    }
+
+    /**
+     * @return mixed
+     */
+    public function pop()
+    {
+        $topIndex = $this->size--;
+        $top = $this->data[$topIndex];
+        unset($this->data[$topIndex]);
+
+        return $top;
+    }
+}
+```
 
 With these changes, the `size` method is now a fast operation, as it just returns the value of the `size` field. To accomplish this, we introduced a new integer attribute called `size`. When a new `Stack` is created, the value of `size` is `0`, and there's no element in the Stack. When we add a new element into the Stack using the `push` method, we also increase the value of the `size` field. Similarly, we reduce the value of `size` when we remove a value from the Stack using the `pop` method.
 
@@ -633,31 +665,33 @@ The best way to learn about Aggregates is by seeing code. So let's consider the 
 
 We'll discuss Application Services in the following chapters, but for now, let's check different approaches for making a Wish. The first approach, particularly for a novice, would likely be something similar to this:
 
-    class MakeWishService
+```php
+class MakeWishService
+{
+    private $wishRepository;
+
+    public function __construct(WishRepository $wishRepository)
     {
-        private $wishRepository;
-    
-        public function __construct(WishRepository $wishRepository)
-        {
-            $this->wishRepository = $wishRepository;
-        }
-    
-        public function execute(MakeWishRequest $request)
-        {
-            $userId = $request->userId();
-            $address = $request->address();
-            $content = $request->content();
-    
-            $wish = new Wish(
-                $this->wishRepository->nextIdentity(),
-                new UserId($userId),
-                $address,
-                $content
-            );
-    
-            $this->wishRepository->add($wish);
-        }
+        $this->wishRepository = $wishRepository;
     }
+
+    public function execute(MakeWishRequest $request)
+    {
+        $userId = $request->userId();
+        $address = $request->address();
+        $content = $request->content();
+
+        $wish = new Wish(
+            $this->wishRepository->nextIdentity(),
+            new UserId($userId),
+            $address,
+            $content
+        );
+
+        $this->wishRepository->add($wish);
+    }
+}
+```
 
 This code probably allows for the best performance possible. You can almost see the `INSERT` statement behind the scenes; the minimum number of operations for such a use case is one, which is good. With the current implementation, we can create as many wishes as we want, according to the business requirements, which is also good.
 
@@ -667,258 +701,276 @@ This is broken business logic. Of course, this can be fixed using a foreign key 
 
 If we want to fix this issue so that the same code can work properly in different infrastructures, we need to check if the user exists. It's likely that the easiest approach is in the same Application Service:
 
-    class MakeWishService
+```php
+class MakeWishService
+{
+    // ...
+    public function execute(MakeWishRequest $request)
     {
-        // ...
-        public function execute(MakeWishRequest $request)
-        {
-            $userId = $request->userId();
-            $address = $request->address();
-            $content = $request->content();
-    
-            $user = $this->userRepository->ofId(new UserId($userId));
-            if (null === $user) {
-                throw new UserDoesNotExistException();
-            }
-    
-            $wish = new Wish(
-                $this->wishRepository->nextIdentity(),
-                $user->id(),
-                $address,
-                $content
-            );
-    
-            $this->wishRepository->add($wish);
+        $userId = $request->userId();
+        $address = $request->address();
+        $content = $request->content();
+
+        $user = $this->userRepository->ofId(new UserId($userId));
+        if (null === $user) {
+            throw new UserDoesNotExistException();
         }
+
+        $wish = new Wish(
+            $this->wishRepository->nextIdentity(),
+            $user->id(),
+            $address,
+            $content
+        );
+
+        $this->wishRepository->add($wish);
     }
+}
+```
 
 That could work, but there's a problem performing the check in the Application Service: this check is high in the delegation chain. If any other code snippet that isn't this Application Service — such as a Domain Service or another Entity — wants to create a `Wish` for a non-existing User, it can do it. Take a look at the following code:
 
-    // Somewhere in a Domain Service or Entity
-    $nonExistingUserId = new UserId('non-existing-user-id');
-        $wish = new Wish(
-            $this->wishRepository->nextIdentity(),
-            $nonExistingUserId,
-            $address,
-            $content
-    );
+```php
+// Somewhere in a Domain Service or Entity
+$nonExistingUserId = new UserId('non-existing-user-id');
+    $wish = new Wish(
+        $this->wishRepository->nextIdentity(),
+        $nonExistingUserId,
+        $address,
+        $content
+);
+```
 
 If you've already read [Chapter 9](../chapters/09%20Factories.md), _Factories_, then you have the solution. Factories help us keep the business invariants, and that's exactly what we need here.
 
 There's an implicit invariant saying that we're not allowed to make a wish without a valid user. Let's see how a factory can help us:
 
-    abstract class WishService
-    {
-        protected $userRepository;
-        protected $wishRepository;
-    
-        public function __construct(
-            UserRepository $userRepository,
-            WishRepository $wishRepository
-        ) {
-            $this->userRepository = $userRepository;
-            $this->wishRepository = $wishRepository;
-        }
-    
-        protected function findUserOrFail($userId)
-        {
-            $user = $this->userRepository->ofId(new UserId($userId));
-            if (null === $user) {
-                throw new UserDoesNotExistException();
-            }
-    
-            return $user;
-        }
-    
-        protected function findWishOrFail($wishId)
-        {
-            $wish = $this->wishRepository->ofId(new WishId($wishId));
-            if (!$wish) {
-                throw new WishDoesNotExistException();
-            }
-    
-            return $wish;
-        }
-    
-        protected function checkIfUserOwnsWish(User $user, Wish $wish)
-        {
-            if (!$wish->userId()->equals($user->id())) {
-                throw new \InvalidArgumentException(
-                    'User is not authorized to update this wish'
-                );
-            }
-        }
+```php
+abstract class WishService
+{
+    protected $userRepository;
+    protected $wishRepository;
+
+    public function __construct(
+        UserRepository $userRepository,
+        WishRepository $wishRepository
+    ) {
+        $this->userRepository = $userRepository;
+        $this->wishRepository = $wishRepository;
     }
-    
-    class MakeWishService extends WishService
+
+    protected function findUserOrFail($userId)
     {
-        public function execute(MakeWishRequest $request)
-        {
-            $userId = $request->userId();
-            $address = $request->address();
-            $content = $request->content();
-    
-            $user = $this->findUserOrFail($userId);
-    
-            $wish = $user->makeWish(
-                $this->wishRepository->nextIdentity(),
-                $address,
-                $content
+        $user = $this->userRepository->ofId(new UserId($userId));
+        if (null === $user) {
+            throw new UserDoesNotExistException();
+        }
+
+        return $user;
+    }
+
+    protected function findWishOrFail($wishId)
+    {
+        $wish = $this->wishRepository->ofId(new WishId($wishId));
+        if (!$wish) {
+            throw new WishDoesNotExistException();
+        }
+
+        return $wish;
+    }
+
+    protected function checkIfUserOwnsWish(User $user, Wish $wish)
+    {
+        if (!$wish->userId()->equals($user->id())) {
+            throw new \InvalidArgumentException(
+                'User is not authorized to update this wish'
             );
-    
-            $this->wishRepository->add($wish);
         }
     }
+}
+
+class MakeWishService extends WishService
+{
+    public function execute(MakeWishRequest $request)
+    {
+        $userId = $request->userId();
+        $address = $request->address();
+        $content = $request->content();
+
+        $user = $this->findUserOrFail($userId);
+
+        $wish = $user->makeWish(
+            $this->wishRepository->nextIdentity(),
+            $address,
+            $content
+        );
+
+        $this->wishRepository->add($wish);
+    }
+}
+```
 
 As you can see, `Users` make `Wishes`, and so does our code. `makeWish` is a Factory Method for building Wishes. The method returns a new `Wish` built with the `UserId` from the owner:
 
-    class User
+```php
+class User
+{
+    // ...
+
+    /**
+     * @return Wish
+     */
+    public function makeWish(WishId $wishId, $address, $content)
     {
-        // ...
-    
-        /**
-         * @return Wish
-         */
-        public function makeWish(WishId $wishId, $address, $content)
-        {
-            return new Wish(
-                $wishId,
-                $this->id(),
-                $address,
-                $content
-            );
-        }
-    
-        // ...
+        return new Wish(
+            $wishId,
+            $this->id(),
+            $address,
+            $content
+        );
     }
+
+    // ...
+}
+```
 
 Why are we returning a `Wish` and not just adding the new `Wish` to an internal collection as we would do with Doctrine? To summarize, in this scenario, `User` and `Wish` don't conform to an Aggregate because there's no true business invariant to protect. A `User` can add and remove as many `Wishes` as they want. `Wishes` and their `User` can be updated independently in the database in different transactions, if needed.
 
 Following the rules about Aggregate Design explained before, we should aim for small Aggregates, and that's the result here. Each Entity has its own Repository. Wish references its owning `User` using Identities — `UserId` in this case. Getting all the wishes of a user can be performed by a finder in the `WishRepository` and paginated easily without any performance issues:
 
-    interface WishRepository
-    {
-        /**
-         * @param WishId $wishId
-         *
-         * @return Wish
-         */
-        public function ofId(WishId $wishId);
-    
-        /**
-         * @param UserId $userId
-         *
-         * @return Wish[]
-         */
-        public function ofUserId(UserId $userId);
-    
-        /**
-         * @param Wish $wish
-         */
-        public function add(Wish $wish);
-    
-        /**
-         * @param Wish $wish
-         */
-        public function remove(Wish $wish);
-    
-        /**
-         * @return WishId
-         */
-        public function nextIdentity();
-    }
+```php
+interface WishRepository
+{
+    /**
+     * @param WishId $wishId
+     *
+     * @return Wish
+     */
+    public function ofId(WishId $wishId);
+
+    /**
+     * @param UserId $userId
+     *
+     * @return Wish[]
+     */
+    public function ofUserId(UserId $userId);
+
+    /**
+     * @param Wish $wish
+     */
+    public function add(Wish $wish);
+
+    /**
+     * @param Wish $wish
+     */
+    public function remove(Wish $wish);
+
+    /**
+     * @return WishId
+     */
+    public function nextIdentity();
+}
+```
 
 An interesting aspect of this approach is that we don't have to map the relation between `User` and `Wish` in our favorite ORM. Because we reference the `User` from the `Wish` using the `UserId`, we just need the Repositories. Let's consider how the mapping of such Entities using Doctrine might appear:
 
-    Lw\Domain\Model\User\User:
-        type: entity
-        id:
-            userId:
-                column: id
-                type: UserId
-        table: user
-        repositoryClass:
-            Lw\Infrastructure\Domain\Model\User\DoctrineUser\Repository
-        fields:
-            email:
-                type: string
-            password:
-                type: string
+```yaml
+Lw\Domain\Model\User\User:
+    type: entity
+    id:
+        userId:
+            column: id
+            type: UserId
+    table: user
+    repositoryClass:
+        Lw\Infrastructure\Domain\Model\User\DoctrineUser\Repository
+    fields:
+        email:
+            type: string
+        password:
+            type: string
 
-    Lw\Domain\Model\Wish\Wish:
-        type: entity
-        table: wish
-        repositoryClass:
-            Lw\Infrastructure\Domain\Model\Wish\DoctrineWish\Repository
-        id:
-            wishId:
-                column: id
-                type: WishId
-        fields:
-            address:
-                type: string
-            content:
-                type: text
-            userId:
-                type: UserId
-            column: user_id
+Lw\Domain\Model\Wish\Wish:
+    type: entity
+    table: wish
+    repositoryClass:
+        Lw\Infrastructure\Domain\Model\Wish\DoctrineWish\Repository
+    id:
+        wishId:
+            column: id
+            type: WishId
+    fields:
+        address:
+            type: string
+        content:
+            type: text
+        userId:
+            type: UserId
+        column: user_id
+```
 
 No relation is defined. After making a new wish, let's write some code for updating an existing one:
 
-    class UpdateWishService extends WishService
+```php
+class UpdateWishService extends WishService
+{
+    public function execute(UpdateWishRequest $request)
     {
-        public function execute(UpdateWishRequest $request)
-        {
-            $userId = $request->userId();
-            $wishId = $request->wishId();
-            $email = $request->email();
-            $content = $request->content();
-    
-            $user = $this->findUserOrFail($userId);
-            $wish = $this->findWishOrFail($wishId);
-            $this->checkIfUserOwnsWish($user, $wish);
-    
-            $wish->changeContent($content);
-            $wish->changeAddress($email);
-        }
+        $userId = $request->userId();
+        $wishId = $request->wishId();
+        $email = $request->email();
+        $content = $request->content();
+
+        $user = $this->findUserOrFail($userId);
+        $wish = $this->findWishOrFail($wishId);
+        $this->checkIfUserOwnsWish($user, $wish);
+
+        $wish->changeContent($content);
+        $wish->changeAddress($email);
     }
+}
+```
 
 Because `User` and `Wish` don't form an Aggregate, in order to update the `Wish`, we need first to retrieve it using the `WishRepository`. Some extra checks ensure that only the owner can update the wish. As you may have seen, `$wish` is already an existing Entity in our Domain, so there's no need to add it back again using the Repository. However, in order to make changes durable, our ORM must be aware of the information updated and flush any remaining changes to the database after the work is done. Don't worry; we'll take a look closer at this in [Chapter 11](../chapters/11%20Application.md), _Application_. In order to complete the example, let's take a look at how to remove a wish:
 
-    class RemoveWishService extends WishService
+```php
+class RemoveWishService extends WishService
+{
+    public function execute(RemoveWishRequest $request)
     {
-        public function execute(RemoveWishRequest $request)
-        {
-            $userId = $request->userId();
-            $wishId = $request->wishId();
-    
-            $user = $this->findUserOrFail($userId);
-            $wish = $this->findWishOrFail($wishId);
-            $this->checkIfUserOwnsWish($user, $wish);
-    
-            $this->wishRepository->remove($wish);
-        }
+        $userId = $request->userId();
+        $wishId = $request->wishId();
+
+        $user = $this->findUserOrFail($userId);
+        $wish = $this->findWishOrFail($wishId);
+        $this->checkIfUserOwnsWish($user, $wish);
+
+        $this->wishRepository->remove($wish);
     }
+}
+```
 
 As you may have seen, you could refactor some parts of the code, such as the constructor and the ownership checks, to reuse them in both Application Services. Feel free to consider how you would do that. Last but not least, how could we get all the wishes of a specific user:
 
-    class ViewWishesService extends WishService
-    {
-        /**
-         * @return Wish[]
-         */
-        public function execute(ViewWishesRequest $request)
-        { 
-            $userId = $request->userId();
-            $wishId = $request->wishId();
-    
-            $user = $this->findUserOrFail($userId);
-            $wish = $this->findWishOrFail($wishId);
-            $this->checkIfUserOwnsWish($user, $wish);
-    
-            return $this->wishRepository->ofUserId($user->id());
-         }
-    }
+```php
+class ViewWishesService extends WishService
+{
+    /**
+     * @return Wish[]
+     */
+    public function execute(ViewWishesRequest $request)
+    { 
+        $userId = $request->userId();
+        $wishId = $request->wishId();
+
+        $user = $this->findUserOrFail($userId);
+        $wish = $this->findWishOrFail($wishId);
+        $this->checkIfUserOwnsWish($user, $wish);
+
+        return $this->wishRepository->ofUserId($user->id());
+     }
+}
+```
 
 This is quite straightforward. However, we'll go deeper into how to render and return information from Application Services in the corresponding chapter. For now, returning a collection of Wishes will do the job. Let's sum up this non-Aggregate approach. We couldn't find any true business invariant to consider `User` and `Wish` as an Aggregate, which is why each of them is an Aggregate. `User` has its own `Repository`, `UserRepository`. `Wish` has its own Repository too, `WishRepository`. Each `Wish` holds a `UserId` reference to owner, `User`. Even so, we didn't require a transaction. That's the best scenario in terms of performance and scalability issues. However, life is not always so wonderful. Consider what could happen with a true business invariant.
 
@@ -928,33 +980,35 @@ Our application is a huge success and now it's time to get some money from it. W
 
 Consider the following code for a moment. Apart from what was explained in the previous section about pushing logic into our Entities, could the following code work:
 
-    class MakeWishService
+```php
+class MakeWishService
+{
+   // ...
+
+    public function execute(MakeWishRequest $request)
     {
-       // ...
-    
-        public function execute(MakeWishRequest $request)
-        {
-            $userId = $request->userId();
-            $address = $request->email();
-            $content = $request->content();
-    
-            $count = $this->wishRepository->numberOfWishesByUserId(
-                new UserId($userId)
-            );
-            if ($count >= 3) {
-                throw new MaxNumberOfWishesExceededException();
-            }
-    
-            $wish = new Wish(
-                $this->wishRepository->nextIdentity(),
-                new UserId($userId),
-                $address,
-                $content
-            );
-    
-            $this->wishRepository->add($wish);
+        $userId = $request->userId();
+        $address = $request->email();
+        $content = $request->content();
+
+        $count = $this->wishRepository->numberOfWishesByUserId(
+            new UserId($userId)
+        );
+        if ($count >= 3) {
+            throw new MaxNumberOfWishesExceededException();
         }
+
+        $wish = new Wish(
+            $this->wishRepository->nextIdentity(),
+            new UserId($userId),
+            $address,
+            $content
+        );
+
+        $this->wishRepository->add($wish);
     }
+}
+```
 
 It looks like it could. That was easy — probably too easy. And here we come across different problems. The first is that Application Services must coordinate but shouldn't contain business logic. Instead, a better place is to put the check for the maximum three wishes into the `User`, where we could have more control of the relationship between `User` and `Wish`. However, for the approach shown here, the code seems to work.
 
@@ -1006,90 +1060,96 @@ This idea was covered before, but it bears repeating. If you try to apply Optimi
 
 To summarize, after reviewing concurrency controls, there's a pessimistic option working, but there are some concerns about performance impact. There's an optimistic option, but we need to find a parent object. Let's consider the final `MakeWishService`, but with some modifications:
 
-    class WishAggregateService
+```php
+class WishAggregateService
+{
+    protected $userRepository;
+
+    public function __construct(UserRepository $userRepository)
     {
-        protected $userRepository;
-    
-        public function __construct(UserRepository $userRepository)
-        {
-            $this->userRepository = $userRepository;
-        }
-    
-        protected function findUserOrFail($userId)
-        {
-            $user = $this->userRepository->ofId(new UserId($userId));
-            if (null === $user) {
-                throw new UserDoesNotExistException();
-            }
-    
-            return $user;
-        }
+        $this->userRepository = $userRepository;
     }
-    
-    class MakeWishService extends WishAggregateService
+
+    protected function findUserOrFail($userId)
     {
-        public function execute(MakeWishRequest $request)
-        {
-            $userId = $request->userId();
-            $address = $request->address();
-            $content = $request->content();
-    
-            $user = $this->findUserOrFail($userId);
-    
-            $user->makeWish($address, $content);
-    
-            // Uncomment if your ORM can not flush
-            // the changes at the end of the request
-            // $this->userRepository->add($user);
+        $user = $this->userRepository->ofId(new UserId($userId));
+        if (null === $user) {
+            throw new UserDoesNotExistException();
         }
+
+        return $user;
     }
+}
+
+class MakeWishService extends WishAggregateService
+{
+    public function execute(MakeWishRequest $request)
+    {
+        $userId = $request->userId();
+        $address = $request->address();
+        $content = $request->content();
+
+        $user = $this->findUserOrFail($userId);
+
+        $user->makeWish($address, $content);
+
+        // Uncomment if your ORM can not flush
+        // the changes at the end of the request
+        // $this->userRepository->add($user);
+    }
+}
+```
 
 We don't pass the `WishId` because it should be something internal to the User. `makeWish` doesn't return a `Wish` either; it stores the new wish internally. After the execution of the Application Service, our ORM will flush the changes performed on the `$user` to the database. Depending on how good our ORM is, we may need to explicitly add our `User` Entity again using the Repository. What changes to the `User` class are needed? First of all, there should be a collection that could hold all the wishes inside a user:
 
-    class User
+```php
+class User
+{
+    // ...
+
+    /**
+     * @var ArrayCollection
+     */
+    protected $wishes;
+
+    public function __construct(UserId $userId, $email, $password)
     {
         // ...
-    
-        /**
-         * @var ArrayCollection
-         */
-        protected $wishes;
-    
-        public function __construct(UserId $userId, $email, $password)
-        {
-            // ...
-            $this->wishes = new ArrayCollection();
-            // ...
-        }
-    
+        $this->wishes = new ArrayCollection();
         // ...
     }
+
+    // ...
+}
+```
 
 The `wishes` property must be initialized in the `User` constructor. We could use a plain PHP array, but we've chosen to use an `ArrayCollection`. `ArrayCollection` is a PHP array with some extra features provided by the Doctrine Common Library, and it can be used separate from the ORM. We know that some of you may think that this could be a boundary leaking and that no references to any infrastructure should be here, but we really believe that's not the case. In fact, the same code works using plain PHP arrays. Let's see how the `makeWish` implementation is affected:
 
-    class User
+```php
+class User
+{
+    // ...
+
+    /**
+     * @return void
+     */
+    public function makeWish($address, $content)
     {
-        // ...
-    
-        /**
-         * @return void
-         */
-        public function makeWish($address, $content)
-        {
-            if (count($this->wishes) >= 3) {
-                throw new MaxNumberOfWishesExceededException();
-            }
-    
-            $this->wishes[] = new Wish(
-                new WishId,
-                $this->id(),
-                $address,
-                $content
-            );
+        if (count($this->wishes) >= 3) {
+            throw new MaxNumberOfWishesExceededException();
         }
-    
-        // ...
+
+        $this->wishes[] = new Wish(
+            new WishId,
+            $this->id(),
+            $address,
+            $content
+        );
     }
+
+    // ...
+}
+```
 
 So far, so good. Now, it's time to review how the rest of the operations are implemented.
 
@@ -1097,121 +1157,131 @@ So far, so good. Now, it's time to review how the rest of the operations are imp
 
 ****`Pushing for Eventual Consistency`**** It looks like the business doesn't want a user to have more than three wishes. That's going to force us to consider `User` as the root Aggregate with `Wish` inside. This will affect our design, performance, scalability issues, and so on. Consider what would happen if we could just let users add as many wishes as they wanted, beyond the limit. We could check who is exceeding that limit and let them know they need to purchase a premium account. Allowing a user to go over the limit and warning them by telephone afterward would be a really nice commercial strategy. That might even allow the developers on your team to avoid designing `User` and `Wish` as part of the same Aggregate, with User as its root. You've already seen the benefits of not designing a single Aggregate: maximum performance.
 
-    class UpdateWishService extends WishAggregateService
+```php
+class UpdateWishService extends WishAggregateService
+{
+    public function execute(UpdateWishRequest $request)
     {
-        public function execute(UpdateWishRequest $request)
-        {
-            $userId = $request->userId();
-            $wishId = $request->wishId();
-            $email = $request->email();
-            $content = $request->content();
-    
-            $user = $this->findUserOrFail($userId);
-    
-            $user->updateWish(new WishId($wishId), $email, $content);
-        }
+        $userId = $request->userId();
+        $wishId = $request->wishId();
+        $email = $request->email();
+        $content = $request->content();
+
+        $user = $this->findUserOrFail($userId);
+
+        $user->updateWish(new WishId($wishId), $email, $content);
     }
+}
+```
 
 Because `User` and `Wish` now form an Aggregate, the `Wish` to be updated is no longer retrieved using the `WishRepository`. We fetch the user using the `UserRepository`. The operation of updating a `Wish` is performed via the root Entity, which is the `User` in this case. The `WishId` is necessary in order to identify which `Wish` we want to update:
 
-    class User
+```php
+class User
+{
+    // ...
+
+    public function updateWish(WishId $wishId, $email, $content)
     {
-        // ...
-    
-        public function updateWish(WishId $wishId, $email, $content)
-        {
-            foreach ($this->wishes as $wish) {
-                if ($wish->id()->equals($wishId)) {
-                    $wish->changeContent($content);
-                    $wish->changeAddress($address);
-                    break;
-                }
+        foreach ($this->wishes as $wish) {
+            if ($wish->id()->equals($wishId)) {
+                $wish->changeContent($content);
+                $wish->changeAddress($address);
+                break;
             }
         }
     }
+}
+```
 
 Depending on the features of your framework, this task may or may not be cheaper to perform. Iterating through all the wishes could mean making too many queries, or even worse, fetching too many rows, which will create a huge impact on memory. In fact, that's one of the main problems of having big Aggregates. So let's consider how to remove a Wish:
 
-    class RemoveWishService extends WishAggregateService
+```php
+class RemoveWishService extends WishAggregateService
+{
+    public function execute(RemoveWishRequest $request)
     {
-        public function execute(RemoveWishRequest $request)
-        {
-            $userId = $request->userId();
-            $wishId = $request->wishId();
-    
-            $user = $this->findUserOrFail($userId);
-    
-            $user->removeWish($wishId):
-        }
+        $userId = $request->userId();
+        $wishId = $request->wishId();
+
+        $user = $this->findUserOrFail($userId);
+
+        $user->removeWish($wishId):
     }
+}
+```
 
 As seen before, `WishRepository` is no longer necessary. We fetch the `User` using its Repository and perform the action of removing a `Wish`. In order to remove a `Wish`, we need to remove it from the inner collection. An option would be iterating through all the elements and matching the one with the same `WishId`:
 
-    class User
+```php
+class User
+{
+    // ...
+
+    public function removeWish(WishId $wishId)
     {
-        // ...
-    
-        public function removeWish(WishId $wishId)
-        {
-            foreach ($this->wishes as $k => $wish) {
-                if ($wish->id()->equals($wishId)) {
-                    unset($this->wishes[$k]);
-                    break;
-                }
+        foreach ($this->wishes as $k => $wish) {
+            if ($wish->id()->equals($wishId)) {
+                unset($this->wishes[$k]);
+                break;
             }
         }
-    
-        // ...
     }
+
+    // ...
+}
+```
 
 That's probably the most ORM-agnostic code possible. However, behind the scenes, Doctrine is fetching all the wishes and iterating through all of them. A more specific approach to fetch only the Entity needed that isn't so ORM agnostic would be the following: Doctrine mapping must also be updated in order to make all the magic work as expected. While the Wish mapping remains the same, the `User` mapping has the new `oneToMany` unidirectional relationship:
 
-    Lw\Domain\Model\Wish\Wish:
-        type: entity
-        table: lw_wish
-        repositoryClass:
-            Lw\Infrastructure\Domain\Model\Wish\DoctrineWish\Repository
-        id:
-            wishId:
-                column: id
-                type: WishId
-         fields:
-             address: 
-                 type: string
-             content:
-                 type: text
-             userId:
-                 type: UserId
-                 column: user_id
-
-    Lw\Domain\Model\User\User:
-        type: entity
-        id:
-        userId:
+```yaml
+Lw\Domain\Model\Wish\Wish:
+    type: entity
+    table: lw_wish
+    repositoryClass:
+        Lw\Infrastructure\Domain\Model\Wish\DoctrineWish\Repository
+    id:
+        wishId:
             column: id
-            type: UserId
-        table: user
-        repositoryClass:
-            Lw\Infrastructure\Domain\Model\User\DoctrineUser\Repository
-        fields:
-            email:
-                type: string
-            password:
-                type: string
-        manyToMany:
-            wishes:
-                orphanRemoval: true
-                cascade: ["all"]
-                targetEntity: Lw\Domain\Model\Wish\Wish
-                joinTable:
-                    name: user_wishes
-                    joinColumns:
-                        user_id:
-                            referencedColumnName: id
-                    inverseJoinColumns:
-                        wish_id:
-                            referencedColumnName: id
-                            unique: true
+            type: WishId
+     fields:
+         address: 
+             type: string
+         content:
+             type: text
+         userId:
+             type: UserId
+             column: user_id
+
+Lw\Domain\Model\User\User:
+    type: entity
+    id:
+    userId:
+        column: id
+        type: UserId
+    table: user
+    repositoryClass:
+        Lw\Infrastructure\Domain\Model\User\DoctrineUser\Repository
+    fields:
+        email:
+            type: string
+        password:
+            type: string
+    manyToMany:
+        wishes:
+            orphanRemoval: true
+            cascade: ["all"]
+            targetEntity: Lw\Domain\Model\Wish\Wish
+            joinTable:
+                name: user_wishes
+                joinColumns:
+                    user_id:
+                        referencedColumnName: id
+                inverseJoinColumns:
+                    wish_id:
+                        referencedColumnName: id
+                        unique: true
+```
 
 In the code above, there are two important configurations: `orphanRemoval` and cascade. According to the Doctrine 2 ORM Documentation on [orphan removal](http://doctrine-orm.readthedocs.io/projects/doctrine-orm/en/latest/reference/working-with-associations.html#orphan-removal) and [transitive persistence / cascade operations](http://doctrine-orm.readthedocs.io/projects/doctrine-orm/en/latest/reference/working-with-associations.html#transitive-persistence-cascade-operations):
 
@@ -1223,18 +1293,20 @@ For more information, please take a closer look at the Doctrine 2 ORM 2 Document
 
 Finally, let's see how we can get the wishes from a user:
 
-    class ViewWishesService extends WishService
+```php
+class ViewWishesService extends WishService
+{
+    /**
+     * @return Wish[]
+     */
+    public function execute(ViewWishesRequest $request)
     {
-        /**
-         * @return Wish[]
-         */
-        public function execute(ViewWishesRequest $request)
-        {
-            return $this
-                ->findUserOrFail($request->userId())
-                ->wishes();
-        }
+        return $this
+            ->findUserOrFail($request->userId())
+            ->wishes();
     }
+}
+```
 
 As mentioned before, especially in this scenario using Aggregates, returning a collection of Wishes is not the best solution. You should never return Domain Entities, as this will prevent code outside of your Application Services — such as Controllers or your UI — from unexpectedly modifying them. With Aggregates, it makes even more sense. Entities that aren't root — the ones that belong to the Aggregate but aren't root  — should appear private to others outside.
 
