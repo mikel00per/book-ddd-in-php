@@ -79,59 +79,63 @@ The Gamification Context is a full-fledged event-driven application powered by a
 
 We'll also fetch the user projection from Elasticsearch and serialize it to a format previously negotiated with the client:
 
-    namespace AppBundle\Controller;
-    
-    use FOS\RestBundle\Controller\Annotations as Rest;
-    use FOS\RestBundle\Controller\FOSRestController;
-    use Nelmio\ApiDocBundle\Annotation\ApiDoc;
-    
-    class UsersController extends FOSRestController
+```php
+namespace AppBundle\Controller;
+
+use FOS\RestBundle\Controller\Annotations as Rest;
+use FOS\RestBundle\Controller\FOSRestController;
+use Nelmio\ApiDocBundle\Annotation\ApiDoc;
+
+class UsersController extends FOSRestController
+{
+    /**
+     * @ApiDoc(
+     *     resource = true,
+     *     description = "Finds a user given a user ID",
+     *     statusCodes = {
+     *         200 = "Returned when the user have been found",
+     *         404 = "Returned when the user could not be found"
+     *     }
+     * )
+     *
+     * @Rest\View(
+     *     statusCode = 200
+     * )
+     */
+    public function getUserAction($id)
     {
-        /**
-         * @ApiDoc(
-         *     resource = true,
-         *     description = "Finds a user given a user ID",
-         *     statusCodes = {
-         *         200 = "Returned when the user have been found",
-         *         404 = "Returned when the user could not be found"
-         *     }
-         * )
-         *
-         * @Rest\View(
-         *     statusCode = 200
-         * )
-         */
-        public function getUserAction($id)
-        {
-            $repo = $this->get('es.manager.default.user');
-            $user = $repo->find($id);
-    
-            if (!$user) {
-                throw $this->createNotFoundException(
-                    sprintf(
-                        'A user with an ID of %s does not exist',
-                        $id
-                    )
-                );
-            }
-            return $user;
+        $repo = $this->get('es.manager.default.user');
+        $user = $repo->find($id);
+
+        if (!$user) {
+            throw $this->createNotFoundException(
+                sprintf(
+                    'A user with an ID of %s does not exist',
+                    $id
+                )
+            );
         }
+        return $user;
     }
+}
+```
 
 As we explained in the [Chapter 2](../chapters/02%20Architectural%20Styles.md), _Architectural Styles_ reads are treated as an Infrastructure concern, so there's no need to wrap them inside a Command / Command Handler flow.
 
 The resulting JSON+HAL representation of a user will be like this:
 
-    {
-        "id": "c3c587c6-610a-42df",
-        "points": 0,
-        "_links": {
-            "self": {
-                "href":
-                "http://gamification.ctx/api/users/c3c587c6-610a-42df"
-            }
+```json
+{
+    "id": "c3c587c6-610a-42df",
+    "points": 0,
+    "_links": {
+        "self": {
+            "href":
+            "http://gamification.ctx/api/users/c3c587c6-610a-42df"
         }
     }
+}
+```
 
 Now we're in a good position to integrate both Contexts. We just need to write the client in the Will Context for consuming the endpoint we've just created. Should we mix both Domain Models? Digesting the Gamification Context directly will mean adapting the Will Context to the Gamification one, resulting in a **Conformist** integration. However, separating these concerns seems worth the effort. We need a layer for guaranteeing the integrity and the consistency of the Domain Model within the Will Context, and we need to translate _points_ (Gamification) to _badges_ (Will). In Domain-Driven Design, this translation mechanism is what's called an **Anti-Corruption layer**.
 
@@ -142,98 +146,106 @@ So, what does the Anti-Corruption layer look like? Most of the time, Services wi
 
 Let's see how to define a User Service within the Will's model that will be responsible for retrieving the badges earned by a given user:
 
-    namespace Lw\Domain\Model\User;
-    
-    interface UserService
-    {
-        public function badgesFrom(UserId $id);
-    }
+```php
+namespace Lw\Domain\Model\User;
+
+interface UserService
+{
+    public function badgesFrom(UserId $id);
+}
+```
 
 
 Now let's look at the implementation on the Infrastructure side. We'll use an adapter for the transformation process:
 
-    namespace Lw\Infrastructure\Service;
-    
-    use Lw\Domain\Model\User\UserId;
-    use Lw\Domain\Model\User\UserService;
-    
-    class TranslatingUserService implements UserService
+```php
+namespace Lw\Infrastructure\Service;
+
+use Lw\Domain\Model\User\UserId;
+use Lw\Domain\Model\User\UserService;
+
+class TranslatingUserService implements UserService
+{
+    private $userAdapter;
+
+    public function __construct(UserAdapter $userAdapter)
     {
-        private $userAdapter;
-    
-        public function __construct(UserAdapter $userAdapter)
-        {
-            $this->userAdapter = $userAdapter;
-        }
-    
-        public function badgesFrom(UserId $id)
-        {
-            return $this->userAdapter->toBadges($id);
-        }
+        $this->userAdapter = $userAdapter;
     }
+
+    public function badgesFrom(UserId $id)
+    {
+        return $this->userAdapter->toBadges($id);
+    }
+}
+```
 
 And here's the HTTP implementation for the `UserAdapter`:
 
-    namespace Lw\Infrastructure\Service;
-    
-    use GuzzleHttp\Client;
-    
-    class HttpUserAdapter implements UserAdapter
+```php
+namespace Lw\Infrastructure\Service;
+
+use GuzzleHttp\Client;
+
+class HttpUserAdapter implements UserAdapter
+{
+    private $client;
+
+    public function __construct(Client $client)
     {
-        private $client;
-    
-        public function __construct(Client $client)
-        {
-            $this->client = $client;
-        }
-    
-        public function toBadges( $id)
-        {
-            $response = $this->client->get(
-                sprintf('/users/%s', $id),
-                [
-                    'allow_redirects' => true,
-                    'headers' => [
-                        'Accept' => 'application/hal+json'
-                    ]
-                ]
-            );
-    
-            $badges = [];
-            if (200 === $response->getStatusCode()) {
-                $badges = 
-                    (new UserTranslator())
-                        ->toBadgesFromRepresentation(
-                            json_decode(
-                                $response->getBody(),
-                                true
-                            )
-                        );
-            }
-            return $badges;
-        }
+        $this->client = $client;
     }
+
+    public function toBadges( $id)
+    {
+        $response = $this->client->get(
+            sprintf('/users/%s', $id),
+            [
+                'allow_redirects' => true,
+                'headers' => [
+                    'Accept' => 'application/hal+json'
+                ]
+            ]
+        );
+
+        $badges = [];
+        if (200 === $response->getStatusCode()) {
+            $badges = 
+                (new UserTranslator())
+                    ->toBadgesFromRepresentation(
+                        json_decode(
+                            $response->getBody(),
+                            true
+                        )
+                    );
+        }
+        return $badges;
+    }
+}
+```
 
 As you can see, the Adapter acts as a **Facade to the Gamification Context** too. We did it this way, as fetching the User resource on the Gamification side is pretty straightforward. The Adapter uses the `UserTranslator` to perform the translation:
 
-    namespace Lw\Infrastructure\Service;
-    
-    use Lw\Infrastructure\Domain\Model\User\FirstWillMadeBadge;
-    use Symfony\Component\PropertyAccess\PropertyAccess;
-    
-    class UserTranslator
+```php
+namespace Lw\Infrastructure\Service;
+
+use Lw\Infrastructure\Domain\Model\User\FirstWillMadeBadge;
+use Symfony\Component\PropertyAccess\PropertyAccess;
+
+class UserTranslator
+{
+    public function toBadgesFromRepresentation($representation)
     {
-        public function toBadgesFromRepresentation($representation)
-        {
-            $accessor = PropertyAccess::createPropertyAccessor();
-            $points = $accessor->getValue($representation, 'points');
-            $badges = [];
-            if ($points > 3) {
-                $badges[] = new FirstWillMadeBadge();
-            }
-            return $badges;
+        $accessor = PropertyAccess::createPropertyAccessor();
+        $points = $accessor->getValue($representation, 'points');
+        $badges = [];
+        if ($points > 3) {
+            $badges[] = new FirstWillMadeBadge();
         }
+        return $badges;
     }
+}
+```
 
 The Translator specializes in transforming the points coming from the Gamification Context into badges.
 
@@ -260,83 +272,87 @@ Let's start with the Will Context, as it's the one that triggers Events when the
 
 We define two message consumers for the _User Registered_ and _Wish Was Made_ events:
 
-    namespace AppBundle\Infrastructure\Messaging\PhpAmqpLib;
-    
-    use Lw\Gamification\Command\SignupCommand;
-    use OldSound\RabbitMqBundle\RabbitMq\ConsumerInterface;
-    use PhpAmqpLib\Message\AMQPMessage;
-    
-    class PhpAmqpLibLastWillUserRegisteredConsumer
-        implements ConsumerInterface
+```php
+namespace AppBundle\Infrastructure\Messaging\PhpAmqpLib;
+
+use Lw\Gamification\Command\SignupCommand;
+use OldSound\RabbitMqBundle\RabbitMq\ConsumerInterface;
+use PhpAmqpLib\Message\AMQPMessage;
+
+class PhpAmqpLibLastWillUserRegisteredConsumer
+    implements ConsumerInterface
+{
+    private $commandBus;
+
+    public function __construct($commandBus)
     {
-        private $commandBus;
-    
-        public function __construct($commandBus)
-        {
-            $this->commandBus = $commandBus;
-        }
-    
-        public function execute(AMQPMessage $message)
-        {
-            $type = $message->get('type');
-    
-            if('Lw\Domain\Model\User\UserRegistered' === $type) {
-                $event = json_decode($message->body);
-                $eventBody = json_decode($event->event_body);
-    
-                $this->commandBus->handle(
-                    new SignupCommand($eventBody->user_id->id)
-                );
-                return true;
-            }
-            return false;
-        }
+        $this->commandBus = $commandBus;
     }
+
+    public function execute(AMQPMessage $message)
+    {
+        $type = $message->get('type');
+
+        if('Lw\Domain\Model\User\UserRegistered' === $type) {
+            $event = json_decode($message->body);
+            $eventBody = json_decode($event->event_body);
+
+            $this->commandBus->handle(
+                new SignupCommand($eventBody->user_id->id)
+            );
+            return true;
+        }
+        return false;
+    }
+}
+```
 
 Note that in this case, we're only processing messages with the type of `Lw\Domain\Model\User\UserRegistered`:
 
-    namespace AppBundle\Infrastructure\Messaging\PhpAmqpLib;
-    
-    use Lw\Gamification\Command\RewardUserCommand;
-    use Lw\Gamification\Domain\Model\AggregateDoesNotExist; 
-    use OldSound\RabbitMqBundle\RabbitMq\ConsumerInterface;
-    use PhpAmqpLib\Message\AMQPMessage;
-    
-    class PhpAmqpLibLastWillWishWasMadeConsumer implements ConsumerInterface
+```php
+namespace AppBundle\Infrastructure\Messaging\PhpAmqpLib;
+
+use Lw\Gamification\Command\RewardUserCommand;
+use Lw\Gamification\Domain\Model\AggregateDoesNotExist; 
+use OldSound\RabbitMqBundle\RabbitMq\ConsumerInterface;
+use PhpAmqpLib\Message\AMQPMessage;
+
+class PhpAmqpLibLastWillWishWasMadeConsumer implements ConsumerInterface
+{
+    private $commandBus;
+
+    public function __construct($commandBus)
     {
-        private $commandBus;
-    
-        public function __construct($commandBus)
-        {
-            $this->commandBus = $commandBus;
-        }
-    
-        public function execute(AMQPMessage $message)
-        {
-            $type = $message->get('type');
-    
-            if ('Lw\Domain\Model\Wish\WishWasMade' === $type) {
-                $event = json_decode($message->body);
-                $eventBody = json_decode($event->event_body);
-    
-                try {
-                    $points = 5;
-                    $this->commandBus->handle(
-                        new RewardUserCommand(
-                            $eventBody->user_id->id,
-                            $points
-                        )
-                    );
-                } catch (AggregateDoesNotExist $e) {
-                    // Noop
-                }
-    
-                return true;
-            }
-    
-            return false;
-        }
+        $this->commandBus = $commandBus;
     }
+
+    public function execute(AMQPMessage $message)
+    {
+        $type = $message->get('type');
+
+        if ('Lw\Domain\Model\Wish\WishWasMade' === $type) {
+            $event = json_decode($message->body);
+            $eventBody = json_decode($event->event_body);
+
+            try {
+                $points = 5;
+                $this->commandBus->handle(
+                    new RewardUserCommand(
+                        $eventBody->user_id->id,
+                        $points
+                    )
+                );
+            } catch (AggregateDoesNotExist $e) {
+                // Noop
+            }
+
+            return true;
+        }
+
+        return false;
+    }
+}
+```
 
 Again, we're only interested in tracking `Lw\Domain\Model\Wish\WishWasMade events`.
 
@@ -346,60 +362,64 @@ The Gamification Context uses [Tactician](http://tactician.thephpleague.com/) (a
 
 The only thing we still need to do is define the RabbitMQBundle configuration in Symfony's `config.yml` file:
 
-    services:
-        last_will_user_registered_consumer:
-            class:
-                AppBundle\Infrastructure\Messaging\
-                    PhpAmqpLib\PhpAmqpLibLastWillUserRegisteredConsumer
-            arguments:
-                - @tactician.commandbus
-    
-        last_will_wish_was_made_consumer:
-            class:
-                AppBundle\Infrastructure\Messaging\
-                    PhpAmqpLib\PhpAmqpLibLastWillWishWasMadeConsumer
-            arguments:
-                - @tactician.commandbus
-    
-    old_sound_rabbit_mq:
-        connections:
-             default:
-                  host: " %rabbitmq_host%"
-                  port: " %rabbitmq_port%"
-                  user: " %rabbitmq_user%"
-                  password: " %rabbitmq_password%"
-                  vhost: " %rabbitmq_vhost%"
-                  lazy: true
-    
-        consumers:
-            last_will_user_registered:
-                connection: default
-                callback: last_will_user_registered_consumer
-    
-                exchange_options:
-                    name: last-will
-                    type: fanout
-    
-                queue_options:
-                    name: last-will
-    
-            last_will_wish_was_made:
-                connection: default
-                callback: last_will_wish_was_made_consumer
-    
-                exchange_options:
-                    name: last-will
-                    type: fanout
-    
-                queue_options:
-                    name: last-wil
+```yaml
+services:
+    last_will_user_registered_consumer:
+        class:
+            AppBundle\Infrastructure\Messaging\
+                PhpAmqpLib\PhpAmqpLibLastWillUserRegisteredConsumer
+        arguments:
+            - @tactician.commandbus
+
+    last_will_wish_was_made_consumer:
+        class:
+            AppBundle\Infrastructure\Messaging\
+                PhpAmqpLib\PhpAmqpLibLastWillWishWasMadeConsumer
+        arguments:
+            - @tactician.commandbus
+
+old_sound_rabbit_mq:
+    connections:
+         default:
+              host: " %rabbitmq_host%"
+              port: " %rabbitmq_port%"
+              user: " %rabbitmq_user%"
+              password: " %rabbitmq_password%"
+              vhost: " %rabbitmq_vhost%"
+              lazy: true
+
+    consumers:
+        last_will_user_registered:
+            connection: default
+            callback: last_will_user_registered_consumer
+
+            exchange_options:
+                name: last-will
+                type: fanout
+
+            queue_options:
+                name: last-will
+
+        last_will_wish_was_made:
+            connection: default
+            callback: last_will_wish_was_made_consumer
+
+            exchange_options:
+                name: last-will
+                type: fanout
+
+            queue_options:
+                name: last-wil
+```
 
 The most convenient RabbitMQ configuration is probably the \[[Publish / Subscribe](https://www.rabbitmq.com/tutorials/tutorial-three-php.html)\] pattern. All messages published by the Will Context will be delivered to all connected consumers. This is called **fanout** in the RabbitMQ exchange configuration.
 
 The exchange consists of an agent being in charge of delivering messages to the corresponding queues:
 
-    > php app/console rabbitmq:consumer --messages=1000 last_will_user_registered
-    > php app/console rabbitmq:consumer --messages=1000 last_will_wish_was_made
+```shell
+$ php app/console rabbitmq:consumer --messages=1000 last_will_user_registered
+$ php app/console rabbitmq:consumer --messages=1000 last_will_wish_was_made
+```
 
 With those two commands, Symfony will execute both consumers and they'll start listening for Domain Events. We've specified a limit of 1,000 messages to consume, as PHP isn't the best platform for executing long-running processes. It also might be a good idea to use something like [Supervisor](http://supervisord.org/) to monitor and restart processes periodically.
 
