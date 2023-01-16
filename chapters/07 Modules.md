@@ -233,7 +233,7 @@ But if for any reason you can't go with CQRS, an alternative approach is needed.
     
     class ElasticaOrderRepository implements OrderRepository 
     { 
-        private $client; 
+        private $client;
         private $baseOrderRepository;
     
         public function __construct(

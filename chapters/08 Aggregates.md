@@ -268,7 +268,7 @@ You can always verify the version of an entity during a request either when call
     use Doctrine\DBAL\LockMode; 
     use Doctrine\ORM\OptimisticLockException;
     
-    $theEntityId = 1; 
+    $theEntityId = 1;
     $expectedVersion = 184;
     try{
        $entity = $em->find(
@@ -541,7 +541,7 @@ Consider the previous `size` method implementation. It's far from perfect, but i
 
     class Stack 
     { 
-        private $data; 
+        private $data;
         private $size;
     
         public function __construct()

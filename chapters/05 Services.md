@@ -303,7 +303,7 @@ Although the implementation described previously clearly defines the Separation 
     
     class SignUp 
     {
-        private $userRepository; 
+        private $userRepository;
         private $passwordHashing;
     
         public function __construct(

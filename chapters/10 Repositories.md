@@ -240,7 +240,7 @@ The first step to design a Repository is to define a collection-like interface f
     { 
         public function add(Post $aPost);
         public function addAll(array $posts); 
-        public function remove(Post $aPost); 
+        public function remove(Post $aPost);
         public function removeAll(array $posts); 
         // ... 
     }
@@ -280,7 +280,7 @@ As we suggested in [Chapter 4](../chapters/04%20Entities.md), _Entities_, we pre
 
 The code responsible for building up each `Post` instance calls `nextIdentity` to get a unique identifier, `PostId`:
 
-    $post = newPost($postRepository->nextIdentity(), $body);
+    $post = newPost($postRepository->nextIdentity(), $body);
 
 Some developers favor placing the implementation close to the interface definition as a subpackage of the Module. However, because we want a clear Separation of Concerns, we recommend instead placing it inside the Infrastructure layer.
 
