@@ -15,6 +15,7 @@ Clear examples of objects requiring an Identity include:
 
 These concepts have an Identity that endures over time. No matter how many times data in the concepts changes, their Identities remain the same. That's what makes them Entities and not Value Objects. In terms of PHP implementation, they would be plain old classes. For example, consider the following in the case of a person:
 
+```php
     namespace Ddd\Identity\Domain\Model;
     
     class Person
@@ -46,44 +47,45 @@ These concepts have an Identity that endures over time. No matter how many times
             return $this->lastName;
         }
      }
-
+```
 
 Or, consider the following in the case of an order:
 
-    namespace Ddd\Billing\Domain\Model\Order;
-    
-    class Order
-    {
-        private $id;
-        private $amount;
-        private $firstName;
-        private $lastName;
-    
-        public function __construct(
-            $anId, Amount $amount, $aFirstName, $aLastName
-        ) {
-            $this->id = $anId;
-            $this->amount = $amount;
-            $this->firstName = $aFirstName;
-            $this->lastName = $aLastName;
-        }
-    
-        public function id()
-        {
-            return $this->id;
-        }
-    
-        public function firstName()
-        {
-            return $this->firstName;
-        }
-    
-        public function lastName()
-        {
-            return $this->lastName;
-        }
+```php
+namespace Ddd\Billing\Domain\Model\Order;
+
+class Order
+{
+    private $id;
+    private $amount;
+    private $firstName;
+    private $lastName;
+
+    public function __construct(
+        $anId, Amount $amount, $aFirstName, $aLastName
+    ) {
+        $this->id = $anId;
+        $this->amount = $amount;
+        $this->firstName = $aFirstName;
+        $this->lastName = $aLastName;
     }
 
+    public function id()
+    {
+        return $this->id;
+    }
+
+    public function firstName()
+    {
+        return $this->firstName;
+    }
+
+    public function lastName()
+    {
+        return $this->lastName;
+    }
+}
+```
 
 
 Objects Vs. Primitive Types
@@ -98,6 +100,7 @@ Most of the time, the Identity of an Entity is represented as a primitive type �
 
 Let's see a possible implementation for `OrderId`, the `Order` Identity that has evolved into a Value Object:
 
+```php
     namespace Ddd\Billing\Domain\Model;
     
     class OrderId
@@ -119,52 +122,54 @@ Let's see a possible implementation for `OrderId`, the `Order` Identity that has
             return $anOrderId->id === $this->id;
         }
     }
+```
 
 
 There are different implementations you can consider for implementing the `OrderId`. The example shown above is quite simple. As explained in the [Chapter 3](../chapters/03%20Value%20Objects.md), _Value Objects_, you can make the `__constructor` method private and use static factory methods to create new instances. Talk with your team, experiment, and agree. Because Entity Identities are not complex Value Objects, our recommendation is that you shouldn't worry too much here.
 
 Going back to the `Order`, it's time to update references to `OrderId`:
 
-     class Order
+```php
+ class Order
+ {
+     private $id;
+     private $amount;
+     private $firstName;
+     private $lastName;
+
+     public function __construct(
+         OrderId $anOrderId, Amount $amount, $aFirstName, $aLastName
+     ) {
+         $this->id = $anOrderId;
+         $this->amount = $amount;
+         $this->firstName = $aFirstName;
+         $this->lastName = $aLastName;
+     }
+
+     public function id()
      {
-         private $id;
-         private $amount;
-         private $firstName;
-         private $lastName;
-    
-         public function __construct(
-             OrderId $anOrderId, Amount $amount, $aFirstName, $aLastName
-         ) {
-             $this->id = $anOrderId;
-             $this->amount = $amount;
-             $this->firstName = $aFirstName;
-             $this->lastName = $aLastName;
-         }
-    
-         public function id()
-         {
-             return $this->id;
-         }
-    
-         public function firstName()
-         {
-             return $this->firstName;
-         }
-    
-         public function lastName()
-         {
-             return $this->lastName;
-         }
-    
-         public function amount()
-         {
-             return $this->amount;
-         }
-    }
+         return $this->id;
+     }
+
+     public function firstName()
+     {
+         return $this->firstName;
+     }
+
+     public function lastName()
+     {
+         return $this->lastName;
+     }
+
+     public function amount()
+     {
+         return $this->amount;
+     }
+}
+```
 
 
 Our Entity has an Identity modeled using a Value Object. Let's consider different ways of creating an `OrderId`.
-
 
 
 Identity Operation
@@ -178,48 +183,54 @@ As stated before, the Identity of an Entity is what defines it. So then, handlin
 
 Usually, the simplest way of generating the Identity is to delegate it to the persistence mechanism, because the vast majority of persistence mechanisms support some kind of Identity generation — like MySQL's `AUTO_INCREMENT` attribute or Postgres and Oracle sequences. This, although simple, has a major drawback: we won't have the Identity of the Entity until we persist it. So to some degree, if we're going with persistence mechanism-generated Identities, we'll couple the Identity operation with the underlying persistence store:
 
-    CREATE TABLE `orders` (
-        `id` int(11) NOT NULL auto_increment,
-        `amount` decimal (10,5) NOT NULL,
-        `first_name` varchar(100) NOT NULL,
-        `last_name` varchar(100) NOT NULL,
-        PRIMARY KEY (`id`)
-    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
-
+```mysql
+CREATE TABLE `orders`
+(
+    `id`         int(11)        NOT NULL auto_increment,
+    `amount`     decimal(10, 5) NOT NULL,
+    `first_name` varchar(100)   NOT NULL,
+    `last_name`  varchar(100)   NOT NULL,
+    PRIMARY KEY (`id`)
+) ENGINE = InnoDB
+  DEFAULT CHARSET = utf8mb4
+  COLLATE = utf8mb4_unicode_ci;
+```
 
 And then we might consider this code:
 
-    namespace Ddd\Identity\Domain\Model;
-    
-    class Person
+```php
+namespace Ddd\Identity\Domain\Model;
+
+class Person
+{
+    private $identificationNumber;
+    private $firstName;
+    private $lastName;
+
+    public function __construct(
+        $anIdentificationNumber, $aFirstName, $aLastName
+    ) {
+        $this->identificationNumber = $anIdentificationNumber;
+        $this->firstName = $aFirstName;
+        $this->lastName = $aLastName;
+    } 
+
+    public function identificationNumber()
     {
-        private $identificationNumber;
-        private $firstName;
-        private $lastName;
-    
-        public function __construct(
-            $anIdentificationNumber, $aFirstName, $aLastName
-        ) {
-            $this->identificationNumber = $anIdentificationNumber;
-            $this->firstName = $aFirstName;
-            $this->lastName = $aLastName;
-        } 
-    
-        public function identificationNumber()
-        {
-            return $this->identificationNumber;
-        }
-    
-        public function firstName()
-        {
-            return $this->firstName;
-        }
-    
-        public function lastName()
-        {
-            return $this->lastName;
-        }
+        return $this->identificationNumber;
     }
+
+    public function firstName()
+    {
+        return $this->firstName;
+    }
+
+    public function lastName()
+    {
+        return $this->lastName;
+    }
+}
+```
 
 If you've ever tried to build your own ORM, you've already experienced this situation. What's the approach for creating a new Person? If the database is going to generate the Identity, do we have to pass it in the constructor? When and where is the magic that will update the Person with its Identity? What happens if we end up not persisting the Entity?
 
@@ -229,40 +240,42 @@ Sometimes when using an ORM to map Entities to a persistence store, some constra
 
 The simplest way to handle such a situation is by using a [Layer Supertype](http://martinfowler.com/eaaCatalog/layerSupertype.html), where the Identity field created for the persistence store is placed:
 
-    namespace Ddd\Common\Domain\Model;
-    
-    abstract class IdentifiableDomainObject
+```php
+namespace Ddd\Common\Domain\Model;
+
+abstract class IdentifiableDomainObject
+{
+    private $id;
+
+    protected function id()
     {
-        private $id;
-    
-        protected function id()
-        {
-            return $this->id;
-        }
-    
-        protected function setId($anId)
-        {
-            $this->id = $anId;
-        }
+        return $this->id;
     }
-    
-    namespace Acme\Billing\Domain;
-    
-    use Acme\Common\Domain\IdentifiableDomainObject;
-    
-    class Order extends IdentifiableDomainObject
+
+    protected function setId($anId)
     {
-        private $orderId;
-    
-        public function orderId()
-        {
-            if (null === $this->orderId) {
-               $this->orderId = new OrderId($this->id());
-            }
-    
-            return $this->orderId;
+        $this->id = $anId;
+    }
+}
+
+namespace Acme\Billing\Domain;
+
+use Acme\Common\Domain\IdentifiableDomainObject;
+
+class Order extends IdentifiableDomainObject
+{
+    private $orderId;
+
+    public function orderId()
+    {
+        if (null === $this->orderId) {
+           $this->orderId = new OrderId($this->id());
         }
-     }
+
+        return $this->orderId;
+    }
+ }
+```
 
 #### Active Record Vs. Data Mapper for Rich Domain Models
 
@@ -482,8 +495,8 @@ When Doctrine was released, a catchy way of showing how to map objects in the co
 
 > ### Note
 > *`What's an annotation?`** An annotation is a special form of metadata. In PHP, it's put under source code comments. For example, _PHPDocumentor_ makes use of annotations to build API information, and `PHPUnit` uses some annotations to specify data providers or to provide expectations about exceptions thrown by a piece of code:
-
-`class SumTest extends PHPUnit_Framework_TestCase {`    `/** @dataProvider aMethodName */`    `public function testAddition() {`        `//...`     `}` `}`
+> 
+> `class SumTest extends PHPUnit_Framework_TestCase {    /** @dataProvider aMethodName */    public function testAddition() {        //...     } }`
 
 In order to map the `Order` Entity to the persistence store, the source code for the `Order` should be modified to add the Doctrine annotations:
 
@@ -591,7 +604,7 @@ $entityManager = EntityManager::create($dbParams, $config);
 The mapping file should be created on the path where Doctrine will search for the mapping files, and the mapping files should be named after the fully qualified class name, replacing the backslashes `\` with dots. Consider the following:
 
 ```php
-    Acme\Billing\Domain\Model\Order
+Acme\Billing\Domain\Model\Order
 ```
 
 The preceding illustration would have the mapping file named like this:
@@ -1492,5 +1505,5 @@ Some concepts in the Domain demand Identity — that is, changes to their intern
 We've seen and discussed Doctrine as a persistence mechanism, we've looked at the drawbacks of using the Active Record pattern, and finally, we've checked different levels of Entity validation:
 
 > *   Attribute validation: Check for specifics inside the object state through preconditions, postconditions, and invariants.
-*   Entire object validation: Look for consistency of an object as a whole. Extracting the validation to an external service is a good practice.
-*   Object compositions: Complex object compositions could be validated through Domain Services. A good way of communicating this to the rest of the application is through Domain Events.
+> *   Entire object validation: Look for consistency of an object as a whole. Extracting the validation to an external service is a good practice.
+> *   Object compositions: Complex object compositions could be validated through Domain Services. A good way of communicating this to the rest of the application is through Domain Events.

@@ -174,11 +174,11 @@ We can take advantage of the \_version number to ensure that conflicting changes
 Let's create a new blog post:
 
 ```http request
-    PUT /website/blog/1/_create
-    { 
-       "title": "My first blog entry",
-       "text": "Just trying this out..." 
-    }
+PUT /website/blog/1/_create
+{ 
+   "title": "My first blog entry",
+   "text": "Just trying this out..." 
+}
 ```
 
 The response body tells us that this newly created document has \_version number 1. Now imagine that we want to edit the document: we load its data into a web form, make our changes, and then save the new version.
@@ -186,33 +186,33 @@ The response body tells us that this newly created document has \_version number
 First we retrieve the document:
 
 ```http request
-    GET /website/blog/1
+GET /website/blog/1
 ```
 
 The response body includes the same \_version number of 1:
 
 ```json
-    { 
-        "index": "website", 
-        "type": "blog", 
-        "id": "1", 
-        "version": 1, 
-        "found": true, 
-        "_source": { 
-            "title": "My first blog entry", 
-            "text": "Just trying this out..." 
-        } 
-    }
+{ 
+    "index": "website", 
+    "type": "blog", 
+    "id": "1", 
+    "version": 1, 
+    "found": true, 
+    "_source": { 
+        "title": "My first blog entry", 
+        "text": "Just trying this out..." 
+    } 
+}
 ```
 
 Now, when we try to save our changes by reindexing the document, we specify the version to which our changes should be applied. We want this update to succeed only if the current \_version of this document in our index is version 1:
 
 ```http request
-   PUT /website/blog/1?version=1
-   { 
-      "title": "My first blog entry", 
-      "text": "Starting to get the hang of this..."  
-   }
+PUT /website/blog/1?version=1
+{ 
+  "title": "My first blog entry", 
+  "text": "Starting to get the hang of this..."  
+}
 ```
 
 This request succeeds, and the response body tells us that the \_version has been incremented to 2:
@@ -264,13 +264,13 @@ Doctrine has integrated support for automatic optimistic locking via a version f
 You designate a version field in an entity as follows. In this example we'll use an integer:
 
 ```php
-    class User
-    { 
-        // ... 
-        /** @Version @Column(type="integer") */ 
-        private $version; 
-        // ... 
-    }
+class User
+{ 
+    // ... 
+    /** @Version @Column(type="integer") */ 
+    private $version; 
+    // ... 
+}
 ```
 
 When a version conflict is encountered during `EntityManager#flush()`, an `OptimisticLockException` is thrown and the active transaction rolled back (or marked for rollback). This exception can be caught and handled. Potential responses to an `OptimisticLockException` are to present the conflict to the user or to refresh or reload objects in a new transaction and then retrying the transaction.
@@ -305,20 +305,20 @@ try {
 Or you can use `EntityManager#lock()` to find out:
 
 ```php
-    use DoctrineDBALLockMode; 
-    use DoctrineORMOptimisticLockException;
-    
-    $theEntityId = 1;
-    $expectedVersion = 184;
-    $entity = $em->find('User', $theEntityId);
-    try {
-        // assert version em−>lock(entity, LockMode::OPTIMISTIC,
-        $expectedVersion);
-    } catch (OptimisticLockException $e){
-        echo
-            'Sorry, someone has already changed this entity.' .
-            'Please apply the changes again!';
-    }
+use DoctrineDBALLockMode; 
+use DoctrineORMOptimisticLockException;
+
+$theEntityId = 1;
+$expectedVersion = 184;
+$entity = $em->find('User', $theEntityId);
+try {
+    // assert version em−>lock(entity, LockMode::OPTIMISTIC,
+    $expectedVersion);
+} catch (OptimisticLockException $e){
+    echo
+        'Sorry, someone has already changed this entity.' .
+        'Please apply the changes again!';
+}
 ```
 
 According to [Doctrine 2 ORM](http://doctrine-orm.readthedocs.io/projects/doctrine-orm/en/latest/reference/transactions-and-concurrency.html#important-implementation-notes) [Document](http://doctrine-orm.readthedocs.io/projects/doctrine-orm/en/latest/reference/transactions-and-concurrency.html#important-implementation-notes)[ation's](http://doctrine-orm.readthedocs.io/projects/doctrine-orm/en/latest/reference/transactions-and-concurrency.html#important-implementation-notes)  important implementation notes:
@@ -403,9 +403,8 @@ The avid reader will probably be wondering what all of this has to do with Aggre
 
 Indeed, when we talk about the Relational Model, we're namely talking about tables, rows, and relationships between rows. And when we talk about the Object-Oriented Model, we're talking mainly about compositions of objects. So every time we fetch data — a set of rows — from a relational database, we run a translation process responsible for building an in-memory representation we can operate with. The same applies to the opposite direction. Every time we need to store an object in the database, we should run the other translation process to translate that object to a given set of rows or tables. This translation, from object to rows or tables, means that you may run different queries against your database. As such, without using any specific tool, such as transactions, it's impossible to guarantee the data will be persisted consistently. This problem is the so-called **impedance mismatch**.
 
-### Note
-
-**`Impedance Mismatch`** The object-relational impedance mismatch is a set of conceptual and technical difficulties that are often encountered when a **relational database management system** (**RDBMS**) is being used by a program written in an object-oriented programming language or style, particularly when objects or class definitions are mapped in a straightforward way to database tables or relational schemata. Extracted from [Wikipedia](https://en.wikipedia.org/wiki/Object-relational_impedance_mismatch)
+> ### Note
+> **`Impedance Mismatch`** The object-relational impedance mismatch is a set of conceptual and technical difficulties that are often encountered when a **relational database management system** (**RDBMS**) is being used by a program written in an object-oriented programming language or style, particularly when objects or class definitions are mapped in a straightforward way to database tables or relational schemata. Extracted from [Wikipedia](https://en.wikipedia.org/wiki/Object-relational_impedance_mismatch)
 
 The impedance mismatch [is not an easy problem to solve](http://martinfowler.com/bliki/OrmHate.html), so we highly discourage trying to solve it on your own. It would be a huge undertaking, and it's simply not worth the effort. Luckily, there are some libraries out there that take care of this translation process. They're commonly known as Object-Relational Mappers (which we've discussed in earlier chapters) and their primary concern is to ease the process of translating from the Relational Model to the Object-Oriented Model, and vice versa.
 
@@ -1153,9 +1152,8 @@ class User
 
 So far, so good. Now, it's time to review how the rest of the operations are implemented.
 
-### Note
-
-****`Pushing for Eventual Consistency`**** It looks like the business doesn't want a user to have more than three wishes. That's going to force us to consider `User` as the root Aggregate with `Wish` inside. This will affect our design, performance, scalability issues, and so on. Consider what would happen if we could just let users add as many wishes as they wanted, beyond the limit. We could check who is exceeding that limit and let them know they need to purchase a premium account. Allowing a user to go over the limit and warning them by telephone afterward would be a really nice commercial strategy. That might even allow the developers on your team to avoid designing `User` and `Wish` as part of the same Aggregate, with User as its root. You've already seen the benefits of not designing a single Aggregate: maximum performance.
+> ### Note
+> ****`Pushing for Eventual Consistency`**** It looks like the business doesn't want a user to have more than three wishes. That's going to force us to consider `User` as the root Aggregate with `Wish` inside. This will affect our design, performance, scalability issues, and so on. Consider what would happen if we could just let users add as many wishes as they wanted, beyond the limit. We could check who is exceeding that limit and let them know they need to purchase a premium account. Allowing a user to go over the limit and warning them by telephone afterward would be a really nice commercial strategy. That might even allow the developers on your team to avoid designing `User` and `Wish` as part of the same Aggregate, with User as its root. You've already seen the benefits of not designing a single Aggregate: maximum performance.
 
 ```php
 class UpdateWishService extends WishAggregateService
@@ -1316,9 +1314,8 @@ We'll go deeper into this in the [Chapter 11](../chapters/11%20Application.md), 
 > *   The Application Service returns a DTO returned by the Aggregate.
 > *   The Application Service uses an Output dependency where it writes the Aggregate. Such an Output dependency will handle the transformation to a DTO or other format.
 
-### Note
-
-Render the Number of Wishes  As an exercise, consider that we want to render the number of wishes a user has made on their account page. How would you implement this, considering User and Wish don't form an Aggregate? How would you implement it if User and Wish did form an Aggregate? Consider how Eventual Consistency could help in your solutions.
+> ### Note
+> Render the Number of Wishes  As an exercise, consider that we want to render the number of wishes a user has made on their account page. How would you implement this, considering User and Wish don't form an Aggregate? How would you implement it if User and Wish did form an Aggregate? Consider how Eventual Consistency could help in your solutions.
 
 
 Transactions

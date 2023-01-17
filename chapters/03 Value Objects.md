@@ -234,7 +234,7 @@ This approach has some noticeable flaws, if say, for example, you want to valida
 With these factors in mind, this use case is a perfect candidate for being abstracted out into a Value Object. Using this abstraction not only gives you the opportunity to group related properties together, but it also allows you to create higher-order concepts and a more concrete Ubiquitous Language.
 
 > ### Note
-> **`Exercise`**Discuss with a peer whether or not an email could be considered a Value Object. Does the context it's used in matter?
+> **`Exercise`** Discuss with a peer whether or not an email could be considered a Value Object. Does the context it's used in matter?
 
 ### Value Equality
 

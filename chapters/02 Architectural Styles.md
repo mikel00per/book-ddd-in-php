@@ -15,7 +15,7 @@ The Good Old Days
 
 Before the release of PHP 4, the language didn't embrace the Object-Oriented paradigm. Back then, the usual way of writing applications was by using procedures and global state. Concepts like **Separation of Concerns** (**SoC**) and **Model-View-Controller** (**MVC**) were alien among the PHP community. The example below is an application written in this traditional way, where applications were composed of many front controllers mixed with HTML code. During this time, Infrastructure-, Presentation-, UI-, and Domain-layer code were all tangled together:
 
-```php
+```injectablephp
 include __DIR__ . '/bootstrap.php';
 
 $link = mysql_connect('localhost', 'a_username', '4_p4ssw0rd');
@@ -78,7 +78,7 @@ $result = mysql_query('SELECT id, title, content FROM posts', $link);
 
 This style of coding is often referred to as the _Big Ball of Mud_ we mentioned in the first chapter. An improvement seen in this style, however, was to encapsulate the header and the footer of the webpage in their own separate files, which were included in the header and footer files. This avoided duplication and favored reuse:
 
-```php
+```injectablephp
 include __DIR__ . '/bootstrap.php';
 
 $link = mysql_connect('localhost', 'a_username', '4_p4ssw0rd');
@@ -279,7 +279,7 @@ The View is a layer that can both send and receive messages from the Model layer
 
 > **`DTOs Instead of Model Instances?`** This is an old and active topic. Why create a DTO instead of giving an instance of the Model to the View layer? The main reason and the short answer is, again, Separation of Concerns. Letting the View inspect and use a Model instance leads to tight coupling between the View layer and the Model layer. In fact, a change in the Model layer can potentially break all the views that make use of the changed Model instances.
 
-```php
+```html
 {% extends "base.html.twig" %}
 
 {% block content %}
@@ -1263,4 +1263,4 @@ As there are plenty of options for architectural styles, you may have gotten a b
 We've also seen CQRS and Event Sourcing as relatively flexible architectures that will help you in fighting serious complexity. CQRS and Event Sourcing both have their places, but don't let the _coolness factor_ distract you from the value they provide. As they both come with some overhead, you should have a technical reason for justifying their use. These architectural styles are indeed really useful, and the heuristics to start using them can be discovered in the number of finders on the Repositories for CQRS and the volume of triggered events for Event Sourcing. If the number of finder methods starts growing and Repositories become difficult to maintain, then it's time to consider the use of CQRS, in order to split read and write concerns. And after that, if the volume of events on each Aggregate operation tends to grow and the business is interested in more granular information, then an option to consider is whether a move toward Event Sourcing might pay off.
 
 > ### Note
-> **`Extracted from a paper by Brian Foote and Joseph Yoder:`**_A BIG BALL OF MUD is haphazardly structured, sprawling, sloppy, duct-tape and bailing wire,_ [spaghetti code jungle](http://www.laputan.org/mud/mud.html#BigBallOfMud).
+> **`Extracted from a paper by Brian Foote and Joseph Yoder:`** _A BIG BALL OF MUD is haphazardly structured, sprawling, sloppy, duct-tape and bailing wire,_ [spaghetti code jungle](http://www.laputan.org/mud/mud.html#BigBallOfMud).

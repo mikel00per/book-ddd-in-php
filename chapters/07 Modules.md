@@ -47,7 +47,7 @@ Referring back to the same folder structure shown in the previous section, let's
 
 As you can see, this enables us to name Domain objects in terms of the Ubiquitous Language, and this is the preferred way to structure and organize code. If you're using Composer, as you should be doing, you need to set some autoloading configurations in your `composer.json` file:
 
-```json lines
+```jsonpath
 ...
 "autoload": {
     "psr-0": {
